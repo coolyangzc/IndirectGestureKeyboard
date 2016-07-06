@@ -11,12 +11,12 @@ public class DebugInfo : MonoBehaviour
 	// Use this for initialization
 	void Start () 
 	{
-		info.text = "debug";
 	}
 	
 	// Update is called once per frame
 	void Update () 
 	{
+		return;
 		if (Input.touchCount > 0) 
 		{
 			info.text = "";

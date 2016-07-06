@@ -1,0 +1,93 @@
+﻿using UnityEngine;
+using System.Collections;
+using UnityEngine.UI;
+using System.Net;
+using System.Net.Sockets;
+using System.IO;
+
+public class Server : MonoBehaviour 
+{
+	public Text inputText;
+	
+	private int count = 0;
+	private int port = 9973;
+	private string IP;
+	
+	// Use this for initialization
+	void Start () 
+	{
+		IP = GetIP();
+		inputText.text = IP;
+	}
+	
+	// Update is called once per frame
+	void Update () 
+	{
+		switch (Network.peerType) 
+		{
+            case NetworkPeerType.Disconnected:
+                StartServer();
+                break;
+            case NetworkPeerType.Server:
+				OnServer();
+                break;
+            case NetworkPeerType.Client:
+                break;
+            case NetworkPeerType.Connecting:
+                break;
+        }
+		
+	}
+	
+	string GetIP()
+	{
+		IPHostEntry host;
+        string localIP = "";
+        host = Dns.GetHostEntry(Dns.GetHostName());
+        /*foreach (IPAddress ip in host.AddressList) 
+		{
+            if (ip.AddressFamily == AddressFamily.InterNetwork) 
+			{
+                localIP = ip.ToString();
+                break;
+            }
+        }*/
+		var addr = host.AddressList;
+		localIP = addr[addr.Length-1].ToString();
+        return localIP;
+	}
+	
+	void StartServer() 
+	{
+        NetworkConnectionError error = Network.InitializeServer(5, port, false);
+        switch (error) 
+		{
+            case NetworkConnectionError.NoError:
+                break;
+            default:
+                Debug.Log("Connect Error: " + error);
+                break;
+        }
+    }
+	
+	void OnServer()
+	{
+		int length = Network.connections.Length;  
+        if (length != count)
+			for (int i=0; i<length; i++)  
+			{  
+				Debug.Log("客户端"+i);  
+				Debug.Log("客户端ip"+Network.connections[i].ipAddress);  
+			}  
+		if (length > 0)
+			inputText.text = "connect";
+		count = length;
+	}
+	
+	[RPC]
+	void ReceiveMessage(string message, NetworkMessageInfo info)
+	{
+		inputText.text = message;
+		Debug.Log(message);
+	}
+}
