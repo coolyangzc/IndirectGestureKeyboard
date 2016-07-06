@@ -1,37 +1,66 @@
 ﻿using UnityEngine;
 using UnityEngine.UI;
 using System.Collections;
+using System.Collections.Generic;
 
 public class DebugInfo : MonoBehaviour 
 {
 	public Text info;
-	public Image keyboard;
+
+	private List<string> logs = new List<string>();
+	private List<string> tags = new List<string>();
+	private bool changed = false;
+	private float ClearTime = 3;
+	private float nowTime = 0;
 	int num;
 	
 	// Use this for initialization
-	void Start () 
+	void Start() 
 	{
 	}
 	
 	// Update is called once per frame
-	void Update () 
+	void Update() 
 	{
-		return;
-		if (Input.touchCount > 0) 
+		if (!changed)
 		{
-			info.text = "";
-			for (int i = 0; i < Input.touchCount; ++i)
+			nowTime += Time.deltaTime;
+			if (nowTime > ClearTime)
 			{
-				info.text += Input.GetTouch(i).position.x.ToString() + " " + Input.GetTouch(i).position.y.ToString() + " ";
-				Vector2 local;
-				RectTransformUtility.ScreenPointToLocalPointInRectangle(
-					keyboard.transform as RectTransform, Input.GetTouch(i).position, Camera.main, out local);
-				info.text += local.x.ToString() + " " + local.y.ToString() + "\n";
+				info.text = "";
+				logs.Clear();
+				tags.Clear();
+				nowTime = 0;
 			}
-				
+			return;
 		}
 
-		//info.text = Input.touchCount.ToString();
+		info.text = "";
+		nowTime = 0;
+		for (int i = 0; i < logs.Count; ++i)
+			info.text += tags[i] + ':' + logs[i] + '\n';
+
+		changed = false;
 	}
+
+	public void Log(string tag, string log)
+	{
+		if (tags.Contains(tag))
+		{
+			for (int i = 0; i < tags.Count; ++i)
+				if (tags[i] == tag)
+				{
+					logs[i] = log;
+					break;
+				}
+		}
+		else
+		{
+			tags.Add(tag);
+			logs.Add(log);
+		}
+		changed = true;
+	}
+
 
 }

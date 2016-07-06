@@ -9,13 +9,13 @@ public class PCControl : MonoBehaviour {
 	private float rotationX, rotationY;
 	
 	// Use this for initialization
-	void Start () 
+	void Start() 
 	{
 	
 	}
 	
 	// Update is called once per frame
-	void Update () 
+	void Update() 
 	{
 		if (Application.platform == RuntimePlatform.WindowsEditor || Application.platform == RuntimePlatform.WindowsPlayer)
 			MouseControl();
