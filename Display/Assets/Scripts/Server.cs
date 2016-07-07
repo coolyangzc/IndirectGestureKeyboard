@@ -9,6 +9,7 @@ public class Server : MonoBehaviour
 {
 	public Text inputText;
 	public Gesture gesture;
+	public Info info;
 
 	private int clientCount = 0;
 	private int port = 9973;
@@ -18,7 +19,7 @@ public class Server : MonoBehaviour
 	void Start() 
 	{
 		IP = GetIP();
-		inputText.text = IP;
+		info.Log("IP", IP);
 	}
 	
 	// Update is called once per frame
@@ -72,9 +73,9 @@ public class Server : MonoBehaviour
 			{  
 				Debug.Log("客户端"+i);  
 				Debug.Log("客户端ip"+Network.connections[i].ipAddress);  
+				info.Log("Client" + i, Network.connections[i].ipAddress);
+
 			}
-			if (clientCount < length)
-				inputText.text = "Connected";
 		}
 
 		clientCount = length;
