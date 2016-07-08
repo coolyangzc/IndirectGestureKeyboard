@@ -71,14 +71,23 @@ public class Server : MonoBehaviour
 		{
 			for (int i=0; i<length; i++)  
 			{  
-				Debug.Log("客户端"+i);  
-				Debug.Log("客户端ip"+Network.connections[i].ipAddress);  
+				Debug.Log("客户端" + i);  
+				Debug.Log("客户端ip" + Network.connections[i].ipAddress);  
 				info.Log("Client" + i, Network.connections[i].ipAddress);
 
 			}
 		}
-
 		clientCount = length;
+	}
+
+	public void Send(string tag, string message)
+	{
+		Send(tag + ":" + message);
+	}
+	
+	public void Send(string message)
+	{
+		GetComponent<NetworkView>().RPC("ReceiveMessage", RPCMode.All, message);
 	}
 	
 	[RPC]

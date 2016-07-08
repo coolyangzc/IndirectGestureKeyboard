@@ -2,25 +2,24 @@
 using UnityEngine.UI;
 using System.Collections;
 
-public class TouchInput : MonoBehaviour 
+public class Keyboard : MonoBehaviour 
 {
 	public Image keyboard;
 	public DebugInfo debugInfo;
 	public Client client;
 
-	private float keyboardWidth;
-	private float keyboardHeight;
+	private float[] Ratio = {1f, 0.8f, 0.5f};
+	private int current = 0;
+	private float keyboardWidth, keyboardHeight;
+
 	// Use this for initialization
-	void Start() 
+	void Start () 
 	{
-		keyboardWidth = keyboard.rectTransform.rect.width;
-		keyboardHeight = keyboard.rectTransform.rect.height;
-		debugInfo.Log("Width", keyboardWidth.ToString());
-		debugInfo.Log("Height", keyboardHeight.ToString());
+		SetKeyboard(1f);
 	}
 	
 	// Update is called once per frame
-	void Update() 
+	void Update () 
 	{
 		if (Input.touchCount > 0) 
 		{
@@ -33,6 +32,35 @@ public class TouchInput : MonoBehaviour
 			Vector2 relative = new Vector2(local.x / keyboardWidth, local.y / keyboardHeight);
 			debugInfo.Log("Relative", relative.x.ToString() + "," + relative.y.ToString());
 			client.Send("Touch", relative.x.ToString() + "," + relative.y.ToString());
+		}
+	}
+
+	void SetKeyboard(float ratio)
+	{
+		keyboard.rectTransform.localScale = new Vector3(ratio, ratio, ratio);
+		keyboardWidth = keyboard.rectTransform.rect.width;
+		keyboardHeight = keyboard.rectTransform.rect.height;
+		debugInfo.Log("Width", keyboardWidth.ToString());
+		debugInfo.Log("Height", keyboardHeight.ToString());
+	}
+
+	public void ZoomIn()
+	{
+		client.Send("Touch", "0.5,0.5");
+		if (current > 0)
+		{
+			current--;
+			SetKeyboard(Ratio[current]);
+		}
+		
+	}
+
+	public void ZoomOut()
+	{
+		if (current + 1 < Ratio.Length)
+		{
+			current++;
+			SetKeyboard(Ratio[current]);
 		}
 	}
 }

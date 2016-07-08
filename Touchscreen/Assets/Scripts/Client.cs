@@ -6,6 +6,7 @@ public class Client : MonoBehaviour
 {
 	public Canvas connectWindow;
 	public Button connectButton;
+	public Keyboard keyboard;
 	public InputField inputIP;
 
 	public DebugInfo debugInfo;
@@ -43,7 +44,6 @@ public class Client : MonoBehaviour
 				debugInfo.Log("Client", error.ToString());
 				break;
 		}
-		
 	}
 	
 	public void Send(string tag, string message)
@@ -59,5 +59,19 @@ public class Client : MonoBehaviour
 	[RPC]
 	void ReceiveMessage(string message, NetworkMessageInfo info)
 	{
+		Debug.Log(message);
+		string tag = message.Split(':')[0];
+		string msg = message.Split(':')[1];
+		switch (tag)
+		{
+			case "TouchScreen Keyboard Size":
+				if (msg == "+")
+					keyboard.ZoomIn();
+				else if (msg == "-")
+					keyboard.ZoomOut();
+				break;
+			default:
+				break;
+		}
 	}
 }

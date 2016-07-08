@@ -21,7 +21,7 @@ public class Gesture : MonoBehaviour {
 	// Update is called once per frame
 	void Update() 
 	{
-	
+		
 	}
 
 	public void MoveCursor(float x, float y)
