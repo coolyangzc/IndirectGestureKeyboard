@@ -7,7 +7,7 @@ public class PCControl : MonoBehaviour {
 	public Server server;
 	public Canvas canvas;
 
-	private bool mouseHidden = true;
+	private bool mouseHidden = false;
 	private float distance = 0;
 
 	private float MinDistance = 4;
@@ -33,7 +33,7 @@ public class PCControl : MonoBehaviour {
 
 	void KeyControl()
 	{
-		if (Input.GetKey(KeyCode.LeftControl))
+		if (Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl))
 		{
 			if (Input.GetKeyDown(KeyCode.UpArrow))
 				server.Send("TouchScreen Keyboard Size", "+");

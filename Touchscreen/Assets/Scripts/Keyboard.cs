@@ -15,7 +15,9 @@ public class Keyboard : MonoBehaviour
 	// Use this for initialization
 	void Start () 
 	{
-		SetKeyboard(1f);
+		keyboardWidth = keyboard.rectTransform.rect.width;
+		keyboardHeight = keyboard.rectTransform.rect.height;
+		SetKeyboard(1.0f);
 	}
 	
 	// Update is called once per frame
@@ -38,15 +40,12 @@ public class Keyboard : MonoBehaviour
 	void SetKeyboard(float ratio)
 	{
 		keyboard.rectTransform.localScale = new Vector3(ratio, ratio, ratio);
-		keyboardWidth = keyboard.rectTransform.rect.width;
-		keyboardHeight = keyboard.rectTransform.rect.height;
-		debugInfo.Log("Width", keyboardWidth.ToString());
-		debugInfo.Log("Height", keyboardHeight.ToString());
+		debugInfo.Log("Width", (keyboardWidth * ratio).ToString());
+		debugInfo.Log("Height", (keyboardHeight * ratio).ToString());
 	}
 
 	public void ZoomIn()
 	{
-		client.Send("Touch", "0.5,0.5");
 		if (current > 0)
 		{
 			current--;
