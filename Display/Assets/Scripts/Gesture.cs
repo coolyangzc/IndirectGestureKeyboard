@@ -5,6 +5,7 @@ using System.Collections.Generic;
 
 public class Gesture : MonoBehaviour {
 
+	public Server server;
 	public Image keyboard;
 	public GameObject sphere;
 	public Text text;
@@ -43,8 +44,13 @@ public class Gesture : MonoBehaviour {
 		sphere.transform.localPosition = new Vector3(x * keyboardWidth, y * keyboardHeight, -0.1f);
 		stroke.Add(new Vector2(x, y));
 		Lexicon.Candidate[] candidates = lexicon.Recognize(stroke.ToArray());
-		text.text = "";
-		foreach (Lexicon.Candidate candidate in candidates)
-			text.text += candidate.word + "";
+		lexicon.SetCandidates(candidates);
+		string msg = "";
+		for (int i = 0; i < candidates.Length; ++i)
+			if (i < candidates.Length - 1)
+				msg += candidates[i].word + ",";
+			else
+				msg += candidates[i].word;
+		server.Send("Candidates", msg);
 	}
 }

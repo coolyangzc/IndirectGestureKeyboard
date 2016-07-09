@@ -70,7 +70,11 @@ public class Client : MonoBehaviour
 				else if (msg == "-")
 					keyboard.ZoomOut();
 				break;
+			case "Candidates":
+				keyboard.SetCandidates(msg.Split(','));
+				break;
 			default:
+				//Debug.Log("Unknown tag: " + tag);
 				break;
 		}
 	}

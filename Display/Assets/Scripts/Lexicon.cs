@@ -5,7 +5,7 @@ using System.Collections.Generic;
 
 public class Lexicon : MonoBehaviour 
 {
-	public Image keyboard;
+	public Image keyboard, candidates;
 
 	private const int LexiconSize = 10000;
 	private const int SampleSize = 32;
@@ -181,5 +181,14 @@ public class Lexicon : MonoBehaviour
 				}
 		}
 		return candidates;
+	}
+
+	public void SetCandidates(Candidate[] cands)
+	{
+		for (int i = 0; i < cands.Length; ++i)
+		{
+			Button btn = candidates.transform.FindChild("Candidate" + i.ToString()).GetComponent<Button>();
+			btn.GetComponentInChildren<Text>().text = cands[i].word;
+		}
 	}
 }

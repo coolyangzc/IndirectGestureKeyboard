@@ -5,17 +5,30 @@ using System.Collections;
 public class Keyboard : MonoBehaviour 
 {
 	public Image keyboard;
+	public Image candidates;
+	public Button button;
 	public DebugInfo debugInfo;
 	public Client client;
+
+	private const int CandidateNum = 4;
 
 	private float[] Ratio = {1f, 0.8f, 0.5f};
 	private int current = 0;
 	private Vector2 preLocal;
+	private Button[] btn = new Button[CandidateNum];
 	private float keyboardWidth, keyboardHeight;
 
 	// Use this for initialization
 	void Start () 
 	{
+		for (int i = 0; i < CandidateNum; ++i)
+		{
+			btn[i] = candidates.transform.FindChild("Candidate" + i.ToString()).GetComponent<Button>();
+		}
+		btn[0].onClick.AddListener(delegate(){ChooseCandidate(0);});
+		btn[1].onClick.AddListener(delegate(){ChooseCandidate(1);});
+		btn[2].onClick.AddListener(delegate(){ChooseCandidate(2);});
+		btn[3].onClick.AddListener(delegate(){ChooseCandidate(3);});
 		keyboardWidth = keyboard.rectTransform.rect.width;
 		keyboardHeight = keyboard.rectTransform.rect.height;
 		SetKeyboard(1.0f);
@@ -63,6 +76,11 @@ public class Keyboard : MonoBehaviour
 		debugInfo.Log("Height", (keyboardHeight * ratio).ToString());
 	}
 
+	void ChooseCandidate(int id)
+	{
+		client.Send("Choose Candidate", btn[id].GetComponentInChildren<Text>().text);
+	}
+
 	public void ZoomIn()
 	{
 		if (current > 0)
@@ -80,5 +98,11 @@ public class Keyboard : MonoBehaviour
 			current++;
 			SetKeyboard(Ratio[current]);
 		}
+	}
+
+	public void SetCandidates(string[] word)
+	{
+		for (int i = 0; i < word.Length; ++i)
+			btn[i].GetComponentInChildren<Text>().text = word[i];
 	}
 }

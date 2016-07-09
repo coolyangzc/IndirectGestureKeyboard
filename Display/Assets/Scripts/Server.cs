@@ -107,6 +107,11 @@ public class Server : MonoBehaviour
 			case "Touch.Ended":
 				gesture.End(float.Parse(msg.Split(',')[0]), float.Parse(msg.Split(',')[1]));
 				break;
+			case "Choose Candidate":
+				if (inputText.text.Length > 36)
+					inputText.text = "";
+				inputText.text += msg + " ";
+				break;
             default:
 				break;
 		}
