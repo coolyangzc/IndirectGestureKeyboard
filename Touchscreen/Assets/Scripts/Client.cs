@@ -16,15 +16,15 @@ public class Client : MonoBehaviour
 	// Use this for initialization
 	void Start() 
 	{
-		connectWindow.enabled = false;
+		connectWindow.enabled = true;
 		connectButton.onClick.AddListener(StartConnect);
 	}
 	
 	// Update is called once per frame
 	void Update() 
 	{
-		if (Input.GetKeyDown(KeyCode.Escape)) 
-			connectWindow.enabled ^= true;
+		//if (Input.GetKeyDown(KeyCode.Escape)) 
+			//connectWindow.enabled ^= true;
 	}
 
 	void OnGUI()

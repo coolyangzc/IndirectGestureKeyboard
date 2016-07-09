@@ -10,6 +10,7 @@ public class Keyboard : MonoBehaviour
 
 	private float[] Ratio = {1f, 0.8f, 0.5f};
 	private int current = 0;
+	private Vector2 preLocal;
 	private float keyboardWidth, keyboardHeight;
 
 	// Use this for initialization
@@ -25,7 +26,7 @@ public class Keyboard : MonoBehaviour
 	{
 		if (Input.touchCount > 0) 
 		{
-			var touch = Input.GetTouch(Input.touchCount - 1);
+			Touch touch = Input.GetTouch(Input.touchCount - 1);
 			Vector2 local;
 			RectTransformUtility.ScreenPointToLocalPointInRectangle(
 				keyboard.transform as RectTransform, touch.position, Camera.main, out local);
@@ -33,7 +34,25 @@ public class Keyboard : MonoBehaviour
 			debugInfo.Log("Local", local.x.ToString() + "," + local.y.ToString());
 			Vector2 relative = new Vector2(local.x / keyboardWidth, local.y / keyboardHeight);
 			debugInfo.Log("Relative", relative.x.ToString() + "," + relative.y.ToString());
-			client.Send("Touch", relative.x.ToString() + "," + relative.y.ToString());
+			string coor = relative.x.ToString() + "," + relative.y.ToString();
+			switch (touch.phase)
+			{
+				case TouchPhase.Began:
+					client.Send("Touch.Began", coor);
+					preLocal = local;
+					break;
+				case TouchPhase.Moved:
+					if (Vector2.Distance(local, preLocal) > 0.1f)
+					{
+						client.Send("Touch.Moved", coor);
+						preLocal = local;
+					}
+					break;
+				case TouchPhase.Ended:
+					client.Send("Touch.Ended", coor);
+					break;
+			}
+			//client.Send("Touch", );
 		}
 	}
 

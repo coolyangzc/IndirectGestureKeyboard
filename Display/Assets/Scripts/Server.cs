@@ -98,9 +98,15 @@ public class Server : MonoBehaviour
         string msg = message.Split(':')[1];
         switch (tag)
         {
-        	case "Touch":
-				gesture.MoveCursor(float.Parse(msg.Split(',')[0]), float.Parse(msg.Split(',')[1]));
+        	case "Touch.Began":
+				gesture.Begin(float.Parse(msg.Split(',')[0]), float.Parse(msg.Split(',')[1]));
                 break;
+			case "Touch.Moved":
+				gesture.Move(float.Parse(msg.Split(',')[0]), float.Parse(msg.Split(',')[1]));
+				break;
+			case "Touch.Ended":
+				gesture.End(float.Parse(msg.Split(',')[0]), float.Parse(msg.Split(',')[1]));
+				break;
             default:
 				break;
 		}
