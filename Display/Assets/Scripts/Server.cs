@@ -112,6 +112,10 @@ public class Server : MonoBehaviour
 					inputText.text = "";
 				inputText.text += msg + " ";
 				break;
+			case "Delete":
+				if (inputText.text.Length > 0)
+					inputText.text = inputText.text.Substring(0, inputText.text.Length - 1);
+				break;
             default:
 				break;
 		}

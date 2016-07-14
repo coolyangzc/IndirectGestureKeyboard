@@ -31,6 +31,7 @@ public class Gesture : MonoBehaviour {
 	public void Begin(float x, float y)
 	{
 		sphere.transform.localPosition = new Vector3(x * keyboardWidth, y * keyboardHeight, -0.1f);
+		sphere.GetComponent<TrailRenderer>();
 		stroke.Clear();
 		stroke.Add(new Vector2(x, y));
 	}

@@ -29,6 +29,8 @@ public class Keyboard : MonoBehaviour
 		btn[1].onClick.AddListener(delegate(){ChooseCandidate(1);});
 		btn[2].onClick.AddListener(delegate(){ChooseCandidate(2);});
 		btn[3].onClick.AddListener(delegate(){ChooseCandidate(3);});
+		Button del = keyboard.transform.FindChild("Del").GetComponent<Button>();
+		del.onClick.AddListener(TapDelete);
 		keyboardWidth = keyboard.rectTransform.rect.width;
 		keyboardHeight = keyboard.rectTransform.rect.height;
 		SetKeyboard(1.0f);
@@ -79,6 +81,11 @@ public class Keyboard : MonoBehaviour
 	void ChooseCandidate(int id)
 	{
 		client.Send("Choose Candidate", btn[id].GetComponentInChildren<Text>().text);
+	}
+
+	void TapDelete()
+	{
+		client.Send("Delete", "");
 	}
 
 	public void ZoomIn()
