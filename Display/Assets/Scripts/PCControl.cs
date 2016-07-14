@@ -39,6 +39,8 @@ public class PCControl : MonoBehaviour {
 				server.Send("TouchScreen Keyboard Size", "+");
 			if (Input.GetKeyDown(KeyCode.DownArrow))
 				server.Send("TouchScreen Keyboard Size", "-");
+			if (Input.GetKeyDown(KeyCode.M))
+				server.Send("Mode", "Change");
 		}
 	}
 

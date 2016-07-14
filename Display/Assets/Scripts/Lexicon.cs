@@ -14,13 +14,14 @@ public class Lexicon : MonoBehaviour
 	private const float Delta = KeyWidth;
 	private Vector2[] keyPos = new Vector2[26];
 
+	public static Vector2 StartPoint = new Vector2(0f, 0f);
 
 	public class Entry
 	{
 		public string word;
 		public int frequency;
-		public Vector2[] locationSample;
-		public Vector2[] shapeSample;
+		public Vector2[][] locationSample = new Vector2[2][];
+		public Vector2[][] shapeSample = new Vector2[2][];
 		public Entry(string word, int frequency, Lexicon lexicon)
 		{
 			this.word = word;
@@ -37,8 +38,11 @@ public class Lexicon : MonoBehaviour
 					pts.Add(lexicon.keyPos[key]);
 				}
 			}
-			locationSample = lexicon.TemporalSampling(pts.ToArray());
-			shapeSample = lexicon.Normalize(locationSample);
+
+			locationSample[0] = lexicon.TemporalSampling(pts.ToArray());
+			pts.Insert(0, StartPoint);
+			locationSample[1] = lexicon.TemporalSampling(pts.ToArray());
+			//shapeSample = lexicon.Normalize(locationSample);
 		}
 	}
 
@@ -71,7 +75,7 @@ public class Lexicon : MonoBehaviour
 		{
 			RectTransform key = keyboard.rectTransform.FindChild(((char)(i + 65)).ToString()).GetComponent<RectTransform>();
 			keyPos[i] = new Vector2(key.localPosition.x / width, key.localPosition.y / height);
-			Debug.Log(((char)(i + 65)).ToString() + ":" + keyPos[i].x.ToString() + "," + keyPos[i].y.ToString());
+			//Debug.Log(((char)(i + 65)).ToString() + ":" + keyPos[i].x.ToString() + "," + keyPos[i].y.ToString());
 		}
 	}
 
@@ -177,7 +181,8 @@ public class Lexicon : MonoBehaviour
 		{
 			Candidate newCandidate = new Candidate();
 			newCandidate.word = entry.word;
-			newCandidate.confidence = Match(stroke, entry.locationSample);
+			newCandidate.confidence = Match(stroke, entry.locationSample[(int)Server.mode]);
+
 			if (newCandidate.confidence == 0)
 				continue;
 			//newCandidate.confidence *= Match(nStroke, entry.shapeSample);

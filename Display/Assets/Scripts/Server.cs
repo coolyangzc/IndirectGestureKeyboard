@@ -14,6 +14,15 @@ public class Server : MonoBehaviour
 	private int clientCount = 0;
 	private int port = 9973;
 	private string IP;
+
+	public enum Mode
+	{
+		Basic = 0,
+		Fix = 1,
+		Null = 2,
+	};
+
+	public static Mode mode;
 	
 	// Use this for initialization
 	void Start() 
@@ -115,6 +124,12 @@ public class Server : MonoBehaviour
 			case "Delete":
 				if (inputText.text.Length > 0)
 					inputText.text = inputText.text.Substring(0, inputText.text.Length - 1);
+				break;
+			case "Mode":
+				mode = mode + 1;
+				if (mode >= Mode.Null)
+					mode = 0;
+				Debug.Log(mode.ToString());
 				break;
             default:
 				break;

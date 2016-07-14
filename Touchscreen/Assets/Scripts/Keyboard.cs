@@ -12,7 +12,7 @@ public class Keyboard : MonoBehaviour
 
 	private const int CandidateNum = 4;
 
-	private float[] Ratio = {1f, 0.8f, 0.5f};
+	private float[] Ratio = {1f, 0.8f, 0.5f, 0.3f};
 	private int current = 0;
 	private Vector2 preLocal;
 	private Button[] btn = new Button[CandidateNum];
