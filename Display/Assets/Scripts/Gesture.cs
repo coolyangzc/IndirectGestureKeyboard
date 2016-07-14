@@ -10,7 +10,7 @@ public class Gesture : MonoBehaviour {
 	public GameObject sphere;
 	public Text text;
 	public Lexicon lexicon;
-
+	
 	private float keyboardWidth;
 	private float keyboardHeight;
 	private List<Vector2> stroke = new List<Vector2>();
@@ -30,8 +30,8 @@ public class Gesture : MonoBehaviour {
 
 	public void Begin(float x, float y)
 	{
+		sphere.GetComponent<TrailRendererHelper>().Reset();
 		sphere.transform.localPosition = new Vector3(x * keyboardWidth, y * keyboardHeight, -0.1f);
-		sphere.GetComponent<TrailRenderer>();
 		stroke.Clear();
 		stroke.Add(new Vector2(x, y));
 	}
