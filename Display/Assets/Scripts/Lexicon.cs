@@ -8,7 +8,7 @@ public class Lexicon : MonoBehaviour
 	public Image keyboard, candidates;
 
 	private const int LexiconSize = 10000;
-	private const int SampleSize = 32;
+	private const int SampleSize = 64;
 	private const int CandidatesNum = 4;
 	private const float KeyWidth = 0.1f;
 	private const float Delta = KeyWidth;
@@ -38,6 +38,7 @@ public class Lexicon : MonoBehaviour
 				}
 			}
 			locationSample = lexicon.TemporalSampling(pts.ToArray());
+			shapeSample = lexicon.Normalize(locationSample);
 		}
 	}
 
@@ -70,7 +71,7 @@ public class Lexicon : MonoBehaviour
 		{
 			RectTransform key = keyboard.rectTransform.FindChild(((char)(i + 65)).ToString()).GetComponent<RectTransform>();
 			keyPos[i] = new Vector2(key.localPosition.x / width, key.localPosition.y / height);
-			//Debug.Log(((char)(i + 65)).ToString() + ":" + keyPos[i].x.ToString() + "," + keyPos[i].y.ToString());
+			Debug.Log(((char)(i + 65)).ToString() + ":" + keyPos[i].x.ToString() + "," + keyPos[i].y.ToString());
 		}
 	}
 
@@ -98,7 +99,7 @@ public class Lexicon : MonoBehaviour
 		for (int i = 0; i < SampleSize; ++i)
 		{
 			dis += Vector2.Distance(A[i], B[i]);
-			if (dis > 2 * (i+1) * KeyWidth)
+			if (dis > 2.5f * (i+1) * KeyWidth)
 				return 0;
 		}
 		dis /= SampleSize;
@@ -143,21 +144,31 @@ public class Lexicon : MonoBehaviour
 
 	public Vector2[] Normalize(Vector2[] pts)
 	{
-		Vector2 minV = new Vector2(1, 1);
-		Vector2 maxV = new Vector2(-1, -1);
+		float minX = 1f, minY = 1f;
+		float maxX = -1f, maxY = -1f;
+
 		Vector2 center = new Vector2(0, 0);
 		int size = pts.Length;
 		for (int i = 0; i < size; ++i)
 		{
 			center += pts[i];
-			//if (pts[i].x < minV.x) minV.Set(
+			minX = Mathf.Min(minX, pts[i].x);
+			maxX = Mathf.Max(maxX, pts[i].x);
+			minY = Mathf.Min(minY, pts[i].y);
+			maxY = Mathf.Max(maxY, pts[i].y);
 		}
-		return null;
+		center = center / size;
+		float ratio = 1.0f / Mathf.Max(maxX - minX, maxY - minY);
+		Vector2[] nPts = new Vector2[size];
+		for(int i = 0; i < size; ++i)
+			nPts[i] = (pts[i] - center) * ratio;
+		return nPts;
 	}
 
 	public Candidate[] Recognize(Vector2[] rawStroke)
 	{
 		Vector2[] stroke = TemporalSampling(rawStroke);
+		Vector2[] nStroke = Normalize(stroke);
 		Candidate[] candidates = new Candidate[4];
 		for (int i = 0; i < CandidatesNum; ++i)
 			candidates[i] = new Candidate();
@@ -169,6 +180,9 @@ public class Lexicon : MonoBehaviour
 			newCandidate.confidence = Match(stroke, entry.locationSample);
 			if (newCandidate.confidence == 0)
 				continue;
+			//newCandidate.confidence *= Match(nStroke, entry.shapeSample);
+			//if (newCandidate.confidence == 0)
+				//continue;
 			if (newCandidate.confidence < candidates[CandidatesNum - 1].confidence)
 				continue;
 			for (int i = 0; i < CandidatesNum; ++i)
