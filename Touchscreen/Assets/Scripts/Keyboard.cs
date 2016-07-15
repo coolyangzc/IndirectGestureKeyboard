@@ -10,7 +10,7 @@ public class Keyboard : MonoBehaviour
 	public DebugInfo debugInfo;
 	public Client client;
 
-	private const int CandidateNum = 4;
+	private const int CandidateNum = 5;
 
 	private float[] Ratio = {1f, 0.8f, 0.5f, 0.3f};
 	private int current = 0;
@@ -21,14 +21,14 @@ public class Keyboard : MonoBehaviour
 	// Use this for initialization
 	void Start () 
 	{
-		for (int i = 0; i < CandidateNum; ++i)
+		for (int i = 1; i < CandidateNum; ++i)
 		{
 			btn[i] = candidates.transform.FindChild("Candidate" + i.ToString()).GetComponent<Button>();
 		}
-		btn[0].onClick.AddListener(delegate(){ChooseCandidate(0);});
 		btn[1].onClick.AddListener(delegate(){ChooseCandidate(1);});
 		btn[2].onClick.AddListener(delegate(){ChooseCandidate(2);});
 		btn[3].onClick.AddListener(delegate(){ChooseCandidate(3);});
+		btn[4].onClick.AddListener(delegate(){ChooseCandidate(4);});
 		Button del = keyboard.transform.FindChild("Del").GetComponent<Button>();
 		del.onClick.AddListener(TapDelete);
 		keyboardWidth = keyboard.rectTransform.rect.width;
@@ -80,7 +80,7 @@ public class Keyboard : MonoBehaviour
 
 	void ChooseCandidate(int id)
 	{
-		client.Send("Choose Candidate", btn[id].GetComponentInChildren<Text>().text);
+		client.Send("Choose Candidate", id.ToString());
 	}
 
 	void TapDelete()
@@ -110,6 +110,6 @@ public class Keyboard : MonoBehaviour
 	public void SetCandidates(string[] word)
 	{
 		for (int i = 0; i < word.Length; ++i)
-			btn[i].GetComponentInChildren<Text>().text = word[i];
+			btn[i+1].GetComponentInChildren<Text>().text = word[i];
 	}
 }

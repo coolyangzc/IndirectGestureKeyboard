@@ -7,8 +7,8 @@ using System.IO;
 
 public class Server : MonoBehaviour 
 {
-	public Text inputText;
 	public Gesture gesture;
+	public Lexicon lexicon;
 	public Info info;
 
 	private int clientCount = 0;
@@ -29,6 +29,7 @@ public class Server : MonoBehaviour
 	{
 		IP = GetIP();
 		info.Log("IP", IP);
+		info.Log("Mode", mode.ToString());
 	}
 	
 	// Update is called once per frame
@@ -100,9 +101,9 @@ public class Server : MonoBehaviour
 	}
 	
 	[RPC]
-	void ReceiveMessage(string message, NetworkMessageInfo info)
+	void ReceiveMessage(string message, NetworkMessageInfo netInfo)
 	{
-		Debug.Log(message);
+		//Debug.Log(message);
 		string tag = message.Split(':')[0];
         string msg = message.Split(':')[1];
         switch (tag)
@@ -117,18 +118,19 @@ public class Server : MonoBehaviour
 				gesture.End(float.Parse(msg.Split(',')[0]), float.Parse(msg.Split(',')[1]));
 				break;
 			case "Choose Candidate":
-				if (inputText.text.Length > 36)
+				/*if (inputText.text.Length > 36)
 					inputText.text = "";
-				inputText.text += msg + " ";
+				inputText.text += msg + " ";*/
+				lexicon.Accept(int.Parse(msg));
 				break;
 			case "Delete":
-				if (inputText.text.Length > 0)
-					inputText.text = inputText.text.Substring(0, inputText.text.Length - 1);
+				//lexicon.Delete();
 				break;
 			case "Mode":
 				mode = mode + 1;
 				if (mode >= Mode.Null)
 					mode = 0;
+				info.Log("Mode", mode.ToString());
 				Debug.Log(mode.ToString());
 				break;
             default:

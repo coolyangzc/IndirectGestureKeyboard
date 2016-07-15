@@ -9,12 +9,21 @@ public class Lexicon : MonoBehaviour
 
 	private const int LexiconSize = 10000;
 	private const int SampleSize = 64;
-	private const int CandidatesNum = 4;
+	private const int CandidatesNum = 5;
 	private const float KeyWidth = 0.1f;
 	private const float Delta = KeyWidth;
+
+	private int choose = 0;
+	private Button[] btn = new Button[CandidatesNum];
+	private Candidate[] cands = new Candidate[CandidatesNum];
 	private Vector2[] keyPos = new Vector2[26];
 
 	public static Vector2 StartPoint = new Vector2(0f, 0f);
+
+	private int[] wordCursor = new int[100];
+	private int editCursor = 0;
+	private string text = "";
+	public Text inputText;
 
 	public class Entry
 	{
@@ -57,6 +66,8 @@ public class Lexicon : MonoBehaviour
 	// Use this for initialization
 	void Start () 
 	{
+		for (int i = 0; i < CandidatesNum; ++i)
+			btn[i] = candidates.transform.FindChild("Candidate" + i.ToString()).GetComponent<Button>();
 		CalcKeyLayout();
 		CalcLexicon();
 	}
@@ -90,7 +101,7 @@ public class Lexicon : MonoBehaviour
 		{
 			string line = lines[i];
 			Entry entry = new Entry(line.Split(' ')[0], int.Parse(line.Split(' ')[1]), this);
-			if (entry.locationSample.Length > 1)
+			if (entry.locationSample[0].Length > 1)
 				dict.Add(entry);
 		}
 		//for (int i = 0; i < SampleSize; ++i)
@@ -100,6 +111,8 @@ public class Lexicon : MonoBehaviour
 	float Match(Vector2[] A, Vector2[] B)
 	{
 		float dis = 0;
+		if (A.Length != B.Length)
+			Debug.Log("len:" + A.Length.ToString() + "," + B.Length.ToString());
 		for (int i = 0; i < SampleSize; ++i)
 		{
 			dis += Vector2.Distance(A[i], B[i]);
@@ -173,7 +186,7 @@ public class Lexicon : MonoBehaviour
 	{
 		Vector2[] stroke = TemporalSampling(rawStroke);
 		Vector2[] nStroke = Normalize(stroke);
-		Candidate[] candidates = new Candidate[4];
+		Candidate[] candidates = new Candidate[CandidatesNum];
 		for (int i = 0; i < CandidatesNum; ++i)
 			candidates[i] = new Candidate();
 
@@ -202,12 +215,77 @@ public class Lexicon : MonoBehaviour
 		return candidates;
 	}
 
-	public void SetCandidates(Candidate[] cands)
+	public void SetCandidates(Candidate[] candList)
 	{
-		for (int i = 0; i < cands.Length; ++i)
+		btn[choose = 0].Select();
+		for (int i = 0; i < candList.Length; ++i)
 		{
-			Button btn = candidates.transform.FindChild("Candidate" + i.ToString()).GetComponent<Button>();
-			btn.GetComponentInChildren<Text>().text = cands[i].word;
+			cands[i] = candList[i];
+			btn[i].GetComponentInChildren<Text>().text = cands[i].word + "\n" + cands[i].confidence;
 		}
+
+		wordCursor[++editCursor] = text.Length;
+		string space = "";
+		if (text.Length > 0)
+			space = " ";
+		inputText.text = text + space + "<i>" + cands[0].word + "</i>";
+
+	}
+
+	public void NextCandidate()
+	{
+		choose = (choose + 1) % CandidatesNum;
+		if (cands[choose].word == "")
+			choose = 0;
+		if (editCursor > 0)
+		{
+			string space = "";
+			if (text.Length > 0)
+				space = " ";
+			inputText.text = text + space + "<i>" + cands[choose].word + "</i>";
+		}
+		btn[choose].Select();
+	}
+
+	public void Accept(int id)
+	{
+		Debug.Log("Accept");
+		if (id == -1)
+			id = choose;
+		if (text.Length > 28)
+			text = "";
+		if (text.Length > 0)
+			text += " ";
+		text += cands[id].word;
+		inputText.text = text;
+		for (int i = 0; i < CandidatesNum; ++i)
+		{
+			btn[i].GetComponentInChildren<Text>().text = "";
+			cands[i].word = "";
+		}
+	}
+
+	public void Delete()
+	{
+		btn[choose = 0].Select(); //choose = 0
+		for (int i = 0; i < CandidatesNum; ++i)
+		{
+			btn[i].GetComponentInChildren<Text>().text = "";
+			cands[i].word = "";
+		}
+		if (editCursor > 0)
+		{
+			text = text.Substring(0, wordCursor[editCursor--]);
+			if (editCursor > 0)
+			{
+				int space = 0;
+				if (editCursor > 1)
+					space = 1;
+				inputText.text = text.Substring(0, wordCursor[editCursor]) + "<i>" + text.Substring(wordCursor[editCursor]) + "</i>";
+			}
+			else
+				inputText.text = text;
+		}
+
 	}
 }

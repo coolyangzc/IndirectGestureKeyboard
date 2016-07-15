@@ -28,7 +28,6 @@ public class Info : MonoBehaviour
 		info.text = "";
 		for (int i = 0; i < logs.Count; ++i)
 			info.text += tags[i] + ':' + logs[i] + '\n';
-		
 		changed = false;
 	}
 	
