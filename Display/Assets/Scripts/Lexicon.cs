@@ -38,7 +38,8 @@ public class Lexicon : MonoBehaviour
 	{
 		Basic = 0,
 		MinusR = 1,
-		Null = 2,
+		Shape = 2,
+		Null = 3,
 	}
 	
 	public static Mode mode;
@@ -70,14 +71,15 @@ public class Lexicon : MonoBehaviour
 			locationSample[0] = lexicon.TemporalSampling(pts.ToArray());
 			pts.Insert(0, StartPoint);
 			locationSample[1] = lexicon.TemporalSampling(pts.ToArray());
-			//shapeSample = lexicon.Normalize(locationSample);
+			for(int i = 0; i < (int)Mode.Null; ++i)
+				shapeSample[i] = lexicon.Normalize(locationSample[i]);
 		}
 	}
 
 	public class Candidate
 	{
 		public string word;
-		public float confidence;
+		public float location, shape, confidence;
 	}
 
 	private List<Entry> dict = new List<Entry>();
@@ -123,15 +125,17 @@ public class Lexicon : MonoBehaviour
 		{
 			string line = lines[i];
 			Entry entry = new Entry(line.Split(' ')[0], int.Parse(line.Split(' ')[1]), this);
-			if (entry.locationSample[0].Length > 1)
+			if (entry.locationSample[(int)Mode.Fix].Length > 1)
 				dict.Add(entry);
 		}
 		//for (int i = 0; i < SampleSize; ++i)
 			//Debug.Log(dict[0].locationSample[i].x.ToString());
 	}
 
-	float Match(Vector2[] A, Vector2[] B)
+	float Match(Vector2[] A, Vector2[] B, Formula formula)
 	{
+		if (A.Length != B.Length)
+			return 0;
 		float dis = 0;
 		switch(formula)
 		{
@@ -139,10 +143,11 @@ public class Lexicon : MonoBehaviour
 				for (int i = 0; i < SampleSize; ++i)
 				{
 					dis += Vector2.Distance(A[i], B[i]);
-				
+
 				}
 				break;
 			case (Formula.MinusR):
+			case (Formula.Shape):
 				for (int i = 0; i < SampleSize; ++i)
 				{
 					dis += Mathf.Max(0, Vector2.Distance(A[i], B[i]) - radius);
@@ -226,13 +231,16 @@ public class Lexicon : MonoBehaviour
 		{
 			Candidate newCandidate = new Candidate();
 			newCandidate.word = entry.word;
-			newCandidate.confidence = Match(stroke, entry.locationSample[(int)mode]);
-
-			if (newCandidate.confidence == 0)
+			newCandidate.confidence = newCandidate.location = Match(stroke, entry.locationSample[(int)mode], formula);
+			if (newCandidate.location == 0)
 				continue;
-			//newCandidate.confidence *= Match(nStroke, entry.shapeSample);
-			//if (newCandidate.confidence == 0)
-				//continue;
+			if (formula == Formula.Shape)
+			{
+				newCandidate.shape = Match(nStroke, entry.shapeSample[(int)mode], Formula.Basic);
+				if (newCandidate.shape == 0)
+					continue;
+				newCandidate.confidence *= newCandidate.shape;
+			}
 			if (newCandidate.confidence < candidates[CandidatesNum - 1].confidence)
 				continue;
 			for (int i = 0; i < CandidatesNum; ++i)
@@ -254,7 +262,7 @@ public class Lexicon : MonoBehaviour
 		{
 			cands[i] = candList[i];
 			if (debugOn)
-				btn[i].GetComponentInChildren<Text>().text = cands[i].word + "\n" + cands[i].confidence;
+				btn[i].GetComponentInChildren<Text>().text = cands[i].word + "\n" + cands[i].location + "\n" + cands[i].shape;
 			else
 				btn[i].GetComponentInChildren<Text>().text = cands[i].word;
 		}
