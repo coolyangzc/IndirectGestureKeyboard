@@ -6,25 +6,43 @@ using System.Collections.Generic;
 public class Lexicon : MonoBehaviour 
 {
 	public Image keyboard, candidates;
+	public Info info;
+	public Text inputText;
 
 	private const int LexiconSize = 10000;
 	private const int SampleSize = 64;
 	private const int CandidatesNum = 5;
 	private const float KeyWidth = 0.1f;
-	private const float Delta = KeyWidth;
-
+	
+	private float radiusMul = 0.5f, radius = KeyWidth * 0.5f;
 	private bool debugOn = false;
 	private int choose = 0;
 	private Button[] btn = new Button[CandidatesNum];
 	private Candidate[] cands = new Candidate[CandidatesNum];
 	private Vector2[] keyPos = new Vector2[26];
 
-	public static Vector2 StartPoint = new Vector2(0f, 0f);
+	public static Vector2 StartPoint = new Vector2(0.0f, 0.125f);
 
 	private int[] wordCursor = new int[100];
 	private int editCursor = 0;
 	private string text = "";
-	public Text inputText;
+
+	public enum Mode
+	{
+		Basic = 0,
+		Fix = 1,
+		Null = 2,
+	};
+
+	public enum Formula
+	{
+		Basic = 0,
+		MinusR = 1,
+		Null = 2,
+	}
+	
+	public static Mode mode;
+	public static Formula formula;
 
 	public class Entry
 	{
@@ -67,6 +85,9 @@ public class Lexicon : MonoBehaviour
 	// Use this for initialization
 	void Start () 
 	{
+		info.Log("Mode", mode.ToString());
+		info.Log("Radius", radiusMul.ToString());
+		info.Log("Formula", formula.ToString());
 		for (int i = 0; i < CandidatesNum; ++i)
 			btn[i] = candidates.transform.FindChild("Candidate" + i.ToString()).GetComponent<Button>();
 		CalcKeyLayout();
@@ -112,16 +133,26 @@ public class Lexicon : MonoBehaviour
 	float Match(Vector2[] A, Vector2[] B)
 	{
 		float dis = 0;
-		if (A.Length != B.Length)
-			Debug.Log("len:" + A.Length.ToString() + "," + B.Length.ToString());
-		for (int i = 0; i < SampleSize; ++i)
+		switch(formula)
 		{
-			dis += Vector2.Distance(A[i], B[i]);
-			if (dis > 2.5f * (i+1) * KeyWidth)
-				return 0;
+			case (Formula.Basic):
+				for (int i = 0; i < SampleSize; ++i)
+				{
+					dis += Vector2.Distance(A[i], B[i]);
+				
+				}
+				break;
+			case (Formula.MinusR):
+				for (int i = 0; i < SampleSize; ++i)
+				{
+					dis += Mathf.Max(0, Vector2.Distance(A[i], B[i]) - radius);
+		
+				}
+				break;
 		}
+		
 		dis /= SampleSize;
-		return Mathf.Exp(-0.5f * (dis / Delta) * (dis / Delta));
+		return Mathf.Exp(-0.5f * (dis / radius) * (dis / radius));
 	}
 
 	public Vector2[] TemporalSampling(Vector2[] stroke)
@@ -195,7 +226,7 @@ public class Lexicon : MonoBehaviour
 		{
 			Candidate newCandidate = new Candidate();
 			newCandidate.word = entry.word;
-			newCandidate.confidence = Match(stroke, entry.locationSample[(int)Server.mode]);
+			newCandidate.confidence = Match(stroke, entry.locationSample[(int)mode]);
 
 			if (newCandidate.confidence == 0)
 				continue;
@@ -234,6 +265,7 @@ public class Lexicon : MonoBehaviour
 			space = " ";
 		inputText.text = text + space + "<i>" + cands[0].word + "</i>";
 
+
 	}
 
 	public void NextCandidate()
@@ -253,7 +285,6 @@ public class Lexicon : MonoBehaviour
 
 	public void Accept(int id)
 	{
-		Debug.Log("Accept");
 		if (id == -1)
 			id = choose;
 		if (text.Length > 28)
@@ -296,8 +327,6 @@ public class Lexicon : MonoBehaviour
 	public void SetDebugDisplay(bool debugOn)
 	{
 		this.debugOn = debugOn;
-		for (int i = 0; i < CandidatesNum; ++i)
-			btn[i].GetComponentInChildren<Text>().fontSize = debugOn?40:50;
 		if (cands[0] == null || cands[0].word.Length <= 0)
 			return;
 		if (debugOn)
@@ -306,5 +335,30 @@ public class Lexicon : MonoBehaviour
 		else
 			for (int i = 0; i < CandidatesNum; ++i)
 				btn[i].GetComponentInChildren<Text>().text = cands[i].word;
+	}
+
+	public void ChangeMode()
+	{
+		mode = mode + 1;
+		if (mode >= Mode.Null)
+			mode = 0;
+		info.Log("Mode", mode.ToString());
+	}
+
+	public void ChangeFormula()
+	{
+		formula = formula + 1;
+		if (formula >= Formula.Null)
+			formula = 0;
+		info.Log("Formula", formula.ToString());
+	}
+
+	public void ChangeRadius(float delta)
+	{
+		if (radiusMul + delta <= 0)
+			return;
+		radiusMul += delta;
+		radius = KeyWidth * radiusMul;
+		info.Log("Radius", radiusMul.ToString());
 	}
 }

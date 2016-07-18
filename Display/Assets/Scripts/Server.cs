@@ -15,21 +15,13 @@ public class Server : MonoBehaviour
 	private int port = 9973;
 	private string IP;
 
-	public enum Mode
-	{
-		Basic = 0,
-		Fix = 1,
-		Null = 2,
-	};
 
-	public static Mode mode;
 	
 	// Use this for initialization
 	void Start() 
 	{
 		IP = GetIP();
 		info.Log("IP", IP);
-		info.Log("Mode", mode.ToString());
 	}
 	
 	// Update is called once per frame
@@ -125,13 +117,6 @@ public class Server : MonoBehaviour
 				break;
 			case "Delete":
 				//lexicon.Delete();
-				break;
-			case "Mode":
-				mode = mode + 1;
-				if (mode >= Mode.Null)
-					mode = 0;
-				info.Log("Mode", mode.ToString());
-				Debug.Log(mode.ToString());
 				break;
             default:
 				break;

@@ -43,15 +43,21 @@ public class PCControl : MonoBehaviour {
 				server.Send("TouchScreen Keyboard Size", "+");
 			if (Input.GetKeyDown(KeyCode.DownArrow))
 				server.Send("TouchScreen Keyboard Size", "-");
+			if (Input.GetKeyDown(KeyCode.LeftArrow))
+				lexicon.ChangeRadius(-0.1f);
+			if (Input.GetKeyDown(KeyCode.RightArrow))
+				lexicon.ChangeRadius(0.1f);
 		}
-		if (Input.GetKeyDown(KeyCode.L))
+		if (Input.GetKeyDown(KeyCode.D))
 		{
 			debugOn ^= true;
 			info.Log("Debug", debugOn.ToString());
 			lexicon.SetDebugDisplay(debugOn);
 		}
 		if (Input.GetKeyDown(KeyCode.M))
-			server.Send("Mode", "Change");
+			lexicon.ChangeMode();
+		if (Input.GetKeyDown(KeyCode.F))
+			lexicon.ChangeFormula();
 	}
 
 	void MouseControl() 
