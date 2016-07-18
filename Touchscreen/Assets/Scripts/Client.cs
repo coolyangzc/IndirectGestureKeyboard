@@ -64,11 +64,17 @@ public class Client : MonoBehaviour
 		string msg = message.Split(':')[1];
 		switch (tag)
 		{
-			case "TouchScreen Keyboard Size":
+			case "TouchScreen Keyboard Width":
 				if (msg == "+")
-					keyboard.ZoomIn();
+					keyboard.ZoomIn(true);
 				else if (msg == "-")
-					keyboard.ZoomOut();
+					keyboard.ZoomOut(true);
+				break;
+			case "TouchScreen Keyboard Height":
+				if (msg == "+")
+					keyboard.ZoomIn(false);
+				else if (msg == "-")
+					keyboard.ZoomOut(false);
 				break;
 			case "Candidates":
 				keyboard.SetCandidates(msg.Split(','));

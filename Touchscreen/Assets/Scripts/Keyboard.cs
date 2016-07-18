@@ -12,7 +12,8 @@ public class Keyboard : MonoBehaviour
 
 	private const int CandidateNum = 5;
 
-	private float[] Ratio = {1f, 0.8f, 0.5f, 0.3f};
+	private const float eps = 1e-10f;
+	private float heightRatio = 1f, widthRatio = 1f;
 	private int current = 0;
 	private Vector2 preLocal;
 	private Button[] btn = new Button[CandidateNum];
@@ -33,7 +34,7 @@ public class Keyboard : MonoBehaviour
 		del.onClick.AddListener(TapDelete);
 		keyboardWidth = keyboard.rectTransform.rect.width;
 		keyboardHeight = keyboard.rectTransform.rect.height;
-		SetKeyboard(1.0f);
+		SetKeyboard();
 	}
 	
 	// Update is called once per frame
@@ -71,11 +72,11 @@ public class Keyboard : MonoBehaviour
 		}
 	}
 
-	void SetKeyboard(float ratio)
+	void SetKeyboard()
 	{
-		keyboard.rectTransform.localScale = new Vector3(ratio, ratio, ratio);
-		debugInfo.Log("Width", (keyboardWidth * ratio).ToString());
-		debugInfo.Log("Height", (keyboardHeight * ratio).ToString());
+		keyboard.rectTransform.localScale = new Vector3(widthRatio, heightRatio, 1f);
+		debugInfo.Log("Width", (keyboardWidth * widthRatio).ToString());
+		debugInfo.Log("Height", (keyboardHeight * heightRatio).ToString());
 	}
 
 	void ChooseCandidate(int id)
@@ -88,23 +89,37 @@ public class Keyboard : MonoBehaviour
 		client.Send("Delete", "");
 	}
 
-	public void ZoomIn()
+	public void ZoomIn(bool isWidth)
 	{
-		if (current > 0)
+		if (isWidth)
 		{
-			current--;
-			SetKeyboard(Ratio[current]);
+			widthRatio += 0.1f;
+			if (widthRatio > 1)
+				widthRatio = 1;
+		} else
+		{
+			heightRatio += 0.1f;
+			if (heightRatio > 1)
+				heightRatio = 1;
 		}
-		
+
+		SetKeyboard();
 	}
 
-	public void ZoomOut()
+	public void ZoomOut(bool isWidth)
 	{
-		if (current + 1 < Ratio.Length)
+		if (isWidth)
 		{
-			current++;
-			SetKeyboard(Ratio[current]);
+			widthRatio -= 0.1f;
+			if (widthRatio < eps)
+				widthRatio = 0.1f;
+		} else
+		{
+			heightRatio -= 0.1f;
+			if (heightRatio < eps)
+				heightRatio = 0.1f;
 		}
+		SetKeyboard();
 	}
 
 	public void SetCandidates(string[] word)
