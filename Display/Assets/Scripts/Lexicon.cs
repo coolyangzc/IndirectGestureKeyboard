@@ -22,9 +22,10 @@ public class Lexicon : MonoBehaviour
 	private Vector2[] keyPos = new Vector2[26];
 
 	public static Vector2 StartPoint = new Vector2(0.0f, 0.125f);
+	
+	private List<Candidate> history = new List<Candidate>();
 
-	private int[] wordCursor = new int[100];
-	private int editCursor = 0;
+
 	private string text = "";
 
 	public enum Mode
@@ -80,6 +81,18 @@ public class Lexicon : MonoBehaviour
 	{
 		public string word;
 		public float location, shape, confidence;
+		public Candidate()
+		{
+			word = "";
+			confidence = 0;
+		}
+		public Candidate(Candidate x)
+		{
+			word = x.word;
+			location = x.location;
+			shape = x.shape;
+			confidence = x.confidence;
+		}
 	}
 
 	private List<Entry> dict = new List<Entry>();
@@ -90,6 +103,7 @@ public class Lexicon : MonoBehaviour
 		info.Log("Mode", mode.ToString());
 		info.Log("Radius", radiusMul.ToString());
 		info.Log("Formula", formula.ToString());
+		history.Clear();
 		for (int i = 0; i < CandidatesNum; ++i)
 			btn[i] = candidates.transform.FindChild("Candidate" + i.ToString()).GetComponent<Button>();
 		CalcKeyLayout();
@@ -257,6 +271,7 @@ public class Lexicon : MonoBehaviour
 
 	public void SetCandidates(Candidate[] candList)
 	{
+
 		btn[choose = 0].Select();
 		for (int i = 0; i < candList.Length; ++i)
 		{
@@ -266,28 +281,27 @@ public class Lexicon : MonoBehaviour
 			else
 				btn[i].GetComponentInChildren<Text>().text = cands[i].word;
 		}
-
-		wordCursor[++editCursor] = text.Length;
+		if (cands[0].confidence == 0)
+			return;
+		history.Add(new Candidate(cands[0]));
+		Debug.Log(history[0].word);
+		
 		string space = "";
 		if (text.Length > 0)
 			space = " ";
 		inputText.text = text + space + "<i>" + cands[0].word + "</i>";
-
-
 	}
 
 	public void NextCandidate()
 	{
 		choose = (choose + 1) % CandidatesNum;
-		if (cands[choose].word == "")
+		if (cands[choose].confidence == 0)
 			choose = 0;
-		if (editCursor > 0)
-		{
-			string space = "";
-			if (text.Length > 0)
-				space = " ";
-			inputText.text = text + space + "<i>" + cands[choose].word + "</i>";
-		}
+		history[history.Count - 1] = new Candidate(cands[choose]);
+		string space = "";
+		if (text.Length > 0)
+			space = " ";
+		inputText.text = text + space + "<i>" + cands[choose].word + "</i>";
 		btn[choose].Select();
 	}
 
@@ -295,12 +309,11 @@ public class Lexicon : MonoBehaviour
 	{
 		if (id == -1)
 			id = choose;
-		if (text.Length > 28)
-			text = "";
 		if (text.Length > 0)
 			text += " ";
 		text += cands[id].word;
 		inputText.text = text;
+
 		for (int i = 0; i < CandidatesNum; ++i)
 		{
 			btn[i].GetComponentInChildren<Text>().text = "";
@@ -316,20 +329,15 @@ public class Lexicon : MonoBehaviour
 			btn[i].GetComponentInChildren<Text>().text = "";
 			cands[i].word = "";
 		}
-		if (editCursor > 0)
-		{
-			text = text.Substring(0, wordCursor[editCursor--]);
-			if (editCursor > 0)
-			{
-				int space = 0;
-				if (editCursor > 1)
-					space = 1;
-				inputText.text = text.Substring(0, wordCursor[editCursor]) + "<i>" + text.Substring(wordCursor[editCursor]) + "</i>";
-			}
-			else
-				inputText.text = text;
-		}
-
+		if (history.Count == 0)
+			return;
+		history.RemoveAt(history.Count - 1);
+		text = "";
+		for (int i = 0; i < history.Count - 1; ++i)
+			text += history[i].word + " ";
+		if (history.Count > 0)
+			text += "<i>" + history[history.Count - 1].word + "</i>";
+		inputText.text = text;
 	}
 
 	public void SetDebugDisplay(bool debugOn)

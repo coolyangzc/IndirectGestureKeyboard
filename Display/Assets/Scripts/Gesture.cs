@@ -100,7 +100,8 @@ public class Gesture : MonoBehaviour {
 		stroke.Add(new Vector2(x, y));
 
 		Lexicon.Candidate[] candidates = lexicon.Recognize(stroke.ToArray());
-		chooseCandidate = true;
+		if (candidates[0].confidence > 0)
+			chooseCandidate = true;
 		lexicon.SetCandidates(candidates);
 		string msg = "";
 		for (int i = 1; i < candidates.Length; ++i)
