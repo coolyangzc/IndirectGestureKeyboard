@@ -13,6 +13,7 @@ public class Lexicon : MonoBehaviour
 	private const float KeyWidth = 0.1f;
 	private const float Delta = KeyWidth;
 
+	private bool debugOn = false;
 	private int choose = 0;
 	private Button[] btn = new Button[CandidatesNum];
 	private Candidate[] cands = new Candidate[CandidatesNum];
@@ -221,7 +222,10 @@ public class Lexicon : MonoBehaviour
 		for (int i = 0; i < candList.Length; ++i)
 		{
 			cands[i] = candList[i];
-			btn[i].GetComponentInChildren<Text>().text = cands[i].word + "\n" + cands[i].confidence;
+			if (debugOn)
+				btn[i].GetComponentInChildren<Text>().text = cands[i].word + "\n" + cands[i].confidence;
+			else
+				btn[i].GetComponentInChildren<Text>().text = cands[i].word;
 		}
 
 		wordCursor[++editCursor] = text.Length;
@@ -287,5 +291,20 @@ public class Lexicon : MonoBehaviour
 				inputText.text = text;
 		}
 
+	}
+
+	public void SetDebugDisplay(bool debugOn)
+	{
+		this.debugOn = debugOn;
+		for (int i = 0; i < CandidatesNum; ++i)
+			btn[i].GetComponentInChildren<Text>().fontSize = debugOn?40:50;
+		if (cands[0] == null || cands[0].word.Length <= 0)
+			return;
+		if (debugOn)
+			for (int i = 0; i < CandidatesNum; ++i)
+				btn[i].GetComponentInChildren<Text>().text = cands[i].word + "\n" + cands[i].confidence;
+		else
+			for (int i = 0; i < CandidatesNum; ++i)
+				btn[i].GetComponentInChildren<Text>().text = cands[i].word;
 	}
 }

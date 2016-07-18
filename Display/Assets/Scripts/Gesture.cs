@@ -7,12 +7,10 @@ public class Gesture : MonoBehaviour {
 
 	public Server server;
 	public Image keyboard;
-	public GameObject sphere;
+	public RawImage cursor;
 	public Text text;
 	public Lexicon lexicon;
-
-	//public enum Stage
-
+	
 	private bool chooseCandidate = false;
 	private float keyboardWidth, keyboardHeight;
 	private float length;
@@ -36,19 +34,19 @@ public class Gesture : MonoBehaviour {
 
 	public void Begin(float x, float y)
 	{
-		sphere.GetComponent<TrailRendererHelper>().Reset();
+		cursor.GetComponent<TrailRendererHelper>().Reset();
 		beginPoint = new Vector2(x, y);
 		prePoint = new Vector2(x, y);
 		length = 0;
 		switch (Server.mode)
 		{
 			case (Server.Mode.Basic):
-				sphere.transform.localPosition = new Vector3(x * keyboardWidth, y * keyboardHeight, -0.1f);
+				cursor.transform.localPosition = new Vector3(x * keyboardWidth, y * keyboardHeight, -0.1f);
 				stroke.Clear();
 				stroke.Add(new Vector2(x, y));
 				break;
 			case (Server.Mode.Fix):
-				sphere.transform.localPosition = new Vector3(StartPoint.x * keyboardWidth, StartPoint.y * keyboardHeight, -0.1f);
+				cursor.transform.localPosition = new Vector3(StartPoint.x * keyboardWidth, StartPoint.y * keyboardHeight, -0.1f);
 				stroke.Clear();
 				stroke.Add(Lexicon.StartPoint);
 				break;
@@ -73,7 +71,7 @@ public class Gesture : MonoBehaviour {
 			x = x - beginPoint.x + StartPoint.x;
 			y = y - beginPoint.y + StartPoint.y;
 		}
-		sphere.transform.localPosition = new Vector3(x * keyboardWidth, y * keyboardHeight, -0.1f);
+		cursor.transform.localPosition = new Vector3(x * keyboardWidth, y * keyboardHeight, -0.1f);
 		stroke.Add(new Vector2(x, y));
 	}
 
@@ -98,7 +96,7 @@ public class Gesture : MonoBehaviour {
 		}
 		
 
-		sphere.transform.localPosition = new Vector3(x * keyboardWidth, y * keyboardHeight, -0.1f);
+		cursor.transform.localPosition = new Vector3(x * keyboardWidth, y * keyboardHeight, -0.1f);
 		stroke.Add(new Vector2(x, y));
 
 		Lexicon.Candidate[] candidates = lexicon.Recognize(stroke.ToArray());

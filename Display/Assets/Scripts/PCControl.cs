@@ -6,8 +6,11 @@ public class PCControl : MonoBehaviour {
 	public GameObject trackingSpace;
 	public Server server;
 	public Canvas canvas;
+	public Lexicon lexicon;
+	public Info info;
 
 	private bool mouseHidden = false;
+	private bool debugOn = false;
 	private float distance = 0;
 
 	private float MinDistance = 4;
@@ -19,6 +22,7 @@ public class PCControl : MonoBehaviour {
 	void Start() 
 	{
 		distance = canvas.transform.localPosition.z;
+		info.Log("Debug", debugOn.ToString());
 	}
 	
 	// Update is called once per frame
@@ -39,9 +43,15 @@ public class PCControl : MonoBehaviour {
 				server.Send("TouchScreen Keyboard Size", "+");
 			if (Input.GetKeyDown(KeyCode.DownArrow))
 				server.Send("TouchScreen Keyboard Size", "-");
-			if (Input.GetKeyDown(KeyCode.M))
-				server.Send("Mode", "Change");
 		}
+		if (Input.GetKeyDown(KeyCode.L))
+		{
+			debugOn ^= true;
+			info.Log("Debug", debugOn.ToString());
+			lexicon.SetDebugDisplay(debugOn);
+		}
+		if (Input.GetKeyDown(KeyCode.M))
+			server.Send("Mode", "Change");
 	}
 
 	void MouseControl() 
