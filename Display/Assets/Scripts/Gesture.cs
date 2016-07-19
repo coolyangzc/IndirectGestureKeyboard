@@ -95,11 +95,11 @@ public class Gesture : MonoBehaviour {
 			lexicon.NextCandidate();
 			return;
 		}
-		
 
 		cursor.transform.localPosition = new Vector3(x * keyboardWidth, y * keyboardHeight, -0.1f);
 		stroke.Add(new Vector2(x, y));
-
+		for (int i = 0; i < stroke.Count; ++i)
+			stroke[i] = new Vector2(stroke[i].x * keyboardWidth, stroke[i].y * keyboardHeight);
 		Lexicon.Candidate[] candidates = lexicon.Recognize(stroke.ToArray());
 		if (candidates[0].confidence > 0)
 			chooseCandidate = true;

@@ -12,9 +12,9 @@ public class Lexicon : MonoBehaviour
 	private const int LexiconSize = 10000;
 	private const int SampleSize = 64;
 	private const int CandidatesNum = 5;
-	private const float KeyWidth = 0.1f;
+	private float KeyWidth = 0.1f;
 	
-	private float radiusMul = 0.5f, radius = KeyWidth * 0.5f;
+	private float radiusMul = 0.5f, radius = 0;
 	private bool debugOn = false;
 	private int choose = 0;
 	private Button[] btn = new Button[CandidatesNum];
@@ -36,7 +36,7 @@ public class Lexicon : MonoBehaviour
 		Null = 3,
 	};
 
-	private float AnyStartThr = 2.0f;
+	private float AnyStartThr = 2.5f;
 
 	public enum Formula
 	{
@@ -111,6 +111,7 @@ public class Lexicon : MonoBehaviour
 			btn[i] = candidates.transform.FindChild("Candidate" + i.ToString()).GetComponent<Button>();
 		CalcKeyLayout();
 		CalcLexicon();
+		ChangeRadius(0);
 	}
 	
 	// Update is called once per frame
@@ -122,11 +123,11 @@ public class Lexicon : MonoBehaviour
 	void CalcKeyLayout()
 	{
 		float width = keyboard.rectTransform.rect.width;
-		float height = keyboard.rectTransform.rect.height;
+		KeyWidth = width * 0.1f;
 		for (int i = 0; i < 26; ++i)
 		{
 			RectTransform key = keyboard.rectTransform.FindChild(((char)(i + 65)).ToString()).GetComponent<RectTransform>();
-			keyPos[i] = new Vector2(key.localPosition.x / width, key.localPosition.y / height);
+			keyPos[i] = new Vector2(key.localPosition.x, key.localPosition.y);
 			//Debug.Log(((char)(i + 65)).ToString() + ":" + keyPos[i].x.ToString() + "," + keyPos[i].y.ToString());
 		}
 	}
@@ -293,7 +294,8 @@ public class Lexicon : MonoBehaviour
 		{
 			cands[i] = candList[i];
 			if (debugOn)
-				btn[i].GetComponentInChildren<Text>().text = cands[i].word + "\n" + cands[i].location + "\n" + cands[i].shape;
+				btn[i].GetComponentInChildren<Text>().text = 
+					cands[i].word + "\n" + cands[i].location.ToString(".000") + " " + cands[i].shape.ToString(".000");
 			else
 				btn[i].GetComponentInChildren<Text>().text = cands[i].word;
 		}
@@ -362,7 +364,8 @@ public class Lexicon : MonoBehaviour
 			return;
 		if (debugOn)
 			for (int i = 0; i < CandidatesNum; ++i)
-				btn[i].GetComponentInChildren<Text>().text = cands[i].word + "\n" + cands[i].confidence;
+				btn[i].GetComponentInChildren<Text>().text = 
+					cands[i].word + "\n" + cands[i].location.ToString(".000") + " " + cands[i].shape.ToString(".000");
 		else
 			for (int i = 0; i < CandidatesNum; ++i)
 				btn[i].GetComponentInChildren<Text>().text = cands[i].word;
