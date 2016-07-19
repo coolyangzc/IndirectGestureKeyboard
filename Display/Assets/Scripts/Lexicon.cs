@@ -7,7 +7,8 @@ public class Lexicon : MonoBehaviour
 {
 	public Image keyboard, candidates;
 	public Info info;
-	public Text inputText;
+	public Text inputText, underText;
+	public string text = "", under = "";
 
 	private const int LexiconSize = 10000;
 	private const int SampleSize = 64;
@@ -26,7 +27,7 @@ public class Lexicon : MonoBehaviour
 	private List<Candidate> history = new List<Candidate>();
 
 
-	private string text = "";
+
 
 	public enum Mode
 	{
@@ -148,6 +149,14 @@ public class Lexicon : MonoBehaviour
 		}
 		//for (int i = 0; i < SampleSize; ++i)
 			//Debug.Log(dict[0].locationSample[i].x.ToString());
+	}
+
+	string underline(char ch, int length)
+	{
+		string under = "";
+		for(int i = 0; i < length; ++i)
+			under += ch;
+		return under;
 	}
 
 	float Match(Vector2[] A, Vector2[] B, Formula formula)
@@ -302,11 +311,11 @@ public class Lexicon : MonoBehaviour
 		if (cands[0].confidence == 0)
 			return;
 		history.Add(new Candidate(cands[0]));
-		
 		string space = "";
 		if (text.Length > 0)
 			space = " ";
-		inputText.text = text + space + "<i>" + cands[0].word + "</i>";
+		inputText.text = text + space + cands[0].word;
+		underText.text = under + space + underline('_', cands[0].word.Length);
 	}
 
 	public void NextCandidate()
@@ -318,7 +327,8 @@ public class Lexicon : MonoBehaviour
 		string space = "";
 		if (text.Length > 0)
 			space = " ";
-		inputText.text = text + space + "<i>" + cands[choose].word + "</i>";
+		inputText.text = text + space + cands[choose].word;
+		underText.text = under + space + underline('_', cands[choose].word.Length);
 		btn[choose].Select();
 	}
 
@@ -327,9 +337,14 @@ public class Lexicon : MonoBehaviour
 		if (id == -1)
 			id = choose;
 		if (text.Length > 0)
+		{
 			text += " ";
+			under += " ";
+		}
 		text += cands[id].word;
+		under += underline(' ', cands[id].word.Length);
 		inputText.text = text;
+		underText.text = under;
 
 		for (int i = 0; i < CandidatesNum; ++i)
 		{
@@ -349,12 +364,21 @@ public class Lexicon : MonoBehaviour
 		if (history.Count == 0)
 			return;
 		history.RemoveAt(history.Count - 1);
-		text = "";
+		text = ""; 
+		int length = 0;
 		for (int i = 0; i < history.Count - 1; ++i)
+		{
 			text += history[i].word + " ";
+			length += history[i].word.Length + 1;
+		}
+		under = underline(' ', length);
 		if (history.Count > 0)
-			text += "<i>" + history[history.Count - 1].word + "</i>";
+		{
+			text += history[history.Count - 1].word;
+			under += underline('_', history[history.Count - 1].word.Length);
+		}
 		inputText.text = text;
+		underText.text = under;
 	}
 
 	public void SetDebugDisplay(bool debugOn)

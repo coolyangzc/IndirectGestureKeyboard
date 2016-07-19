@@ -61,10 +61,15 @@ public class Gesture : MonoBehaviour {
 	{
 		localPoint = new Vector2(x, y);
 		length += Vector2.Distance(prePoint, localPoint);
-		if (length > 0.1f && chooseCandidate)
+		if (length > 0.1f)
 		{
-			chooseCandidate = false;
-			lexicon.Accept(-1);
+			lexicon.under = lexicon.under.Replace("_", " ");
+			lexicon.underText.text = lexicon.under;
+			if (chooseCandidate)
+			{
+				chooseCandidate = false;
+				lexicon.Accept(-1);
+			}
 		}
 		prePoint = localPoint;
 		if (Lexicon.mode == Lexicon.Mode.FixStart)
