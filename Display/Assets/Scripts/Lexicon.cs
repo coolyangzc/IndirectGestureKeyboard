@@ -31,9 +31,12 @@ public class Lexicon : MonoBehaviour
 	public enum Mode
 	{
 		Basic = 0,
-		Fix = 1,
-		Null = 2,
+		FixStart = 1,
+		AnyStart = 2,
+		Null = 3,
 	};
+
+	private float AnyStartThr = 2.0f;
 
 	public enum Formula
 	{
@@ -50,13 +53,13 @@ public class Lexicon : MonoBehaviour
 	{
 		public string word;
 		public int frequency;
-		public Vector2[][] locationSample = new Vector2[2][];
-		public Vector2[][] shapeSample = new Vector2[2][];
+		public List<Vector2> pts = new List<Vector2>();
+		public Vector2[][] locationSample = new Vector2[3][];
+		public Vector2[][] shapeSample = new Vector2[3][];
 		public Entry(string word, int frequency, Lexicon lexicon)
 		{
 			this.word = word;
 			this.frequency = frequency;
-			List<Vector2> pts = new List<Vector2>();
 			int key = -1;
 			for (int i = 0; i < word.Length; ++i)
 			{
@@ -68,10 +71,10 @@ public class Lexicon : MonoBehaviour
 					pts.Add(lexicon.keyPos[key]);
 				}
 			}
-
 			locationSample[0] = lexicon.TemporalSampling(pts.ToArray());
 			pts.Insert(0, StartPoint);
 			locationSample[1] = lexicon.TemporalSampling(pts.ToArray());
+			pts.RemoveAt(0);
 			for(int i = 0; i < (int)Mode.Null; ++i)
 				shapeSample[i] = lexicon.Normalize(locationSample[i]);
 		}
@@ -139,7 +142,7 @@ public class Lexicon : MonoBehaviour
 		{
 			string line = lines[i];
 			Entry entry = new Entry(line.Split(' ')[0], int.Parse(line.Split(' ')[1]), this);
-			if (entry.locationSample[(int)Mode.Fix].Length > 1)
+			if (entry.locationSample[(int)Mode.FixStart].Length > 1)
 				dict.Add(entry);
 		}
 		//for (int i = 0; i < SampleSize; ++i)
@@ -212,6 +215,8 @@ public class Lexicon : MonoBehaviour
 
 	public Vector2[] Normalize(Vector2[] pts)
 	{
+		if (pts == null)
+			return null;
 		float minX = 1f, minY = 1f;
 		float maxX = -1f, maxY = -1f;
 
@@ -245,6 +250,17 @@ public class Lexicon : MonoBehaviour
 		{
 			Candidate newCandidate = new Candidate();
 			newCandidate.word = entry.word;
+			if (mode == Mode.AnyStart)
+			{
+				if (entry.word == "gesture")
+					Debug.Log(Vector2.Distance(stroke[0], entry.pts[0]).ToString());
+				if (Vector2.Distance(stroke[0], entry.pts[0]) > AnyStartThr * KeyWidth)
+					continue;
+				entry.pts.Insert(0, stroke[0]);
+				entry.locationSample[(int)mode] = TemporalSampling(entry.pts.ToArray());
+				entry.shapeSample[(int)mode] = Normalize(entry.locationSample[(int)mode]);
+				entry.pts.RemoveAt(0);
+			}
 			newCandidate.confidence = newCandidate.location = Match(stroke, entry.locationSample[(int)mode], formula);
 			if (newCandidate.location == 0)
 				continue;
@@ -284,7 +300,6 @@ public class Lexicon : MonoBehaviour
 		if (cands[0].confidence == 0)
 			return;
 		history.Add(new Candidate(cands[0]));
-		Debug.Log(history[0].word);
 		
 		string space = "";
 		if (text.Length > 0)

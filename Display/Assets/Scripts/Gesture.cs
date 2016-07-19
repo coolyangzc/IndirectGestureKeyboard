@@ -41,11 +41,12 @@ public class Gesture : MonoBehaviour {
 		switch (Lexicon.mode)
 		{
 			case (Lexicon.Mode.Basic):
+			case (Lexicon.Mode.AnyStart):
 				cursor.transform.localPosition = new Vector3(x * keyboardWidth, y * keyboardHeight, -0.1f);
 				stroke.Clear();
 				stroke.Add(new Vector2(x, y));
 				break;
-			case (Lexicon.Mode.Fix):
+			case (Lexicon.Mode.FixStart):
 				cursor.transform.localPosition = new Vector3(StartPoint.x * keyboardWidth, StartPoint.y * keyboardHeight, -0.1f);
 				stroke.Clear();
 				stroke.Add(Lexicon.StartPoint);
@@ -66,7 +67,7 @@ public class Gesture : MonoBehaviour {
 			lexicon.Accept(-1);
 		}
 		prePoint = localPoint;
-		if (Lexicon.mode == Lexicon.Mode.Fix)
+		if (Lexicon.mode == Lexicon.Mode.FixStart)
 		{
 			x = x - beginPoint.x + StartPoint.x;
 			y = y - beginPoint.y + StartPoint.y;
@@ -77,7 +78,7 @@ public class Gesture : MonoBehaviour {
 
 	public void End(float x, float y)
 	{
-		if (Lexicon.mode == Lexicon.Mode.Fix)
+		if (Lexicon.mode == Lexicon.Mode.FixStart)
 		{
 			x = x - beginPoint.x + StartPoint.x;
 			y = y - beginPoint.y + StartPoint.y;
