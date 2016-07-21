@@ -11,8 +11,9 @@ public class Lexicon : MonoBehaviour
 	public string text = "", under = "";
 
 	private const int LexiconSize = 10000;
-	private const int SampleSize = 64;
+	private const int SampleSize = 48;
 	private const int CandidatesNum = 5;
+	private float DTWConst = 0.2f;
 	private float KeyWidth = 0f;
 	
 	private float radiusMul = 0.5f, radius = 0;
@@ -22,11 +23,12 @@ public class Lexicon : MonoBehaviour
 	private Candidate[] cands = new Candidate[CandidatesNum];
 	private Vector2[] keyPos = new Vector2[26];
 
+	private int[] DTWL = new int[SampleSize + 1], DTWR = new int[SampleSize + 1];
+	private float[][] dtw = new float[SampleSize+1][];
+
 	public static Vector2 StartPoint = new Vector2(0.0f, 0.125f);
 	
 	private List<Candidate> history = new List<Candidate>();
-
-
 
 
 	public enum Mode
@@ -44,7 +46,8 @@ public class Lexicon : MonoBehaviour
 		Basic = 0,
 		MinusR = 1,
 		Shape = 2,
-		Null = 3,
+		DTW = 3,
+		Null = 4,
 	}
 	
 	public static Mode mode;
@@ -113,6 +116,8 @@ public class Lexicon : MonoBehaviour
 		CalcKeyLayout();
 		CalcLexicon();
 		ChangeRadius(0);
+		InitDTW();
+
 	}
 	
 	// Update is called once per frame
@@ -151,6 +156,20 @@ public class Lexicon : MonoBehaviour
 			//Debug.Log(dict[0].locationSample[i].x.ToString());
 	}
 
+	void InitDTW()
+	{
+		int w = (int)(SampleSize * DTWConst);
+		for (int i = 0; i <= SampleSize; ++i)
+		{
+			dtw[i] = new float[SampleSize + 1];
+			DTWL[i] = Mathf.Max(i - w, 0);
+			DTWR[i] = Mathf.Min(i + w, SampleSize);
+			for (int j = 0; j <= SampleSize; ++j)
+				dtw[i][j] = float.MaxValue;
+		}
+		dtw[0][0] = 0;
+	}
+
 	string underline(char ch, int length)
 	{
 		string under = "";
@@ -184,6 +203,15 @@ public class Lexicon : MonoBehaviour
 					dis += Mathf.Max(0, Vector2.Distance(A[i], B[i]) - radius);
 		
 				}
+				break;
+			case (Formula.DTW):
+				int w = (int)(SampleSize * DTWConst);
+				for (int i = 0; i < SampleSize; ++i)
+					for (int j = DTWL[i]; j < DTWR[i]; ++j)
+					{
+						dtw[i+1][j+1] = Vector2.Distance(A[i], B[j]) + Mathf.Min(dtw[i][j], Mathf.Min(dtw[i][j+1], dtw[i+1][j]));
+					}
+				dis = dtw[SampleSize][SampleSize];
 				break;
 		}
 		
