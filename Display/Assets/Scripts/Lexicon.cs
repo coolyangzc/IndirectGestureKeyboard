@@ -10,15 +10,24 @@ public class Lexicon : MonoBehaviour
 	public Text inputText, underText, phraseText;
 	public string text = "", under = "";
 	
+	//Constants
 	private const int LexiconSize = 10000;
 	private const int SampleSize = 48;
 	private const int CandidatesNum = 5;
 	private const float DTWConst = 0.1f;
-	private float endOffset = 2.0f;
+	private const float AnyStartThr = 3.0f;
 	private float KeyWidth = 0f;
-	
+	public static Vector2 StartPoint;
+	public static Vector2 StartPointRelative = new Vector2(0f, 0.125f);
+
+	//Parameters
+	private float endOffset = 1.5f;
 	private float radiusMul = 0.5f, radius = 0;
 	private bool debugOn = false;
+	public static Mode mode;
+	public static Formula locationFormula, shapeFormula;
+
+	//Internal Variables
 	private int choose = 0;
 	private Button[] btn = new Button[CandidatesNum];
 	private Candidate[] cands = new Candidate[CandidatesNum];
@@ -28,35 +37,25 @@ public class Lexicon : MonoBehaviour
 	private float[][] dtw = new float[SampleSize+1][];
 
 	private List<string> phrase = new List<string>();
-	
-	public static Vector2 StartPoint;
-	public static Vector2 StartPointRelative = new Vector2(0f, 0.125f);
-
-	
 	private List<Candidate> history = new List<Candidate>();
 
-
+	//Definitions
 	public enum Mode
 	{
 		Basic = 0,
 		FixStart = 1,
 		AnyStart = 2,
-		Null = 3,
+		End = 3,
 	};
-
-	private float AnyStartThr = 2.5f;
-
+	
 	public enum Formula
 	{
 		Basic = 0,
 		MinusR = 1,
-		Shape = 2,
-		DTW = 3,
-		Null = 4,
+		DTW = 2,
+		Null = 3,
+		End = 4,
 	}
-	
-	public static Mode mode;
-	public static Formula formula;
 
 	public class Entry
 	{
@@ -84,7 +83,7 @@ public class Lexicon : MonoBehaviour
 			pts.Insert(0, StartPoint);
 			locationSample[1] = lexicon.TemporalSampling(pts.ToArray());
 			pts.RemoveAt(0);
-			for(int i = 0; i < (int)Mode.Null; ++i)
+			for(int i = 0; i < (int)Mode.End; ++i)
 				shapeSample[i] = lexicon.Normalize(locationSample[i]);
 		}
 	}
@@ -114,18 +113,15 @@ public class Lexicon : MonoBehaviour
 	void Start () 
 	{
 		info.Log("Mode", mode.ToString());
-		info.Log("Radius", radiusMul.ToString());
-		info.Log("Formula", formula.ToString());
+		info.Log("[L]ocation", locationFormula.ToString());
+		info.Log("[S]hape", shapeFormula.ToString());
 		history.Clear();
 		for (int i = 0; i < CandidatesNum; ++i)
 			btn[i] = candidates.transform.FindChild("Candidate" + i.ToString()).GetComponent<Button>();
 		CalcKeyLayout();
 		CalcLexicon();
-		/*for (int i = 0; i < dict.Count; ++i)
-		{
-			if (dict[i].word == "an" || dict[i].word == "fan")
-		}*/
 		ChangeRadius(0);
+		ChangeEndOffset(0);
 		InitDTW();
 		InitPhrases();
 	}
@@ -218,7 +214,7 @@ public class Lexicon : MonoBehaviour
 
 	float Match(Vector2[] A, Vector2[] B, Formula formula)
 	{
-		if (A.Length != B.Length)
+		if (A.Length != B.Length || formula == Formula.Null)
 			return 0;
 		if (Vector2.Distance(A[0], B[0]) > KeyWidth)
 			return 0;
@@ -235,7 +231,6 @@ public class Lexicon : MonoBehaviour
 				}
 				break;
 			case (Formula.MinusR):
-			case (Formula.Shape):
 				for (int i = 0; i < SampleSize; ++i)
 				{
 					dis += Mathf.Max(0, Vector2.Distance(A[i], B[i]) - radius);
@@ -341,12 +336,12 @@ public class Lexicon : MonoBehaviour
 				entry.shapeSample[(int)mode] = Normalize(entry.locationSample[(int)mode]);
 				entry.pts.RemoveAt(0);
 			}
-			newCandidate.confidence = newCandidate.location = Match(stroke, entry.locationSample[(int)mode], formula);
+			newCandidate.confidence = newCandidate.location = Match(stroke, entry.locationSample[(int)mode], locationFormula);
 			if (newCandidate.location == 0)
 				continue;
-			if (formula == Formula.Shape)
+			if (shapeFormula != Formula.Null)
 			{
-				newCandidate.shape = Match(nStroke, entry.shapeSample[(int)mode], Formula.Basic);
+				newCandidate.shape = Match(nStroke, entry.shapeSample[(int)mode], shapeFormula);
 				if (newCandidate.shape == 0)
 					continue;
 				newCandidate.confidence *= newCandidate.shape;
@@ -475,17 +470,25 @@ public class Lexicon : MonoBehaviour
 	public void ChangeMode()
 	{
 		mode = mode + 1;
-		if (mode >= Mode.Null)
+		if (mode >= Mode.End)
 			mode = 0;
 		info.Log("Mode", mode.ToString());
 	}
 
-	public void ChangeFormula()
+	public void ChangeLocationFormula()
 	{
-		formula = formula + 1;
-		if (formula >= Formula.Null)
-			formula = 0;
-		info.Log("Formula", formula.ToString());
+		locationFormula = locationFormula + 1;
+		if (locationFormula >= Formula.End)
+			locationFormula = 0;
+		info.Log("[L]ocation", locationFormula.ToString());
+	}
+
+	public void ChangeShapeFormula()
+	{
+		shapeFormula = shapeFormula + 1;
+		if (shapeFormula >= Formula.End)
+			shapeFormula = 0;
+		info.Log("[S]hape", shapeFormula.ToString());
 	}
 
 	public void ChangeRadius(float delta)
@@ -494,7 +497,7 @@ public class Lexicon : MonoBehaviour
 			return;
 		radiusMul += delta;
 		radius = KeyWidth * radiusMul;
-		info.Log("Radius", radiusMul.ToString());
+		info.Log("[R]adius", radiusMul.ToString("0.0"));
 	}
 
 	public void ChangeEndOffset(float delta)
@@ -502,7 +505,7 @@ public class Lexicon : MonoBehaviour
 		if (endOffset + delta <= 0)
 			return;
 		endOffset += delta;
-		info.Log("[E]ndOffset", endOffset.ToString());
+		info.Log("[E]ndOffset", endOffset.ToString("0.0"));
 	}
 
 	public void ChangePhrase()

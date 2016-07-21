@@ -37,24 +37,32 @@ public class PCControl : MonoBehaviour {
 
 	void KeyControl()
 	{
-		if (Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl))
-		{
-			if (Input.GetKeyDown(KeyCode.LeftArrow))
-				lexicon.ChangeRadius(-0.1f);
-			if (Input.GetKeyDown(KeyCode.RightArrow))
-				lexicon.ChangeRadius(0.1f);
-		}
 		if (Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift))
 		{
-			if (Input.GetKeyDown(KeyCode.UpArrow))
-				server.Send("TouchScreen Keyboard Height", "+");
-			if (Input.GetKeyDown(KeyCode.DownArrow))
-				server.Send("TouchScreen Keyboard Height", "-");
 			if (Input.GetKeyDown(KeyCode.RightArrow))
 				server.Send("TouchScreen Keyboard Width", "+");
 			if (Input.GetKeyDown(KeyCode.LeftArrow))
 				server.Send("TouchScreen Keyboard Width", "-");
 		}
+		if (Input.GetKeyDown(KeyCode.UpArrow))
+		{
+			if (Input.GetKey(KeyCode.E))
+				lexicon.ChangeEndOffset(0.1f);
+			if (Input.GetKey(KeyCode.R))
+				lexicon.ChangeRadius(0.1f);
+			if (Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift))
+				server.Send("TouchScreen Keyboard Height", "+");
+		}
+		if (Input.GetKeyDown(KeyCode.DownArrow))
+		{
+			if (Input.GetKey(KeyCode.E))
+				lexicon.ChangeEndOffset(-0.1f);
+			if (Input.GetKey(KeyCode.R))
+				lexicon.ChangeRadius(-0.1f);
+			if (Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift))
+				server.Send("TouchScreen Keyboard Height", "-");
+		}
+
 		if (Input.GetKeyDown(KeyCode.D))
 		{
 			debugOn ^= true;
@@ -63,8 +71,10 @@ public class PCControl : MonoBehaviour {
 		}
 		if (Input.GetKeyDown(KeyCode.M))
 			lexicon.ChangeMode();
-		if (Input.GetKeyDown(KeyCode.F))
-			lexicon.ChangeFormula();
+		if (Input.GetKeyDown(KeyCode.S))
+			lexicon.ChangeShapeFormula();
+		if (Input.GetKeyDown(KeyCode.L))
+			lexicon.ChangeLocationFormula();
 		if (Input.GetKeyDown(KeyCode.N))
 			lexicon.ChangePhrase();
 	}

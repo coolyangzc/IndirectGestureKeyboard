@@ -5,7 +5,7 @@ using System.Collections.Generic;
 
 public class Info : MonoBehaviour 
 {
-	public Text info;
+	public Text info, ipInfo;
 	
 	private List<string> logs = new List<string>();
 	private List<string> tags = new List<string>();
@@ -26,8 +26,12 @@ public class Info : MonoBehaviour
 		}
 		
 		info.text = "";
+		ipInfo.text = "";
 		for (int i = 0; i < logs.Count; ++i)
-			info.text += tags[i] + ':' + logs[i] + '\n';
+			if (tags[i] != "IP" && !tags[i].Contains("Client"))
+				info.text += tags[i] + ": " + logs[i] + '\n';
+			else
+				ipInfo.text += tags[i] + ": " + logs[i] + '\n';
 		changed = false;
 	}
 	
