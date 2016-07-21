@@ -65,6 +65,8 @@ public class PCControl : MonoBehaviour {
 			lexicon.ChangeMode();
 		if (Input.GetKeyDown(KeyCode.F))
 			lexicon.ChangeFormula();
+		if (Input.GetKeyDown(KeyCode.N))
+			lexicon.ChangePhrase();
 	}
 
 	void MouseControl() 

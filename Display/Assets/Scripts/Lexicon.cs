@@ -7,13 +7,14 @@ public class Lexicon : MonoBehaviour
 {
 	public Image keyboard, candidates;
 	public Info info;
-	public Text inputText, underText;
+	public Text inputText, underText, phraseText;
 	public string text = "", under = "";
-
+	
 	private const int LexiconSize = 10000;
 	private const int SampleSize = 48;
 	private const int CandidatesNum = 5;
-	private float DTWConst = 0.2f;
+	private const float DTWConst = 0.1f;
+	private float endOffset = 2.0f;
 	private float KeyWidth = 0f;
 	
 	private float radiusMul = 0.5f, radius = 0;
@@ -26,7 +27,11 @@ public class Lexicon : MonoBehaviour
 	private int[] DTWL = new int[SampleSize + 1], DTWR = new int[SampleSize + 1];
 	private float[][] dtw = new float[SampleSize+1][];
 
-	public static Vector2 StartPoint = new Vector2(0.0f, 0.125f);
+	private List<string> phrase = new List<string>();
+	
+	public static Vector2 StartPoint;
+	public static Vector2 StartPointRelative = new Vector2(0f, 0.125f);
+
 	
 	private List<Candidate> history = new List<Candidate>();
 
@@ -102,6 +107,7 @@ public class Lexicon : MonoBehaviour
 		}
 	}
 
+	private HashSet<string> allWords = new HashSet<string>();
 	private List<Entry> dict = new List<Entry>();
 
 	// Use this for initialization
@@ -115,9 +121,13 @@ public class Lexicon : MonoBehaviour
 			btn[i] = candidates.transform.FindChild("Candidate" + i.ToString()).GetComponent<Button>();
 		CalcKeyLayout();
 		CalcLexicon();
+		/*for (int i = 0; i < dict.Count; ++i)
+		{
+			if (dict[i].word == "an" || dict[i].word == "fan")
+		}*/
 		ChangeRadius(0);
 		InitDTW();
-
+		InitPhrases();
 	}
 	
 	// Update is called once per frame
@@ -134,13 +144,14 @@ public class Lexicon : MonoBehaviour
 		{
 			RectTransform key = keyboard.rectTransform.FindChild(((char)(i + 65)).ToString()).GetComponent<RectTransform>();
 			keyPos[i] = new Vector2(key.localPosition.x, key.localPosition.y);
-			//Debug.Log(((char)(i + 65)).ToString() + ":" + keyPos[i].x.ToString() + "," + keyPos[i].y.ToString());
+			Debug.Log(((char)(i + 65)).ToString() + ":" + keyPos[i].x.ToString() + "," + keyPos[i].y.ToString());
 		}
+		StartPoint = keyPos[6]; //keyG
 	}
 
 	void CalcLexicon()
 	{
-		TextAsset textAsset = Resources.Load("en_us_wordlist") as TextAsset;
+		TextAsset textAsset = Resources.Load("corpus") as TextAsset;
 		string[] lines = textAsset.text.Split('\n');
 		int size = lines.Length;
 		if (LexiconSize > 0)
@@ -148,12 +159,13 @@ public class Lexicon : MonoBehaviour
 		for (int i = 0; i < size; ++i)
 		{
 			string line = lines[i];
-			Entry entry = new Entry(line.Split(' ')[0], int.Parse(line.Split(' ')[1]), this);
+			Entry entry = new Entry(line.Split('	')[0], int.Parse(line.Split('	')[1]), this);
 			if (entry.locationSample[(int)Mode.FixStart].Length > 1)
+			{
 				dict.Add(entry);
+				allWords.Add(line.Split('	')[0]);
+			}
 		}
-		//for (int i = 0; i < SampleSize; ++i)
-			//Debug.Log(dict[0].locationSample[i].x.ToString());
 	}
 
 	void InitDTW()
@@ -170,6 +182,32 @@ public class Lexicon : MonoBehaviour
 		dtw[0][0] = 0;
 	}
 
+	void InitPhrases()
+	{
+		TextAsset textAsset = Resources.Load("phrases") as TextAsset;
+		string[] lines = textAsset.text.Split('\n');
+		for (int i = 0; i < lines.Length; ++i)
+		{
+			if (lines[i].Length <= 1)
+				continue;
+			string line = lines[i].Substring(0, lines[i].Length - 1);
+			string[] words = line.Split(' ');
+			bool available = true;
+			foreach(string word in words)
+				if (!allWords.Contains(word))
+				{
+					available = false;
+					break;
+				}
+			if (available)
+			{
+				phrase.Add(lines[i]);
+			}
+		}
+		Debug.Log("Phrases: " + phrase.Count + "/" + lines.Length);
+		ChangePhrase();
+	}
+
 	string underline(char ch, int length)
 	{
 		string under = "";
@@ -184,7 +222,7 @@ public class Lexicon : MonoBehaviour
 			return 0;
 		if (Vector2.Distance(A[0], B[0]) > KeyWidth)
 			return 0;
-		if (Vector2.Distance(A[A.Length - 1], B[B.Length - 1]) > KeyWidth)
+		if (Vector2.Distance(A[A.Length - 1], B[B.Length - 1]) > endOffset * KeyWidth)
 			return 0;
 		float dis = 0;
 		switch(formula)
@@ -457,5 +495,25 @@ public class Lexicon : MonoBehaviour
 		radiusMul += delta;
 		radius = KeyWidth * radiusMul;
 		info.Log("Radius", radiusMul.ToString());
+	}
+
+	public void ChangeEndOffset(float delta)
+	{
+		if (endOffset + delta <= 0)
+			return;
+		endOffset += delta;
+		info.Log("[E]ndOffset", endOffset.ToString());
+	}
+
+	public void ChangePhrase()
+	{
+		phraseText.text = phrase[Random.Range(0, phrase.Count)];
+		history.Clear();
+		inputText.text = underText.text = under = text = "";
+		for (int i = 0; i < CandidatesNum; ++i)
+		{
+			btn[i].GetComponentInChildren<Text>().text = "";
+			cands[i].word = "";
+		}
 	}
 }

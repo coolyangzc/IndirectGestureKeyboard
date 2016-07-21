@@ -14,7 +14,7 @@ public class Gesture : MonoBehaviour {
 	private bool chooseCandidate = false;
 	private float keyboardWidth, keyboardHeight;
 	private float length;
-	private Vector2 StartPoint;
+	private Vector2 StartPointRelative;
 	private Vector2 beginPoint, prePoint, localPoint;
 	private List<Vector2> stroke = new List<Vector2>();
 
@@ -23,7 +23,7 @@ public class Gesture : MonoBehaviour {
 	{
 		keyboardWidth = keyboard.rectTransform.rect.width;
 		keyboardHeight = keyboard.rectTransform.rect.height;
-		StartPoint = Lexicon.StartPoint;
+		StartPointRelative = Lexicon.StartPointRelative;
 	}
 	
 	// Update is called once per frame
@@ -47,9 +47,9 @@ public class Gesture : MonoBehaviour {
 				stroke.Add(new Vector2(x, y));
 				break;
 			case (Lexicon.Mode.FixStart):
-				cursor.transform.localPosition = new Vector3(StartPoint.x * keyboardWidth, StartPoint.y * keyboardHeight, -0.1f);
+				cursor.transform.localPosition = new Vector3(StartPointRelative.x * keyboardWidth, StartPointRelative.y * keyboardHeight, -0.1f);
 				stroke.Clear();
-				stroke.Add(Lexicon.StartPoint);
+				stroke.Add(Lexicon.StartPointRelative);
 				break;
 			default:
 				break;
@@ -74,8 +74,8 @@ public class Gesture : MonoBehaviour {
 		prePoint = localPoint;
 		if (Lexicon.mode == Lexicon.Mode.FixStart)
 		{
-			x = x - beginPoint.x + StartPoint.x;
-			y = y - beginPoint.y + StartPoint.y;
+			x = x - beginPoint.x + StartPointRelative.x;
+			y = y - beginPoint.y + StartPointRelative.y;
 		}
 		cursor.transform.localPosition = new Vector3(x * keyboardWidth, y * keyboardHeight, -0.1f);
 		stroke.Add(new Vector2(x, y));
@@ -85,8 +85,8 @@ public class Gesture : MonoBehaviour {
 	{
 		if (Lexicon.mode == Lexicon.Mode.FixStart)
 		{
-			x = x - beginPoint.x + StartPoint.x;
-			y = y - beginPoint.y + StartPoint.y;
+			x = x - beginPoint.x + StartPointRelative.x;
+			y = y - beginPoint.y + StartPointRelative.y;
 		}
 		if (0.3 <= x && y <= 0)
 		{
