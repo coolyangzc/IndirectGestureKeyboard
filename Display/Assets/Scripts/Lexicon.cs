@@ -338,7 +338,14 @@ public class Lexicon : MonoBehaviour
 				btn[i].GetComponentInChildren<Text>().text = 
 					cands[i].word + "\n" + cands[i].location.ToString(".000") + " " + cands[i].shape.ToString(".000");
 			else
+			{
 				btn[i].GetComponentInChildren<Text>().text = cands[i].word;
+				if (cands[i].word.Length > 10)
+					btn[i].GetComponentInChildren<Text>().resizeTextMaxSize = 40;
+				else
+					btn[i].GetComponentInChildren<Text>().resizeTextMaxSize = 48;
+
+			}
 		}
 		if (cands[0].confidence == 0)
 			return;
