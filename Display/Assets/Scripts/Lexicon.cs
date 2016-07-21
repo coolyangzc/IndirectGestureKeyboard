@@ -13,7 +13,7 @@ public class Lexicon : MonoBehaviour
 	private const int LexiconSize = 10000;
 	private const int SampleSize = 64;
 	private const int CandidatesNum = 5;
-	private float KeyWidth = 0.1f;
+	private float KeyWidth = 0f;
 	
 	private float radiusMul = 0.5f, radius = 0;
 	private bool debugOn = false;
@@ -162,6 +162,10 @@ public class Lexicon : MonoBehaviour
 	float Match(Vector2[] A, Vector2[] B, Formula formula)
 	{
 		if (A.Length != B.Length)
+			return 0;
+		if (Vector2.Distance(A[0], B[0]) > KeyWidth)
+			return 0;
+		if (Vector2.Distance(A[A.Length - 1], B[B.Length - 1]) > KeyWidth)
 			return 0;
 		float dis = 0;
 		switch(formula)
