@@ -12,7 +12,7 @@ public class Lexicon : MonoBehaviour
 	
 	//Constants
 	private const int LexiconSize = 10000;
-	private const int SampleSize = 48;
+	private const int SampleSize = 32;
 	private const int CandidatesNum = 5;
 	private const float DTWConst = 0.1f;
 	private const float AnyStartThr = 3.0f;
@@ -23,14 +23,16 @@ public class Lexicon : MonoBehaviour
 	//Parameters
 	private float endOffset = 1.5f;
 	private float radiusMul = 0.5f, radius = 0;
+	private float languageWeight = 0.00001f;
 	private bool debugOn = false;
-	public static Mode mode;
-	public static Formula locationFormula, shapeFormula;
+	public static Mode mode = Mode.FixStart;
+	public static Formula locationFormula = Formula.DTW, shapeFormula = Formula.Null;
 
 	//Internal Variables
 	private int choose = 0;
+	private float dis = 0;
 	private Button[] btn = new Button[CandidatesNum];
-	private Candidate[] cands = new Candidate[CandidatesNum];
+	private Candidate[] cands = new Candidate[CandidatesNum], candsTmp = new Candidate[CandidatesNum];
 	private Vector2[] keyPos = new Vector2[26];
 
 	private int[] DTWL = new int[SampleSize + 1], DTWR = new int[SampleSize + 1];
@@ -61,6 +63,7 @@ public class Lexicon : MonoBehaviour
 	{
 		public string word;
 		public int frequency;
+		public float languageModelPossibilty;
 		public List<Vector2> pts = new List<Vector2>();
 		public Vector2[][] locationSample = new Vector2[3][];
 		public Vector2[][] shapeSample = new Vector2[3][];
@@ -91,11 +94,12 @@ public class Lexicon : MonoBehaviour
 	public class Candidate
 	{
 		public string word;
-		public float location, shape, confidence;
+		public float location, shape, language, confidence, DTWDistance;
 		public Candidate()
 		{
 			word = "";
 			confidence = 0;
+			DTWDistance = float.MaxValue;
 		}
 		public Candidate(Candidate x)
 		{
@@ -103,6 +107,7 @@ public class Lexicon : MonoBehaviour
 			location = x.location;
 			shape = x.shape;
 			confidence = x.confidence;
+			DTWDistance = x.DTWDistance;
 		}
 	}
 
@@ -152,6 +157,7 @@ public class Lexicon : MonoBehaviour
 		int size = lines.Length;
 		if (LexiconSize > 0)
 			size = LexiconSize;
+
 		for (int i = 0; i < size; ++i)
 		{
 			string line = lines[i];
@@ -160,8 +166,21 @@ public class Lexicon : MonoBehaviour
 			{
 				dict.Add(entry);
 				allWords.Add(line.Split('	')[0]);
+
 			}
 		}
+		float l = dict[dict.Count - 1].frequency, r = dict[1000].frequency; 
+		foreach (Entry entry in dict)
+		{
+			if (entry.frequency >= r)
+				entry.languageModelPossibilty = 1;
+			else
+				//entry.languageModelPossibilty = 1;
+				entry.languageModelPossibilty = 0.8f + (entry.frequency - l) / (r - l) * 0.2f;
+		}
+		Debug.Log(dict[dict.Count - 1].languageModelPossibilty.ToString());
+		Debug.Log(dict[0].languageModelPossibilty.ToString());
+		
 	}
 
 	void InitDTW()
@@ -204,6 +223,11 @@ public class Lexicon : MonoBehaviour
 		ChangePhrase();
 	}
 
+	float sqr(float x)
+	{
+		return x * x;
+	}
+
 	string underline(char ch, int length)
 	{
 		string under = "";
@@ -220,7 +244,7 @@ public class Lexicon : MonoBehaviour
 			return 0;
 		if (Vector2.Distance(A[A.Length - 1], B[B.Length - 1]) > endOffset * KeyWidth)
 			return 0;
-		float dis = 0;
+		dis = 0;
 		switch(formula)
 		{
 			case (Formula.Basic):
@@ -238,12 +262,17 @@ public class Lexicon : MonoBehaviour
 				}
 				break;
 			case (Formula.DTW):
-				int w = (int)(SampleSize * DTWConst);
 				for (int i = 0; i < SampleSize; ++i)
+				{
+					//float gap = float.MaxValue;
 					for (int j = DTWL[i]; j < DTWR[i]; ++j)
 					{
 						dtw[i+1][j+1] = Vector2.Distance(A[i], B[j]) + Mathf.Min(dtw[i][j], Mathf.Min(dtw[i][j+1], dtw[i+1][j]));
+						//gap = Mathf.Min(gap, dtw[i+1][j+1]);
 					}
+					//if (gap > 1.5f * candsTmp[CandidatesNum - 1].DTWDistance)
+						//return 0;
+				}
 				dis = dtw[SampleSize][SampleSize];
 				break;
 		}
@@ -317,9 +346,9 @@ public class Lexicon : MonoBehaviour
 	{
 		Vector2[] stroke = TemporalSampling(rawStroke);
 		Vector2[] nStroke = Normalize(stroke);
-		Candidate[] candidates = new Candidate[CandidatesNum];
+
 		for (int i = 0; i < CandidatesNum; ++i)
-			candidates[i] = new Candidate();
+			candsTmp[i] = new Candidate();
 
 		foreach (Entry entry in dict)
 		{
@@ -327,8 +356,6 @@ public class Lexicon : MonoBehaviour
 			newCandidate.word = entry.word;
 			if (mode == Mode.AnyStart)
 			{
-				if (entry.word == "gesture")
-					Debug.Log(Vector2.Distance(stroke[0], entry.pts[0]).ToString());
 				if (Vector2.Distance(stroke[0], entry.pts[0]) > AnyStartThr * KeyWidth)
 					continue;
 				entry.pts.Insert(0, stroke[0]);
@@ -339,6 +366,8 @@ public class Lexicon : MonoBehaviour
 			newCandidate.confidence = newCandidate.location = Match(stroke, entry.locationSample[(int)mode], locationFormula);
 			if (newCandidate.location == 0)
 				continue;
+			if (locationFormula == Formula.Null)
+				newCandidate.DTWDistance = dis;
 			if (shapeFormula != Formula.Null)
 			{
 				newCandidate.shape = Match(nStroke, entry.shapeSample[(int)mode], shapeFormula);
@@ -346,18 +375,20 @@ public class Lexicon : MonoBehaviour
 					continue;
 				newCandidate.confidence *= newCandidate.shape;
 			}
-			if (newCandidate.confidence < candidates[CandidatesNum - 1].confidence)
+			newCandidate.language = entry.languageModelPossibilty;
+			newCandidate.confidence *= newCandidate.language;
+			if (newCandidate.confidence < candsTmp[CandidatesNum - 1].confidence)
 				continue;
 			for (int i = 0; i < CandidatesNum; ++i)
-				if (newCandidate.confidence > candidates[i].confidence)
+				if (newCandidate.confidence > candsTmp[i].confidence)
 				{
 					for (int j = CandidatesNum - 1; j > i; j--)
-						candidates[j] = candidates[j-1];
-					candidates[i] = newCandidate;
+						candsTmp[j] = candsTmp[j-1];
+					candsTmp[i] = newCandidate;
 					break;
 				}
 		}
-		return candidates;
+		return candsTmp;
 	}
 
 	public void SetCandidates(Candidate[] candList)
@@ -369,7 +400,7 @@ public class Lexicon : MonoBehaviour
 			cands[i] = candList[i];
 			if (debugOn)
 				btn[i].GetComponentInChildren<Text>().text = 
-					cands[i].word + "\n" + cands[i].location.ToString(".000") + " " + cands[i].shape.ToString(".000");
+					cands[i].word + "\n" + cands[i].location.ToString(".000") + " " + cands[i].shape.ToString(".000") + " " + cands[i].language.ToString(".000");
 			else
 			{
 				btn[i].GetComponentInChildren<Text>().text = cands[i].word;
@@ -518,5 +549,6 @@ public class Lexicon : MonoBehaviour
 			btn[i].GetComponentInChildren<Text>().text = "";
 			cands[i].word = "";
 		}
+		btn[0].Select();
 	}
 }

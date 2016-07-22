@@ -88,7 +88,7 @@ public class Gesture : MonoBehaviour {
 			x = x - beginPoint.x + StartPointRelative.x;
 			y = y - beginPoint.y + StartPointRelative.y;
 		}
-		if (0.3 <= x && y <= 0)
+		if (0.3 <= x && y <= 0 && length <= 2.0f)
 		{
 			lexicon.Delete();
 			chooseCandidate = false;
