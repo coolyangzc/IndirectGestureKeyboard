@@ -5,7 +5,7 @@ using System.Collections.Generic;
 
 public class Lexicon : MonoBehaviour 
 {
-	public Image keyboard, candidates;
+	public Image keyboard, candidates, radialCandidates;
 	public Info info;
 	public Text inputText, underText, phraseText;
 	public string text = "", under = "";
@@ -25,6 +25,7 @@ public class Lexicon : MonoBehaviour
 	private float radiusMul = 0.5f, radius = 0;
 	private float languageWeight = 0.00001f;
 	private bool debugOn = false;
+	public static bool useRadialMenu = false;
 	public static Mode mode = Mode.FixStart;
 	public static Formula locationFormula = Formula.DTW, shapeFormula = Formula.Null;
 
@@ -121,8 +122,7 @@ public class Lexicon : MonoBehaviour
 		info.Log("[L]ocation", locationFormula.ToString());
 		info.Log("[S]hape", shapeFormula.ToString());
 		history.Clear();
-		for (int i = 0; i < CandidatesNum; ++i)
-			btn[i] = candidates.transform.FindChild("Candidate" + i.ToString()).GetComponent<Button>();
+		ChangeCandidatesChoose(false);
 		CalcKeyLayout();
 		CalcLexicon();
 		ChangeRadius(0);
@@ -393,8 +393,10 @@ public class Lexicon : MonoBehaviour
 
 	public void SetCandidates(Candidate[] candList)
 	{
-
-		btn[choose = 0].Select();
+		if (!useRadialMenu)
+			btn[choose = 0].Select();
+		else
+			btn[CandidatesNum - 1].Select();
 		for (int i = 0; i < candList.Length; ++i)
 		{
 			cands[i] = candList[i];
@@ -408,7 +410,6 @@ public class Lexicon : MonoBehaviour
 					btn[i].GetComponentInChildren<Text>().resizeTextMaxSize = 40;
 				else
 					btn[i].GetComponentInChildren<Text>().resizeTextMaxSize = 48;
-
 			}
 		}
 		if (cands[0].confidence == 0)
@@ -458,7 +459,10 @@ public class Lexicon : MonoBehaviour
 
 	public void Delete()
 	{
-		btn[choose = 0].Select(); //choose = 0
+		if (!useRadialMenu)
+			btn[choose = 0].Select();
+		else
+			btn[CandidatesNum - 1].Select();
 		for (int i = 0; i < CandidatesNum; ++i)
 		{
 			btn[i].GetComponentInChildren<Text>().text = "";
@@ -544,5 +548,36 @@ public class Lexicon : MonoBehaviour
 			cands[i].word = "";
 		}
 		btn[0].Select();
+	}
+
+	public void ChangeCandidatesChoose(bool change)
+	{
+		useRadialMenu ^= change;
+		for (int i = 0; i < CandidatesNum; ++i)
+		{
+			if (useRadialMenu)
+				btn[i] = radialCandidates.transform.FindChild("Candidate" + i.ToString()).GetComponent<Button>();
+			else
+				btn[i] = candidates.transform.FindChild("Candidate" + i.ToString()).GetComponent<Button>();
+		}
+		if (useRadialMenu)
+			info.Log("[C]hoose", "Radial");
+		else
+			info.Log("[C]hoose", "Tap");
+	}
+
+	public void SetRadialMenuDisplay(bool display)
+	{
+		for (int i = 0; i < CandidatesNum; ++i)
+		{
+			ColorBlock cb = btn[i].colors;
+			Color c = cb.normalColor;
+			c.a = display?1f:0;
+			cb.normalColor = c;
+			btn[i].colors = cb;
+		}
+		Color color = radialCandidates.color;
+		color.a = display?0.5f:0;
+		radialCandidates.color = color;
 	}
 }

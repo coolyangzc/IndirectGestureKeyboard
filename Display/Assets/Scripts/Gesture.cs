@@ -6,7 +6,7 @@ using System.Collections.Generic;
 public class Gesture : MonoBehaviour {
 
 	public Server server;
-	public Image keyboard;
+	public Image keyboard, radialCandidates;
 	public RawImage cursor;
 	public Text text;
 	public Lexicon lexicon;
@@ -65,7 +65,7 @@ public class Gesture : MonoBehaviour {
 		{
 			lexicon.under = lexicon.under.Replace("_", " ");
 			lexicon.underText.text = lexicon.under;
-			if (chooseCandidate)
+			if (chooseCandidate && !Lexicon.useRadialMenu)
 			{
 				chooseCandidate = false;
 				lexicon.Accept(-1);
@@ -88,16 +88,48 @@ public class Gesture : MonoBehaviour {
 			x = x - beginPoint.x + StartPointRelative.x;
 			y = y - beginPoint.y + StartPointRelative.y;
 		}
+		if (chooseCandidate)
+		{
+			if (length < 0.1f)
+			{
+				if (!Lexicon.useRadialMenu )
+				{
+					lexicon.NextCandidate();
+				} else
+				{
+					lexicon.Delete();
+					chooseCandidate = false;
+					lexicon.SetRadialMenuDisplay(false);
+				}
+				return;
+			}
+			if (Lexicon.useRadialMenu)
+			{
+				x -= StartPointRelative.x;
+				y -= StartPointRelative.y;
+				if (Mathf.Abs(x) > Mathf.Abs(y))
+				{
+					if (x > 0)
+						lexicon.Accept(2);
+					else
+						lexicon.Accept(1);
+				}
+				else
+				{
+					if (y > 0)
+						lexicon.Accept(0);
+					else
+						lexicon.Accept(3);
+				}
+				chooseCandidate = false;
+				lexicon.SetRadialMenuDisplay(false);
+				return;
+			}
+		}
 		if (0.3 <= x && y <= 0 && length <= 2.0f)
 		{
 			lexicon.Delete();
 			chooseCandidate = false;
-			return;
-		}
-
-		if (length < 0.1f && chooseCandidate)
-		{
-			lexicon.NextCandidate();
 			return;
 		}
 
@@ -107,7 +139,11 @@ public class Gesture : MonoBehaviour {
 			stroke[i] = new Vector2(stroke[i].x * keyboardWidth, stroke[i].y * keyboardHeight);
 		Lexicon.Candidate[] candidates = lexicon.Recognize(stroke.ToArray());
 		if (candidates[0].confidence > 0)
+		{
 			chooseCandidate = true;
+			if (Lexicon.useRadialMenu)
+				lexicon.SetRadialMenuDisplay(true);
+		}
 		lexicon.SetCandidates(candidates);
 		string msg = "";
 		for (int i = 1; i < candidates.Length; ++i)
