@@ -400,7 +400,7 @@ public class Lexicon : MonoBehaviour
 			cands[i] = candList[i];
 			if (debugOn)
 				btn[i].GetComponentInChildren<Text>().text = 
-					cands[i].word + "\n" + cands[i].location.ToString(".000") + " " + cands[i].shape.ToString(".000") + " " + cands[i].language.ToString(".000");
+					cands[i].word + "\n" + cands[i].location.ToString(".00") + " " + cands[i].shape.ToString(".00") + " " + cands[i].language.ToString(".00");
 			else
 			{
 				btn[i].GetComponentInChildren<Text>().text = cands[i].word;
@@ -489,13 +489,7 @@ public class Lexicon : MonoBehaviour
 		this.debugOn = debugOn;
 		if (cands[0] == null || cands[0].word.Length <= 0)
 			return;
-		if (debugOn)
-			for (int i = 0; i < CandidatesNum; ++i)
-				btn[i].GetComponentInChildren<Text>().text = 
-					cands[i].word + "\n" + cands[i].location.ToString(".000") + " " + cands[i].shape.ToString(".000");
-		else
-			for (int i = 0; i < CandidatesNum; ++i)
-				btn[i].GetComponentInChildren<Text>().text = cands[i].word;
+		SetCandidates(cands);
 	}
 
 	public void ChangeMode()
