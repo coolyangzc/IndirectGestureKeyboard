@@ -21,10 +21,10 @@ void drawLine(Mat& img, Point u, Point v, int thickness = 5, Scalar* color = NUL
     if (!color)
         color = new Scalar(0, 255, 255);
     line(img, u, v, *color, thickness, lineType);
-    //circle(img, u, 10, Scalar(0, 0, 255));
+    //circle(img, v, 10, Scalar(0, 0, 255));
 }
 
-void draw(string outputFileName, bool show = false)
+void draw(string outputFileName)
 {
     string s, buffer;
     double X, Y;
@@ -38,6 +38,7 @@ void draw(string outputFileName, bool show = false)
         while (true)
         {
             scanf("%lf%lf", &X, &Y);
+            Y = H - Y;
             x.push_back(X);
             y.push_back(Y);
             stringstream sX, sY;
@@ -49,11 +50,18 @@ void draw(string outputFileName, bool show = false)
         }
         Mat img = Mat::zeros(H, W, CV_8UC3);
         rep(i, x.size() - 1)
-        {
-            drawLine(img, Point(x[i], H - y[i]), Point(x[i+1], H - y[i+1]));
-            if (show)
-                imshow("Drawer", img);
-        }
+            drawLine(img, Point(x[i], y[i]), Point(x[i+1], y[i+1]));
+
+        sort(x.begin(), x.end());
+        sort(y.begin(), y.end());
+
+        int id = x.size() * 0.10f;
+        double minX = x[id], maxX = x[x.size() - id - 1], minY = y[y.size() - id - 1], maxY = y[id];
+        Scalar color = Scalar(0, 0, 255);
+        drawLine(img, Point(minX, minY), Point(minX, maxY), 4, &color);
+        drawLine(img, Point(minX, minY), Point(maxX, minY), 4, &color);
+        drawLine(img, Point(maxX, maxY), Point(minX, maxY), 4, &color);
+        drawLine(img, Point(maxX, maxY), Point(maxX, minY), 4, &color);
         stringstream ss;
         ss << cnt++;
         imwrite(outputFileName + ss.str() + ".jpg", img);
@@ -62,6 +70,7 @@ void draw(string outputFileName, bool show = false)
         cout << buffer << endl;
         fclose(stdout);
     }
+    puts("Finish");
 }
 
 void Merge(Mat& img, fstream& fin, Scalar color)
@@ -87,55 +96,44 @@ void Merge(Mat& img, fstream& fin, Scalar color)
         {
             drawLine(img, Point(x[i], H - y[i]), Point(x[i+1], H - y[i+1]), 4, &color);
         }
+
     }
 }
 
-/*void drawFile(string fileName)
-{
-    freopen(fileName.c_str(), "r", stdin);
-    string str, outFileName;
-    int cnt = 0;
-    while (cin >> str)
-    {
-        rep(i, 4)
-            cin >> str;
-        stringstream ss;
-        ss << cnt;
-        outFileName = ss.str() + str + ".jpg";
-        if (cnt < 10)
-            outFileName = "0" + outFileName;
-        cnt++;
-        cout << outFileName << endl;
-        rep(i, 6)
-            cin >> str;
-        draw(outFileName);
-    }
-}*/
-
 int main()
 {
-    freopen("data/yuntao.txt", "r", stdin);
-    draw("res/yuntao", true);
-    string name[] = {"maye", "yixin", "yzc", "yxc", "mzy", "xwj", "yuntao"};
+    string name[] = {"maye", "yixin", "yxc", "mzy", "xwj", "yuntao"};
+
+
+    string file = name[5];
+    string dir = "data/refine/" + file + ".txt";
+    freopen(dir.c_str(), "r", stdin);
+    draw(file.c_str());
+    fclose(stdin);
+
+    //freopen("maye2.txt", "r", stdin);
+    //draw("out");
+
+
+
+    /*string name[] = {"maye", "yixin", "yxc", "mzy", "xwj", "yuntao"};
     Mat img = Mat::zeros(H, W, CV_8UC3);
-    rep(i, 7)
+    rep(i, 6)
     {
         Scalar color(Random(255), Random(255), Random(255));
-        rep(id, 5)
-        {
-            stringstream ss;
-            ss << id;
-            fstream fin;
-            string file = "data/merge/" + name[i] + ss.str() + ".txt";
 
-            fin.open(file.c_str(), fstream::in );
+        stringstream ss;
+        fstream fin;
+        string file = "data/refine/" + name[i] + ".txt";
 
-            cout << file << endl;
-            Merge(img, fin, color);
-            fin.close();
-        }
+        fin.open(file.c_str(), fstream::in );
+
+        cout << file << endl;
+        Merge(img, fin, color);
+        fin.close();
+
     }
-    imwrite("Merge.jpg", img);
+    imwrite("Merge.jpg", img);*/
 
     waitKey();
     return 0;
