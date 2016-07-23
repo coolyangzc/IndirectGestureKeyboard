@@ -60,7 +60,7 @@ public class Keyboard : MonoBehaviour
 			debugInfo.Log("Relative", relative.x.ToString() + "," + relative.y.ToString());
 			string coor = relative.x.ToString() + "," + relative.y.ToString();
 			if (userStudy > 0)
-				buffer += touch.phase.ToString() + " " + touch.deltaTime + " " +
+				buffer += touch.phase.ToString() + " " + Time.time.ToString() + " " +
 					touch.position.x.ToString() + " " + touch.position.y.ToString() + " " +
 					relative.x.ToString() + " " + relative.y.ToString() + "\n";
 			switch (touch.phase)
