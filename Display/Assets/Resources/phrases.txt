@@ -1,16 +1,10 @@
 my watch fell in the water
-prevailing wind from the east
 never too rich and never too thin
 breathing is difficult
-physics and chemistry are hard
-elections bring out the best
-we are having spaghetti
 time to go shopping
 a problem with the engine
 elephants are afraid of mice
 my favorite place to visit
-my favorite subject is psychology
-circumstances are unacceptable
 watch out for low flying objects
 if at first you do not succeed
 please provide your date of birth
@@ -22,9 +16,7 @@ the world is a stage
 one heck of a question
 question that must be answered
 the power of denial
-I agree with you
 do not say anything
-play it again Sam
 the force is with you
 an offer you cannot refuse
 are you talking to me
@@ -34,6 +26,7 @@ the facts get in the way
 did you have a good time
 space is a high priority
 you are a wonderful example
+circumstances are unacceptable
 do not drink too much
 take a coffee break
 popularity is desired by all
@@ -381,3 +374,10 @@ put garbage in an abandoned mine
 employee recruitment takes a lot of effort
 experience is hard to come by
 everyone wants to win the lottery
+prevailing wind from the east
+physics and chemistry are hard
+elections bring out the best
+my favorite subject is psychology
+we are having spaghetti
+I agree with you
+play it again Sam

@@ -25,6 +25,7 @@ public class Lexicon : MonoBehaviour
 	private float radiusMul = 0.5f, radius = 0;
 	private float languageWeight = 0.00001f;
 	private bool debugOn = false;
+	public static int userStudy = 0;
 	public static bool useRadialMenu = false;
 	public static Mode mode = Mode.FixStart;
 	public static Formula locationFormula = Formula.DTW, shapeFormula = Formula.Null;
@@ -32,6 +33,8 @@ public class Lexicon : MonoBehaviour
 	//Internal Variables
 	private int choose = 0;
 	private float dis = 0;
+	private int highLight = 0;
+	private string[] words;
 	private Button[] btn = new Button[CandidatesNum];
 	private Candidate[] cands = new Candidate[CandidatesNum], candsTmp = new Candidate[CandidatesNum];
 	private Vector2[] keyPos = new Vector2[26];
@@ -537,15 +540,20 @@ public class Lexicon : MonoBehaviour
 		info.Log("[E]ndOffset", endOffset.ToString("0.0"));
 	}
 
-	public void ChangePhrase()
+	public void ChangePhrase(int id = -1)
 	{
-		phraseText.text = phrase[Random.Range(0, phrase.Count)];
+		if (id == -1)
+			phraseText.text = phrase[Random.Range(0, phrase.Count)];
+		else
+			phraseText.text = phrase[id];
+		words = phraseText.text.Split(' ');
 		history.Clear();
 		inputText.text = underText.text = under = text = "";
 		for (int i = 0; i < CandidatesNum; ++i)
 		{
 			btn[i].GetComponentInChildren<Text>().text = "";
-			cands[i].word = "";
+			if (cands[i] != null)
+				cands[i].word = "";
 		}
 		btn[0].Select();
 	}
@@ -575,9 +583,28 @@ public class Lexicon : MonoBehaviour
 			c.a = display?1f:0;
 			cb.normalColor = c;
 			btn[i].colors = cb;
-		}
+		}	
 		Color color = radialCandidates.color;
 		color.a = display?0.5f:0;
 		radialCandidates.color = color;
+	}
+
+	public void HighLight(int delta)
+	{
+		highLight += delta;
+		if (highLight < 0)
+			highLight = 0;
+		phraseText.text = "";
+		for (int i = 0; i < words.Length; ++i)
+				if (i == highLight)
+					phraseText.text += "<color=red>" + words[i] + "</color> ";
+				else
+					phraseText.text += words[i] + " ";
+
+	}
+
+	public void StartStudy(int id)
+	{
+		userStudy = id;
 	}
 }

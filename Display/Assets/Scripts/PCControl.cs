@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using UnityEngine.UI;
 using System.Collections;
 
 public class PCControl : MonoBehaviour {
@@ -8,6 +9,9 @@ public class PCControl : MonoBehaviour {
 	public Canvas canvas;
 	public Lexicon lexicon;
 	public Info info;
+	public int phraseID; 
+	public InputField userID;
+	//public Text userID;
 
 	private bool mouseHidden = false;
 	private bool debugOn = false;
@@ -43,6 +47,38 @@ public class PCControl : MonoBehaviour {
 				server.Send("TouchScreen Keyboard Width", "+");
 			if (Input.GetKeyDown(KeyCode.LeftArrow))
 				server.Send("TouchScreen Keyboard Width", "-");
+			if (Input.GetKeyDown(KeyCode.D))
+			{
+				debugOn ^= true;
+				info.Log("Debug", debugOn.ToString());
+				lexicon.SetDebugDisplay(debugOn);
+			}
+			if (Input.GetKeyDown(KeyCode.M))
+				lexicon.ChangeMode();
+			if (Input.GetKeyDown(KeyCode.S))
+				lexicon.ChangeShapeFormula();
+			if (Input.GetKeyDown(KeyCode.L))
+				lexicon.ChangeLocationFormula();
+			if (Input.GetKeyDown(KeyCode.N))
+				lexicon.ChangePhrase();
+			if (Input.GetKeyDown(KeyCode.C))
+				lexicon.ChangeCandidatesChoose(true);
+			if (Input.GetKeyDown(KeyCode.Alpha1))
+			{
+				lexicon.StartStudy(1);
+				lexicon.ChangePhrase(phraseID = 0);
+				SendPhraseMessage();
+				lexicon.HighLight(-100);
+				info.Log("Phrase", (phraseID+1).ToString() + "/30");
+				ColorBlock cb = userID.colors;
+				Color c = userID.colors.normalColor;
+				c.a = 0;
+				cb.normalColor = c;
+				userID.colors = cb;
+				c = userID.transform.FindChild("Text").GetComponent<Text>().color;
+				c.a = 0;
+				userID.transform.FindChild("Text").GetComponent<Text>().color = c;
+			}
 		}
 		if (Input.GetKeyDown(KeyCode.UpArrow))
 		{
@@ -63,22 +99,23 @@ public class PCControl : MonoBehaviour {
 				server.Send("TouchScreen Keyboard Height", "-");
 		}
 
-		if (Input.GetKeyDown(KeyCode.D))
+		if (Lexicon.userStudy == 1)
 		{
-			debugOn ^= true;
-			info.Log("Debug", debugOn.ToString());
-			lexicon.SetDebugDisplay(debugOn);
+			if (Input.GetKeyDown(KeyCode.Space))
+			{
+				server.Send("Study1 End Phrase", Lexicon.mode.ToString());
+				phraseID++;
+				lexicon.ChangePhrase(phraseID);
+				SendPhraseMessage();
+				lexicon.HighLight(-100);
+				info.Log("Phrase", (phraseID+1).ToString() + "/30");
+			}
+			if (Input.GetKeyDown(KeyCode.Backspace))
+			{
+				server.Send("Study1 Backspace", "");
+				lexicon.HighLight(-1);
+			}
 		}
-		if (Input.GetKeyDown(KeyCode.M))
-			lexicon.ChangeMode();
-		if (Input.GetKeyDown(KeyCode.S))
-			lexicon.ChangeShapeFormula();
-		if (Input.GetKeyDown(KeyCode.L))
-			lexicon.ChangeLocationFormula();
-		if (Input.GetKeyDown(KeyCode.N))
-			lexicon.ChangePhrase();
-		if (Input.GetKeyDown(KeyCode.C))
-		    lexicon.ChangeCandidatesChoose(true);
 	}
 
 	void MouseControl() 
@@ -112,5 +149,14 @@ public class PCControl : MonoBehaviour {
 			Cursor.lockState = CursorLockMode.None;
 			Cursor.visible = true;
 		}
+	}
+
+	void SendPhraseMessage()
+	{
+		server.Send("Study1 New Phrase", 
+		            userID.text + "_" + phraseID.ToString() + ".txt" + "\n" + 
+		            lexicon.phraseText.text);
+		Debug.Log(userID.text + "_" + phraseID.ToString() + ".txt" + "\n" + 
+		          lexicon.phraseText.text);
 	}
 }

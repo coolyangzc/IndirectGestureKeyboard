@@ -88,6 +88,12 @@ public class Gesture : MonoBehaviour {
 			x = x - beginPoint.x + StartPointRelative.x;
 			y = y - beginPoint.y + StartPointRelative.y;
 		}
+		cursor.transform.localPosition = new Vector3(x * keyboardWidth, y * keyboardHeight, -0.1f);
+		if (Lexicon.userStudy == 1)
+		{
+			lexicon.HighLight(+1);
+			return;
+		}
 		if (chooseCandidate)
 		{
 			if (length < 0.1f)
@@ -133,7 +139,6 @@ public class Gesture : MonoBehaviour {
 			return;
 		}
 
-		cursor.transform.localPosition = new Vector3(x * keyboardWidth, y * keyboardHeight, -0.1f);
 		stroke.Add(new Vector2(x, y));
 		for (int i = 0; i < stroke.Count; ++i)
 			stroke[i] = new Vector2(stroke[i].x * keyboardWidth, stroke[i].y * keyboardHeight);

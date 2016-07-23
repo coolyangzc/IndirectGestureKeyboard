@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using UnityEngine.UI;
+using System.IO;
 using System.Collections;
 
 public class Keyboard : MonoBehaviour 
@@ -10,11 +11,16 @@ public class Keyboard : MonoBehaviour
 	public DebugInfo debugInfo;
 	public Client client;
 
+	private string path = "sdcard/";
+	private string buffer = "";
+	private string phraseInfo;
+	private StreamWriter writer;
+	private int userStudy = 0;
+
 	private const int CandidateNum = 5;
 
 	private const float eps = 1e-10f;
 	private float heightRatio = 1f, widthRatio = 1f;
-	private int current = 0;
 	private Vector2 preLocal;
 	private Button[] btn = new Button[CandidateNum];
 	private float keyboardWidth, keyboardHeight;
@@ -53,6 +59,10 @@ public class Keyboard : MonoBehaviour
 			Vector2 relative = new Vector2(local.x / keyboardWidth, local.y / keyboardHeight);
 			debugInfo.Log("Relative", relative.x.ToString() + "," + relative.y.ToString());
 			string coor = relative.x.ToString() + "," + relative.y.ToString();
+			if (userStudy > 0)
+				buffer += touch.phase.ToString() + " " + touch.deltaTime + " " +
+					touch.position.x.ToString() + " " + touch.position.y.ToString() + " " +
+					relative.x.ToString() + " " + relative.y.ToString() + "\n";
 			switch (touch.phase)
 			{
 				case TouchPhase.Began:
@@ -128,5 +138,35 @@ public class Keyboard : MonoBehaviour
 	{
 		for (int i = 0; i < word.Length; ++i)
 			btn[i+1].GetComponentInChildren<Text>().text = word[i];
+	}
+
+	public void NewDataFile(string str)
+	{
+		userStudy = 1;
+		string fileName = str.Split('\n')[0]; 
+		phraseInfo = str.Split('\n')[1];
+		FileInfo file = new FileInfo(path + "//" + fileName);
+		if (!file.Exists)
+			writer = file.CreateText();
+		else
+			writer = file.AppendText();
+		debugInfo.Log("FileName", file.FullName);
+		buffer = "";
+	}
+
+	public void EndDataFile(string mode)
+	{
+		buffer = phraseInfo + "\n" + 
+				 mode + "\n" + 
+				 heightRatio.ToString("0.0") + " " + widthRatio.ToString("0.0") + "\n" +
+				 buffer;
+		writer.WriteLine(buffer);
+		writer.Close();
+		writer.Dispose();
+	}
+
+	public void Backspace()
+	{
+		buffer += "Backspace" + "\n";
 	}
 }

@@ -79,6 +79,15 @@ public class Client : MonoBehaviour
 			case "Candidates":
 				keyboard.SetCandidates(msg.Split(','));
 				break;
+			case "Study1 New Phrase":
+				keyboard.NewDataFile(msg);
+				break;
+			case "Study1 End Phrase":
+				keyboard.EndDataFile(msg);
+				break;
+			case "Study1 Backspace":
+				keyboard.Backspace();
+				break;
 			default:
 				//Debug.Log("Unknown tag: " + tag);
 				break;

@@ -10,7 +10,7 @@ public class DebugInfo : MonoBehaviour
 	private List<string> logs = new List<string>();
 	private List<string> tags = new List<string>();
 	private bool changed = false;
-	private float ClearTime = 3;
+	private float ClearTime = 5;
 	private float nowTime = 0;
 	int num;
 	
