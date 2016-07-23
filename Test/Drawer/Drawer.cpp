@@ -10,6 +10,8 @@ const int W = 720;
 using namespace cv;
 using namespace std;
 
+double CX[2], CY[2];
+
 int Random(int mo)
 {
     return rand() % mo;
@@ -79,6 +81,7 @@ void Merge(Mat& img, fstream& fin, Scalar color)
     double X, Y;
     vector<double> x, y;
     int cnt = 0;
+    double minX = 0, maxX = 0, minY = 0, maxY = 0;
     while (fin >> s)
     {
         x.clear();
@@ -86,6 +89,7 @@ void Merge(Mat& img, fstream& fin, Scalar color)
         while (true)
         {
             fin >> X >> Y;
+            Y = H - Y;
             x.push_back(X);
             y.push_back(Y);
             if (s[0] == 'E')
@@ -94,46 +98,66 @@ void Merge(Mat& img, fstream& fin, Scalar color)
         }
         rep(i, x.size() - 1)
         {
-            drawLine(img, Point(x[i], H - y[i]), Point(x[i+1], H - y[i+1]), 4, &color);
+            //drawLine(img, Point(x[i], y[i]), Point(x[i+1], y[i+1]), 4, &color);
         }
+        sort(x.begin(), x.end());
+        sort(y.begin(), y.end());
 
+        int id = x.size() * 0.10f;
+        minX += x[id], maxX += x[x.size() - id - 1], minY += y[y.size() - id - 1], maxY += y[id];
+        drawLine(img, Point(x[id], y[y.size() - id - 1]), Point(x[id], y[id]), 4, &color);
+        drawLine(img, Point(x[id], y[y.size() - id - 1]), Point(x[x.size() - id - 1], y[y.size() - id - 1]), 4, &color);
+        drawLine(img, Point(x[x.size() - id - 1], y[id]), Point(x[id], y[id]), 4, &color);
+        drawLine(img, Point(x[x.size() - id - 1], y[id]), Point(x[x.size() - id - 1], y[y.size() - id - 1]), 4, &color);
+        cnt++;
     }
+    minX /= cnt;
+    maxX /= cnt;
+    minY /= cnt;
+    maxY /= cnt;
+    CX[0] += minX;
+    CX[1] += maxX;
+    CY[0] += minY;
+    CY[1] += maxY;
+
 }
 
 int main()
 {
     string name[] = {"maye", "yixin", "yxc", "mzy", "xwj", "yuntao"};
-
-
+    int User = 6;
+    /*
     string file = name[5];
     string dir = "data/refine/" + file + ".txt";
     freopen(dir.c_str(), "r", stdin);
     draw(file.c_str());
     fclose(stdin);
+    */
 
     //freopen("maye2.txt", "r", stdin);
     //draw("out");
 
-
-
-    /*string name[] = {"maye", "yixin", "yxc", "mzy", "xwj", "yuntao"};
     Mat img = Mat::zeros(H, W, CV_8UC3);
-    rep(i, 6)
+    rep(i, User)
     {
         Scalar color(Random(255), Random(255), Random(255));
 
         stringstream ss;
         fstream fin;
         string file = "data/refine/" + name[i] + ".txt";
-
         fin.open(file.c_str(), fstream::in );
-
         cout << file << endl;
         Merge(img, fin, color);
         fin.close();
 
     }
-    imwrite("Merge.jpg", img);*/
+    Scalar red = Scalar(0, 0, 255);
+    double minX = CX[0] / User, maxX = CX[1] / User, minY = CY[0] / User, maxY = CY[1] / User;
+    drawLine(img, Point(minX, minY), Point(minX, maxY), 8, &red);
+    drawLine(img, Point(minX, minY), Point(maxX, minY), 8, &red);
+    drawLine(img, Point(maxX, maxY), Point(minX, maxY), 8, &red);
+    drawLine(img, Point(maxX, maxY), Point(maxX, minY), 8, &red);
+    imwrite("Merge.jpg", img);
 
     waitKey();
     return 0;

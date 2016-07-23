@@ -159,7 +159,9 @@ public class Keyboard : MonoBehaviour
 		buffer = phraseInfo + "\n" + 
 				 mode + "\n" + 
 				 heightRatio.ToString("0.0") + " " + widthRatio.ToString("0.0") + "\n" +
-				 buffer;
+				 (keyboardWidth * widthRatio).ToString() + " " + (keyboardHeight * heightRatio).ToString() + "\n" +
+				 buffer + 
+				 Time.time.ToString();
 		writer.WriteLine(buffer);
 		writer.Close();
 		writer.Dispose();
@@ -167,6 +169,6 @@ public class Keyboard : MonoBehaviour
 
 	public void Backspace()
 	{
-		buffer += "Backspace" + "\n";
+		buffer += "Backspace" + " " + Time.time.ToString() + "\n";
 	}
-}
+}		

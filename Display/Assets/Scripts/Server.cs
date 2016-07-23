@@ -110,9 +110,6 @@ public class Server : MonoBehaviour
 				gesture.End(float.Parse(msg.Split(',')[0]), float.Parse(msg.Split(',')[1]));
 				break;
 			case "Choose Candidate":
-				/*if (inputText.text.Length > 36)
-					inputText.text = "";
-				inputText.text += msg + " ";*/
 				lexicon.Accept(int.Parse(msg));
 				break;
 			case "Delete":

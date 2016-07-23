@@ -25,9 +25,10 @@ public class Lexicon : MonoBehaviour
 	private float radiusMul = 0.5f, radius = 0;
 	private float languageWeight = 0.00001f;
 	private bool debugOn = false;
-	public static int userStudy = 0;
+
 	public static bool useRadialMenu = false;
-	public static Mode mode = Mode.FixStart;
+	public static Mode mode = Mode.Basic;
+	public static UserStudy userStudy = UserStudy.Train;
 	public static Formula locationFormula = Formula.DTW, shapeFormula = Formula.Null;
 
 	//Internal Variables
@@ -43,6 +44,7 @@ public class Lexicon : MonoBehaviour
 	private float[][] dtw = new float[SampleSize+1][];
 
 	private List<string> phrase = new List<string>();
+	private int[] phraseList = new int[30];
 	private List<Candidate> history = new List<Candidate>();
 
 	//Definitions
@@ -61,6 +63,14 @@ public class Lexicon : MonoBehaviour
 		DTW = 2,
 		Null = 3,
 		End = 4,
+	}
+
+	public enum UserStudy
+	{
+		Basic = 0,
+		Train = 1,
+		Study1 = 2,
+		End = 3,
 	}
 
 	public class Entry
@@ -218,12 +228,43 @@ public class Lexicon : MonoBehaviour
 					break;
 				}
 			if (available)
-			{
 				phrase.Add(lines[i]);
-			}
 		}
 		Debug.Log("Phrases: " + phrase.Count + "/" + lines.Length);
+		textAsset = Resources.Load("pangrams") as TextAsset;
+		lines = textAsset.text.Split('\n');
+		for (int i = 0; i < lines.Length; ++i)
+			phrase.Add(lines[i]);
 		ChangePhrase();
+
+		int[] id = new int[24];
+		for (int i = 0; i < 24; ++i)
+			id[i] = i;
+		for (int i = 0; i < 24; ++i) 
+		{
+			int j = Random.Range(0, 23);
+			int k = id[i]; id[i] = id[j]; id[j] = k;
+		}
+		int x;
+		for(int i = 0; i < 3; ++i)
+		{
+			x = Random.Range((i*10), (i+1)*10 - 1);
+			phraseList[x] = phrase.Count - 2;
+			do
+				x = Random.Range((i*10), (i+1)*10 - 1);
+			while (phraseList[x] > 0);
+			phraseList[x] = phrase.Count - 1;
+		}
+		int p = 0;
+		for (int i = 0; i < 24; ++i)
+		{
+			while (phraseList[p] > 0) ++p;
+			phraseList[p++] = id[i];
+        }
+		/*for (int i = 0; i < 30; ++i) 
+		{
+			Debug.Log("phrase" + phraseList[i].ToString());
+		}*/
 	}
 
 	float sqr(float x)
@@ -543,9 +584,9 @@ public class Lexicon : MonoBehaviour
 	public void ChangePhrase(int id = -1)
 	{
 		if (id == -1)
-			phraseText.text = phrase[Random.Range(0, phrase.Count)];
+			phraseText.text = phrase[Random.Range(0, phrase.Count - 3)];
 		else
-			phraseText.text = phrase[id];
+			phraseText.text = phrase[phraseList[id]];
 		words = phraseText.text.Split(' ');
 		history.Clear();
 		inputText.text = underText.text = under = text = "";
@@ -601,10 +642,5 @@ public class Lexicon : MonoBehaviour
 				else
 					phraseText.text += words[i] + " ";
 
-	}
-
-	public void StartStudy(int id)
-	{
-		userStudy = id;
 	}
 }

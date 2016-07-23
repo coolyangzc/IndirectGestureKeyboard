@@ -47,7 +47,8 @@ public class Gesture : MonoBehaviour {
 				stroke.Add(new Vector2(x, y));
 				break;
 			case (Lexicon.Mode.FixStart):
-				cursor.transform.localPosition = new Vector3(StartPointRelative.x * keyboardWidth, StartPointRelative.y * keyboardHeight, -0.1f);
+				cursor.transform.localPosition = new Vector3(StartPointRelative.x * keyboardWidth, 
+				                                             StartPointRelative.y * keyboardHeight, -0.1f);
 				stroke.Clear();
 				stroke.Add(Lexicon.StartPointRelative);
 				break;
@@ -89,7 +90,7 @@ public class Gesture : MonoBehaviour {
 			y = y - beginPoint.y + StartPointRelative.y;
 		}
 		cursor.transform.localPosition = new Vector3(x * keyboardWidth, y * keyboardHeight, -0.1f);
-		if (Lexicon.userStudy == 1)
+		if (Lexicon.userStudy == Lexicon.UserStudy.Study1 || Lexicon.userStudy == Lexicon.UserStudy.Train)
 		{
 			lexicon.HighLight(+1);
 			return;

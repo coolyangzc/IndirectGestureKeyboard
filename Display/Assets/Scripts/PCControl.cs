@@ -9,7 +9,7 @@ public class PCControl : MonoBehaviour {
 	public Canvas canvas;
 	public Lexicon lexicon;
 	public Info info;
-	public int phraseID; 
+	public int phraseID = 0; 
 	public InputField userID;
 	//public Text userID;
 
@@ -65,8 +65,8 @@ public class PCControl : MonoBehaviour {
 				lexicon.ChangeCandidatesChoose(true);
 			if (Input.GetKeyDown(KeyCode.Alpha1))
 			{
-				lexicon.StartStudy(1);
-				lexicon.ChangePhrase(phraseID = 0);
+				Lexicon.userStudy = Lexicon.UserStudy.Study1;
+				lexicon.ChangePhrase(phraseID);
 				SendPhraseMessage();
 				lexicon.HighLight(-100);
 				info.Log("Phrase", (phraseID+1).ToString() + "/30");
@@ -98,24 +98,40 @@ public class PCControl : MonoBehaviour {
 			if (Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift))
 				server.Send("TouchScreen Keyboard Height", "-");
 		}
-
-		if (Lexicon.userStudy == 1)
+		if (Input.GetKeyDown(KeyCode.Space))
 		{
-			if (Input.GetKeyDown(KeyCode.Space))
+			if (Lexicon.userStudy == Lexicon.UserStudy.Study1)
 			{
 				server.Send("Study1 End Phrase", Lexicon.mode.ToString());
 				phraseID++;
+
+				if (phraseID % 10 == 0)
+				{
+					Lexicon.userStudy = Lexicon.UserStudy.Train;
+					lexicon.ChangePhrase();
+					lexicon.HighLight(-100);
+					info.Log("Phrase", "Next");
+					return;
+				}
 				lexicon.ChangePhrase(phraseID);
 				SendPhraseMessage();
 				lexicon.HighLight(-100);
 				info.Log("Phrase", (phraseID+1).ToString() + "/30");
 			}
-			if (Input.GetKeyDown(KeyCode.Backspace))
+			if (Lexicon.userStudy == Lexicon.UserStudy.Train)
 			{
-				server.Send("Study1 Backspace", "");
-				lexicon.HighLight(-1);
+				lexicon.ChangePhrase();
+				lexicon.HighLight(-100);
 			}
 		}
+		if (Input.GetKeyDown(KeyCode.Backspace))
+		{
+			if (Lexicon.userStudy == Lexicon.UserStudy.Study1)
+				server.Send("Study1 Backspace", "");
+			if (Lexicon.userStudy == Lexicon.UserStudy.Study1 || Lexicon.userStudy == Lexicon.UserStudy.Train)
+				lexicon.HighLight(-100);
+		}
+
 	}
 
 	void MouseControl() 
