@@ -15,11 +15,14 @@ using namespace std;
 
 const int PHRASES = 60;
 const double eps = 1e-6;
+const double inf = 1e10;
+
+double dtw[MAXSAMPLE][MAXSAMPLE];
 
 string sentence[PHRASES], mode[PHRASES], scale[PHRASES];
 double height[PHRASES], width[PHRASES], heightRatio[PHRASES], widthRatio[PHRASES], keyboardSize[PHRASES];
 double WPM[PHRASES];
-double keyX[128], keyY[128];
+Vector2 keyPos[128];
 
 vector<string> cmd;
 vector<string> words;
@@ -31,6 +34,14 @@ fstream fout;
 int Random(int mo)
 {
     return rand() % mo;
+}
+
+void InitDTW()
+{
+    rep(i, MAXSAMPLE)
+        rep(j, MAXSAMPLE)
+            dtw[i][j] = inf;
+    dtw[0][0] = 0;
 }
 
 bool same(const std::string& input, const std::string& tar)
@@ -56,18 +67,15 @@ void CalcKeyLayout()
     string line3 = "zxcvbnm";
     rep(i, line1.length())
     {
-        keyX[line1[i]] = -0.45 + i * 0.1;
-        keyY[line1[i]] = 0.333;
+        keyPos[line1[i]] = Vector2(-0.45 + i * 0.1, 0.3333);
     }
     rep(i, line2.length())
     {
-        keyX[line2[i]] = -0.4 + i * 0.1;
-        keyY[line2[i]] = 0;
+        keyPos[line2[i]] = Vector2(-0.4 + i * 0.1, 0);
     }
     rep(i, line3.length())
     {
-        keyX[line3[i]] = -0.35 + i * 0.1;
-        keyY[line3[i]] = -0.333;
+        keyPos[line3[i]] = Vector2(-0.35 + i * 0.1, -0.333);
     }
 
 }
@@ -166,26 +174,99 @@ void CalcWPM(string fileName)
     fout.close();
 }
 
-void CalcDistance(int id, fstream& fout)
+void CalcDistance(int id, vector<int>& sampleNums, fstream& fout)
 {
+    int line = 0;
+    double keyWidth = width[id] / 10;
+    rep(w, words.size())
+    {
+        string word = words[w];
+        vector<Vector2> pts, rawstroke;
+        if (word.length() == 1)
+            continue;
+        rep(i, word.length())
+        {
+            int key = word[i];
+            pts.push_back(Vector2(keyPos[key].x * width[id], keyPos[key].y * height[id]));
+        }
+        while (line < cmd.size())
+        {
+            string s = cmd[line];
+            Vector2 p(relative[line].x * width[id], relative[line].y * height[id]);
+            line++;
+            if (rawstroke.size() == 0 || dist(rawstroke[rawstroke.size()-1], p) > eps)
+                rawstroke.push_back(p);
+            if (same(s, "Ended"))
+                break;
+        }
+        if (rawstroke.size() <= 1)
+            return;
+        rep(i, sampleNums.size())
+        {
+            vector<Vector2> location = temporalSampling(pts, sampleNums[i]);
+            vector<Vector2> stroke = temporalSampling(rawstroke, sampleNums[i]);
 
+            double result = match(location, stroke, dtw, Standard) / sampleNums[i];
+            fout<< "1" << ","
+                << scale[id] << ","
+                << keyboardSize[id] << ","
+                << word << ","
+                << "Standard" << ","
+                << sampleNums[i] << ","
+                << "pixel" << ","
+                << result << endl;
+            fout<< "1" << ","
+                << scale[id] << ","
+                << keyboardSize[id] << ","
+                << word << ","
+                << "Standard" << ","
+                << sampleNums[i] << ","
+                << "keyWidth" << ","
+                << result / keyWidth << endl;
+
+            result = match(location, stroke, dtw, DTW) / sampleNums[i];
+
+            fout<< "1" << ","
+                << scale[id] << ","
+                << keyboardSize[id] << ","
+                << word << ","
+                << "DTW" << ","
+                << sampleNums[i] << ","
+                << "pixel" << ","
+                << result << endl;
+            fout<< "1" << ","
+                << scale[id] << ","
+                << keyboardSize[id] << ","
+                << word << ","
+                << "DTW" << ","
+                << sampleNums[i] << ","
+                << "keyWidth" << ","
+                << result / keyWidth << endl;
+        }
+    }
 }
 
 int main()
 {
+    InitDTW();
     CalcKeyLayout();
 
     string user = "yzc";
     fstream fout;
     fout.open("distance.csv", fstream::out);
-    fout << "user,scale,size,word,algorithm,sampleNum,distance" << endl;
-
+    fout << "user,scale,size,word,algorithm,sampleNum,coor,distance" << endl;
+    vector<int> sample;
+    sample.push_back(16);
+    sample.push_back(32);
+    sample.push_back(64);
+    sample.push_back(128);
     rep(i, 60)
     {
         ReadData(i, user);
-        CalcDistance(i, fout);
+        CalcDistance(i, sample, fout);
     }
-    CalcWPM("WPM.csv");
+    //CalcWPM("WPM.csv");
 
     return 0;
 }
+
