@@ -1,3 +1,6 @@
+#include "Vector2.h"
+
+#include <cmath>
 #include <cstdio>
 #include <vector>
 #include <cstdlib>
@@ -8,16 +11,20 @@
 #define rep(i,n) for(int i=0; i<n; ++i)
 #define FOR(i,a,b) for(int i=a; i<=b; ++i)
 
-
-const int PHRASES = 30;
 using namespace std;
-string sentence[PHRASES], mode[PHRASES];
-double height[PHRASES], width[PHRASES], heightRatio[PHRASES], widthRatio[PHRASES];
+
+const int PHRASES = 60;
+const double eps = 1e-6;
+
+string sentence[PHRASES], mode[PHRASES], scale[PHRASES];
+double height[PHRASES], width[PHRASES], heightRatio[PHRASES], widthRatio[PHRASES], keyboardSize[PHRASES];
 double WPM[PHRASES];
 double keyX[128], keyY[128];
 
 vector<string> cmd;
-vector<double> time, worldX, worldY, relX, relY;
+vector<string> words;
+vector<double> time;
+vector<Vector2> world, relative;
 
 fstream fout;
 
@@ -35,7 +42,11 @@ bool same(const std::string& input, const std::string& tar)
     while (p != input.end() && q != tar.end() && toupper(*p) == toupper(*q))
         ++p, ++q;
     return (p == input.end()) || (q == tar.end());
+}
 
+bool same(const double& x, const double& y)
+{
+    return (fabs(x-y) < eps);
 }
 
 void CalcKeyLayout()
@@ -46,17 +57,17 @@ void CalcKeyLayout()
     rep(i, line1.length())
     {
         keyX[line1[i]] = -0.45 + i * 0.1;
-        keyY[line1[i]] = 0.375;
+        keyY[line1[i]] = 0.333;
     }
     rep(i, line2.length())
     {
         keyX[line2[i]] = -0.4 + i * 0.1;
-        keyY[line2[i]] = 0.125;
+        keyY[line2[i]] = 0;
     }
     rep(i, line3.length())
     {
         keyX[line3[i]] = -0.35 + i * 0.1;
-        keyY[line3[i]] = -0.125;
+        keyY[line3[i]] = -0.333;
     }
 
 }
@@ -65,23 +76,30 @@ void LinePushBack(string s, double t, double x = 0, double y = 0, double rx = 0,
 {
     cmd.push_back(s);
     time.push_back(t);
-    worldX.push_back(x);
-    worldY.push_back(y);
-    relX.push_back(rx);
-    relY.push_back(ry);
+
+    world.push_back(Vector2(x, y));
+    relative.push_back(Vector2(rx, ry));
 }
 
-void ReadData(int id, string fileName)
+void ReadData(int id, string user)
 {
+    stringstream ss;
+    ss << id;
+    string fileName = "data/" + user + "_" + ss.str() + ".txt";
     fstream fin;
     fin.open(fileName.c_str(), fstream::in);
-
     getline(fin, sentence[id]);
     fin >> mode[id];
     fin >> widthRatio[id] >> heightRatio[id];
-    fin >> height[id] >> width[id];
+    fin >> width[id] >> height[id];
+    if (width[id] > 2 * height[id])
+        scale[id] = "1x1";
+    else
+        scale[id] = "1x3";
 
-    vector<string> words;
+    keyboardSize[id] = widthRatio[id] / 0.8;
+
+    words.clear();
     int alpha = 0;
     string word = "";
     rep(i, sentence[id].length())
@@ -97,12 +115,10 @@ void ReadData(int id, string fileName)
         }
     if (word.length() > 0)
         words.push_back(word);
-
     double startTime = -1;
     cmd.clear(); time.clear();
-    worldX.clear(); worldY.clear();
-    relX.clear(); relY.clear();
-    int wordID = 0;
+    world.clear(); relative.clear();
+
     string s;
     double t, x, y, rx, ry;
     while (fin >> s)
@@ -111,6 +127,8 @@ void ReadData(int id, string fileName)
         if (same(s, "Backspace"))
         {
             startTime = -1;
+            cmd.clear(); time.clear();
+            world.clear(); relative.clear();
             LinePushBack(s, t);
             continue;
         }
@@ -120,6 +138,7 @@ void ReadData(int id, string fileName)
             continue;
         }
         fin >> x >> y >> rx >> ry;
+        LinePushBack(s, t, x, y, rx, ry);
         if (same(s, "Began"))
         {
             if (startTime == -1)
@@ -135,26 +154,38 @@ void CalcWPM(string fileName)
 {
     fstream fout;
     fout.open(fileName.c_str(), fstream::out);
-    rep(i, 9)
-        fout << WPM[i] << endl;
+    fout << "user,scale,size,sentence,WPM" << endl;
+    rep(i, PHRASES)
+    {
+        fout<< "1" << ","
+            << scale[i] << ","
+            << keyboardSize[i] << ","
+            << sentence[i] << ","
+            << WPM[i] << endl;
+    }
     fout.close();
+}
+
+void CalcDistance(int id, fstream& fout)
+{
+
 }
 
 int main()
 {
     CalcKeyLayout();
-    //fout.open("firstKey0.txt", fstream::out);
-    //fout << "sentence,size,WPM" << endl;
-    //fout << "size,key,keyX,keyY,inputX,inputY,offsetX,offsetY" << endl;
-    string user = "yzc";
-    FOR(i, 0, 9)
-    {
-        stringstream ss;
-        ss << i;
-        ReadData(i, "data/" + user + "_" + ss.str() + ".txt");
 
+    string user = "yzc";
+    fstream fout;
+    fout.open("distance.csv", fstream::out);
+    fout << "user,scale,size,word,algorithm,sampleNum,distance" << endl;
+
+    rep(i, 60)
+    {
+        ReadData(i, user);
+        CalcDistance(i, fout);
     }
-    CalcWPM("WPM.txt");
+    CalcWPM("WPM.csv");
 
     return 0;
 }
