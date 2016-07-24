@@ -53,4 +53,12 @@ public class Info : MonoBehaviour
 		}
 		changed = true;
 	}
+
+	public void Clear()
+	{
+		tags.Clear();
+		logs.Clear();
+		info.text = "";
+		ipInfo.text = "";
+	}
 }

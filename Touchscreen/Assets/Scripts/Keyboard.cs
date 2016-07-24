@@ -11,6 +11,7 @@ public class Keyboard : MonoBehaviour
 	public DebugInfo debugInfo;
 	public Client client;
 
+
 	private string path = "sdcard/";
 	private string buffer = "";
 	private string phraseInfo;
@@ -20,10 +21,11 @@ public class Keyboard : MonoBehaviour
 	private const int CandidateNum = 5;
 
 	private const float eps = 1e-10f;
-	private float heightRatio = 1f, widthRatio = 1f;
 	private Vector2 preLocal;
 	private Button[] btn = new Button[CandidateNum];
 	private float keyboardWidth, keyboardHeight;
+	private float heightRatio = 1f, widthRatio = 1f, overallRatio = 1f;
+	private bool ratioChanged = false;
 
 	// Use this for initialization
 	void Start () 
@@ -86,9 +88,9 @@ public class Keyboard : MonoBehaviour
 
 	void SetKeyboard()
 	{
-		keyboard.rectTransform.localScale = new Vector3(widthRatio, heightRatio, 1f);
-		debugInfo.Log("Width", (keyboardWidth * widthRatio).ToString());
-		debugInfo.Log("Height", (keyboardHeight * heightRatio).ToString());
+		keyboard.rectTransform.localScale = new Vector3(widthRatio * overallRatio, heightRatio * overallRatio, 1f);
+		debugInfo.Log("Width", (keyboardWidth * widthRatio * overallRatio).ToString());
+		debugInfo.Log("Height", (keyboardHeight * heightRatio * overallRatio).ToString());
 	}
 
 	void ChooseCandidate(int id)
@@ -101,36 +103,49 @@ public class Keyboard : MonoBehaviour
 		client.Send("Delete", "");
 	}
 
-	public void ZoomIn(bool isWidth)
+	public void ZoomIn(bool isWidth, bool isOverall = false)
 	{
-		if (isWidth)
+		if (isOverall)
 		{
-			widthRatio += 0.1f;
-			if (widthRatio > 1)
-				widthRatio = 1;
-		} else
-		{
-			heightRatio += 0.1f;
-			if (heightRatio > 1)
-				heightRatio = 1;
+			overallRatio += 0.25f;
+			if (overallRatio > 1)
+				overallRatio = 1;
 		}
-
+		else
+			if (isWidth)
+			{
+				widthRatio += 0.1f;
+				if (widthRatio > 1)
+					widthRatio = 1;
+			} else
+			{
+				heightRatio += 0.1f;
+				if (heightRatio > 1)
+					heightRatio = 1;
+			}
 		SetKeyboard();
 	}
 
-	public void ZoomOut(bool isWidth)
+	public void ZoomOut(bool isWidth, bool isOverall = false)
 	{
-		if (isWidth)
+		if (isOverall)
 		{
-			widthRatio -= 0.1f;
-			if (widthRatio < eps)
-				widthRatio = 0.1f;
-		} else
-		{
-			heightRatio -= 0.1f;
-			if (heightRatio < eps)
-				heightRatio = 0.1f;
+			overallRatio -= 0.25f;
+			if (overallRatio < eps)
+				overallRatio = 0.25f;
 		}
+		else
+			if (isWidth)
+			{
+				widthRatio -= 0.1f;
+				if (widthRatio < eps)
+					widthRatio = 0.1f;
+			} else
+			{
+				heightRatio -= 0.1f;
+				if (heightRatio < eps)
+					heightRatio = 0.1f;
+			}
 		SetKeyboard();
 	}
 
@@ -138,6 +153,20 @@ public class Keyboard : MonoBehaviour
 	{
 		for (int i = 0; i < word.Length; ++i)
 			btn[i+1].GetComponentInChildren<Text>().text = word[i];
+	}
+
+	public void ChangeRatio()
+	{
+		Vector2 v = keyboard.GetComponent<RectTransform>().anchorMax;
+		if (ratioChanged)
+			v.y = 0.3f;
+		else
+			v.y = 0.5f;
+		keyboard.GetComponent<RectTransform>().anchorMax = v;
+		keyboardWidth = keyboard.rectTransform.rect.width;
+		keyboardHeight = keyboard.rectTransform.rect.height;
+		ratioChanged ^= true;
+		SetKeyboard();
 	}
 
 	public void NewDataFile(string str)
@@ -158,10 +187,10 @@ public class Keyboard : MonoBehaviour
 	{
 		buffer = phraseInfo + "\n" + 
 				 mode + "\n" + 
-				 heightRatio.ToString("0.0") + " " + widthRatio.ToString("0.0") + "\n" +
-				 (keyboardWidth * widthRatio).ToString() + " " + (keyboardHeight * heightRatio).ToString() + "\n" +
+				 (widthRatio * overallRatio).ToString("0.0") + " " + (heightRatio * overallRatio).ToString("0.0") + "\n" +
+				 (keyboardWidth * widthRatio * overallRatio).ToString() + " " + (keyboardHeight * heightRatio * overallRatio).ToString() + "\n" +
 				 buffer + 
-				 Time.time.ToString();
+				 "PhraseEnd " + Time.time.ToString();
 		writer.WriteLine(buffer);
 		writer.Close();
 		writer.Dispose();
@@ -170,5 +199,14 @@ public class Keyboard : MonoBehaviour
 	public void Backspace()
 	{
 		buffer += "Backspace" + " " + Time.time.ToString() + "\n";
+	}
+
+	public void SendSizeMsg()
+	{
+		if (ratioChanged)
+			client.Send("Keyboard Size Msg", overallRatio.ToString("0.00") + " " + "3");
+		else
+			client.Send("Keyboard Size Msg", overallRatio.ToString("0.00") + " " + "1");
+			
 	}
 }		

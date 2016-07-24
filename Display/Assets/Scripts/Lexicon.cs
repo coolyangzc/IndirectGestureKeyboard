@@ -18,7 +18,7 @@ public class Lexicon : MonoBehaviour
 	private const float AnyStartThr = 3.0f;
 	private float KeyWidth = 0f;
 	public static Vector2 StartPoint;
-	public static Vector2 StartPointRelative = new Vector2(0f, 0.125f);
+	public static Vector2 StartPointRelative = new Vector2(0f, 0f);
 
 	//Parameters
 	private float endOffset = 1.5f;
@@ -150,7 +150,7 @@ public class Lexicon : MonoBehaviour
 		
 	}
 
-	void CalcKeyLayout()
+	public void CalcKeyLayout()
 	{
 		float width = keyboard.rectTransform.rect.width;
 		KeyWidth = width * 0.1f;
@@ -163,14 +163,15 @@ public class Lexicon : MonoBehaviour
 		StartPoint = keyPos[6]; //keyG
 	}
 
-	void CalcLexicon()
+	public void CalcLexicon()
 	{
 		TextAsset textAsset = Resources.Load("corpus") as TextAsset;
 		string[] lines = textAsset.text.Split('\n');
 		int size = lines.Length;
 		if (LexiconSize > 0)
 			size = LexiconSize;
-
+		dict.Clear();
+		allWords.Clear();
 		for (int i = 0; i < size; ++i)
 		{
 			string line = lines[i];
@@ -191,9 +192,7 @@ public class Lexicon : MonoBehaviour
 				//entry.languageModelPossibilty = 1;
 				entry.languageModelPossibilty = 0.8f + (entry.frequency - l) / (r - l) * 0.2f;
 		}
-		Debug.Log(dict[dict.Count - 1].languageModelPossibilty.ToString());
-		Debug.Log(dict[0].languageModelPossibilty.ToString());
-		
+
 	}
 
 	void InitDTW()
@@ -261,10 +260,6 @@ public class Lexicon : MonoBehaviour
 			while (phraseList[p] > 0) ++p;
 			phraseList[p++] = id[i];
         }
-		/*for (int i = 0; i < 30; ++i) 
-		{
-			Debug.Log("phrase" + phraseList[i].ToString());
-		}*/
 	}
 
 	float sqr(float x)
@@ -583,6 +578,8 @@ public class Lexicon : MonoBehaviour
 
 	public void ChangePhrase(int id = -1)
 	{
+		if (id >= 30)
+			id -= 30;
 		if (id == -1)
 			phraseText.text = phrase[Random.Range(0, phrase.Count - 3)];
 		else
@@ -642,5 +639,11 @@ public class Lexicon : MonoBehaviour
 				else
 					phraseText.text += words[i] + " ";
 
+	}
+
+	public void UpdateSizeMsg(string msg)
+	{
+		info.Log("Size", msg.Split(' ')[0]);
+		info.Log("Scale", msg.Split(' ')[1]);
 	}
 }

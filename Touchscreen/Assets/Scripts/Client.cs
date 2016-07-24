@@ -76,6 +76,15 @@ public class Client : MonoBehaviour
 				else if (msg == "-")
 					keyboard.ZoomOut(false);
 				break;
+			case "TouchScreen Keyboard Size":
+				if (msg == "+")
+					keyboard.ZoomIn(false, true);
+				else if (msg == "-")
+					keyboard.ZoomOut(false, true);
+				break;
+			case "Get Keyboard Size":
+				keyboard.SendSizeMsg();
+				break;
 			case "Candidates":
 				keyboard.SetCandidates(msg.Split(','));
 				break;
@@ -87,6 +96,9 @@ public class Client : MonoBehaviour
 				break;
 			case "Study1 Backspace":
 				keyboard.Backspace();
+				break;
+			case "Change Ratio":
+				keyboard.ChangeRatio();
 				break;
 			default:
 				//Debug.Log("Unknown tag: " + tag);

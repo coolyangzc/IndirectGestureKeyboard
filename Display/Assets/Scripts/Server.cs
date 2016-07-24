@@ -112,6 +112,9 @@ public class Server : MonoBehaviour
 			case "Choose Candidate":
 				lexicon.Accept(int.Parse(msg));
 				break;
+			case "Keyboard Size Msg":
+				lexicon.UpdateSizeMsg(msg);
+				break;
 			case "Delete":
 				//lexicon.Delete();
 				break;

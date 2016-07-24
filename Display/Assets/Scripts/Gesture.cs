@@ -12,6 +12,7 @@ public class Gesture : MonoBehaviour {
 	public Lexicon lexicon;
 	
 	private bool chooseCandidate = false;
+	private bool ratioChanged = false;
 	private float keyboardWidth, keyboardHeight;
 	private float length;
 	private Vector2 StartPointRelative;
@@ -30,6 +31,29 @@ public class Gesture : MonoBehaviour {
 	void Update() 
 	{
 		
+	}
+
+	public void ChangeRatio()
+	{
+		Vector3 pos = keyboard.GetComponent<RectTransform>().localPosition;
+		Vector2 size = keyboard.GetComponent<RectTransform>().sizeDelta;
+		if (ratioChanged)
+		{
+			size.x = 1000;
+			size.y = 300;
+			pos.y = 0.5f;
+		}
+		else
+		{
+			size.x = 600;
+			size.y = 540;
+			pos.y = -0.7f;
+		}
+		keyboard.GetComponent<RectTransform>().sizeDelta = size;
+		keyboard.GetComponent<RectTransform>().localPosition = pos;
+		keyboardWidth = keyboard.rectTransform.rect.width;
+		keyboardHeight = keyboard.rectTransform.rect.height;
+		ratioChanged ^= true;
 	}
 
 	public void Begin(float x, float y)

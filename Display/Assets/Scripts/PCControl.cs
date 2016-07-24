@@ -7,7 +7,9 @@ public class PCControl : MonoBehaviour {
 	public GameObject trackingSpace;
 	public Server server;
 	public Canvas canvas;
+	public Image keyboard;
 	public Lexicon lexicon;
+	public Gesture gesture;
 	public Info info;
 	public int phraseID = 0; 
 	public InputField userID;
@@ -15,6 +17,7 @@ public class PCControl : MonoBehaviour {
 
 	private bool mouseHidden = false;
 	private bool debugOn = false;
+	private bool ratioChanged = false;
 	private float distance = 0;
 
 	private float MinDistance = 4;
@@ -63,13 +66,26 @@ public class PCControl : MonoBehaviour {
 				lexicon.ChangePhrase();
 			if (Input.GetKeyDown(KeyCode.C))
 				lexicon.ChangeCandidatesChoose(true);
+			if (Input.GetKeyDown(KeyCode.R))
+			{
+			    server.Send("Change Ratio", "");
+				server.Send("Get Keyboard Size", "");
+			}
+			if (Input.GetKeyDown(KeyCode.T))
+			{
+				gesture.ChangeRatio();
+				lexicon.CalcKeyLayout();
+				lexicon.CalcLexicon();
+			}
 			if (Input.GetKeyDown(KeyCode.Alpha1))
 			{
 				Lexicon.userStudy = Lexicon.UserStudy.Study1;
 				lexicon.ChangePhrase(phraseID);
 				SendPhraseMessage();
 				lexicon.HighLight(-100);
-				info.Log("Phrase", (phraseID+1).ToString() + "/30");
+				info.Clear();
+				info.Log("Phrase", (phraseID+1).ToString() + "/60");
+				server.Send("Get Keyboard Size", "");
 				ColorBlock cb = userID.colors;
 				Color c = userID.colors.normalColor;
 				c.a = 0;
@@ -88,6 +104,11 @@ public class PCControl : MonoBehaviour {
 				lexicon.ChangeRadius(0.1f);
 			if (Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift))
 				server.Send("TouchScreen Keyboard Height", "+");
+			if (Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl))
+			{
+				server.Send("TouchScreen Keyboard Size", "+");
+				server.Send("Get Keyboard Size", "");
+			}
 		}
 		if (Input.GetKeyDown(KeyCode.DownArrow))
 		{
@@ -97,6 +118,11 @@ public class PCControl : MonoBehaviour {
 				lexicon.ChangeRadius(-0.1f);
 			if (Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift))
 				server.Send("TouchScreen Keyboard Height", "-");
+			if (Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl))
+			{
+				server.Send("TouchScreen Keyboard Size", "-");
+				server.Send("Get Keyboard Size", "");
+			}
 		}
 		if (Input.GetKeyDown(KeyCode.Space))
 		{
@@ -110,13 +136,13 @@ public class PCControl : MonoBehaviour {
 					Lexicon.userStudy = Lexicon.UserStudy.Train;
 					lexicon.ChangePhrase();
 					lexicon.HighLight(-100);
-					info.Log("Phrase", "Next");
+					info.Log("Phrase", "Warmup");
 					return;
 				}
 				lexicon.ChangePhrase(phraseID);
 				SendPhraseMessage();
 				lexicon.HighLight(-100);
-				info.Log("Phrase", (phraseID+1).ToString() + "/30");
+				info.Log("Phrase", (phraseID+1).ToString() + "/60");
 			}
 			if (Lexicon.userStudy == Lexicon.UserStudy.Train)
 			{
