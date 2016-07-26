@@ -95,6 +95,14 @@ public class PCControl : MonoBehaviour {
 				c.a = 0;
 				userID.transform.FindChild("Text").GetComponent<Text>().color = c;
 			}
+			if (Input.GetKeyDown(KeyCode.Alpha2))
+			{
+				Lexicon.userStudy = Lexicon.UserStudy.Study2;
+				lexicon.ChangePhrase();
+				info.Clear();
+				info.Log("Phrase", (phraseID+1).ToString() + "/60");
+				server.Send("Get Keyboard Size", "");
+			}
 		}
 		if (Input.GetKeyDown(KeyCode.UpArrow))
 		{
@@ -126,28 +134,32 @@ public class PCControl : MonoBehaviour {
 		}
 		if (Input.GetKeyDown(KeyCode.Space))
 		{
-			if (Lexicon.userStudy == Lexicon.UserStudy.Study1)
+			switch(Lexicon.userStudy)
 			{
-				server.Send("Study1 End Phrase", Lexicon.mode.ToString());
-				phraseID++;
-
-				if (phraseID % 10 == 0)
-				{
-					Lexicon.userStudy = Lexicon.UserStudy.Train;
+				case Lexicon.UserStudy.Basic:
 					lexicon.ChangePhrase();
+					break;
+				case Lexicon.UserStudy.Train:
+					lexicon.ChangePhrase();
+					lexicon.HighLight(-1000);
+					break;
+				case Lexicon.UserStudy.Study1:
+					server.Send("Study1 End Phrase", Lexicon.mode.ToString());
+					phraseID++;
+					
+					if (phraseID % 10 == 0)
+					{
+						Lexicon.userStudy = Lexicon.UserStudy.Train;
+						lexicon.ChangePhrase();
+						lexicon.HighLight(-100);
+						info.Log("Phrase", "Warmup");
+						return;
+					}
+					lexicon.ChangePhrase(phraseID);
+					SendPhraseMessage();
 					lexicon.HighLight(-100);
-					info.Log("Phrase", "Warmup");
-					return;
-				}
-				lexicon.ChangePhrase(phraseID);
-				SendPhraseMessage();
-				lexicon.HighLight(-100);
-				info.Log("Phrase", (phraseID+1).ToString() + "/60");
-			}
-			if (Lexicon.userStudy == Lexicon.UserStudy.Train)
-			{
-				lexicon.ChangePhrase();
-				lexicon.HighLight(-100);
+					info.Log("Phrase", (phraseID+1).ToString() + "/60");
+					break;
 			}
 		}
 		if (Input.GetKeyDown(KeyCode.Backspace))
@@ -195,10 +207,13 @@ public class PCControl : MonoBehaviour {
 
 	void SendPhraseMessage()
 	{
-		server.Send("Study1 New Phrase", 
-		            userID.text + "_" + phraseID.ToString() + ".txt" + "\n" + 
-		            lexicon.phraseText.text);
-		Debug.Log(userID.text + "_" + phraseID.ToString() + ".txt" + "\n" + 
-		          lexicon.phraseText.text);
+		if (Lexicon.userStudy == Lexicon.UserStudy.Study1)
+			server.Send("Study1 New Phrase", 
+			            userID.text + "_" + phraseID.ToString() + ".txt" + "\n" + 
+			            lexicon.phraseText.text);
+		else if (Lexicon.userStudy == Lexicon.UserStudy.Study2)
+			server.Send("Study2 New Phrase", 
+			            userID.text + "_" + phraseID.ToString() + ".txt" + "\n" + 
+			            lexicon.phraseText.text);
 	}
 }

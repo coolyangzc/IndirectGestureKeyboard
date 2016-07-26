@@ -70,7 +70,8 @@ public class Lexicon : MonoBehaviour
 		Basic = 0,
 		Train = 1,
 		Study1 = 2,
-		End = 3,
+		Study2 = 3,
+		End = 4,
 	}
 
 	public class Entry
@@ -395,8 +396,6 @@ public class Lexicon : MonoBehaviour
 			newCandidate.word = entry.word;
 			if (mode == Mode.AnyStart)
 			{
-				if (Vector2.Distance(stroke[0], entry.pts[0]) > AnyStartThr * KeyWidth)
-					continue;
 				entry.pts.Insert(0, stroke[0]);
 				entry.locationSample[(int)mode] = TemporalSampling(entry.pts.ToArray());
 				entry.shapeSample[(int)mode] = Normalize(entry.locationSample[(int)mode]);
