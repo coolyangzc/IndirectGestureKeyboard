@@ -47,7 +47,7 @@ public class Gesture : MonoBehaviour {
 		{
 			size.x = 600;
 			size.y = 540;
-			pos.y = -0.7f;
+			pos.y = 0.3f;
 		}
 		keyboard.GetComponent<RectTransform>().sizeDelta = size;
 		keyboard.GetComponent<RectTransform>().localPosition = pos;
