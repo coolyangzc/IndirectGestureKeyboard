@@ -66,13 +66,13 @@ public class Gesture : MonoBehaviour {
 		{
 			case (Lexicon.Mode.Basic):
 			case (Lexicon.Mode.AnyStart):
-				cursor.transform.localPosition = new Vector3(x * keyboardWidth, y * keyboardHeight, -0.1f);
+				cursor.transform.localPosition = new Vector3(x * keyboardWidth, y * keyboardHeight, -0.2f);
 				stroke.Clear();
 				stroke.Add(new Vector2(x, y));
 				break;
 			case (Lexicon.Mode.FixStart):
 				cursor.transform.localPosition = new Vector3(StartPointRelative.x * keyboardWidth, 
-				                                             StartPointRelative.y * keyboardHeight, -0.1f);
+				                                             StartPointRelative.y * keyboardHeight, -0.2f);
 				stroke.Clear();
 				stroke.Add(Lexicon.StartPointRelative);
 				break;
@@ -102,7 +102,7 @@ public class Gesture : MonoBehaviour {
 			x = x - beginPoint.x + StartPointRelative.x;
 			y = y - beginPoint.y + StartPointRelative.y;
 		}
-		cursor.transform.localPosition = new Vector3(x * keyboardWidth, y * keyboardHeight, -0.1f);
+		cursor.transform.localPosition = new Vector3(x * keyboardWidth, y * keyboardHeight, -0.2f);
 		stroke.Add(new Vector2(x, y));
 	}
 
@@ -113,7 +113,7 @@ public class Gesture : MonoBehaviour {
 			x = x - beginPoint.x + StartPointRelative.x;
 			y = y - beginPoint.y + StartPointRelative.y;
 		}
-		cursor.transform.localPosition = new Vector3(x * keyboardWidth, y * keyboardHeight, -0.1f);
+		cursor.transform.localPosition = new Vector3(x * keyboardWidth, y * keyboardHeight, -0.2f);
 		if (Lexicon.userStudy == Lexicon.UserStudy.Study1 || Lexicon.userStudy == Lexicon.UserStudy.Train)
 		{
 			lexicon.HighLight(+1);
@@ -157,7 +157,7 @@ public class Gesture : MonoBehaviour {
 				return;
 			}
 		}
-		if (0.3 <= x && y <= 0 && length <= 2.0f)
+		if (y <= -0.5f && length <= 2.0f)
 		{
 			lexicon.Delete();
 			chooseCandidate = false;

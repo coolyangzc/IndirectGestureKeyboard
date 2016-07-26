@@ -100,13 +100,13 @@ public class Server : MonoBehaviour
         string msg = message.Split(':')[1];
         switch (tag)
         {
-        	case "Touch.Began":
+        	case "Began":
 				gesture.Begin(float.Parse(msg.Split(',')[0]), float.Parse(msg.Split(',')[1]));
                 break;
-			case "Touch.Moved":
+			case "Moved":
 				gesture.Move(float.Parse(msg.Split(',')[0]), float.Parse(msg.Split(',')[1]));
 				break;
-			case "Touch.Ended":
+			case "Ended":
 				gesture.End(float.Parse(msg.Split(',')[0]), float.Parse(msg.Split(',')[1]));
 				break;
 			case "Choose Candidate":

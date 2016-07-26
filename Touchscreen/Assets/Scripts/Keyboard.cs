@@ -68,18 +68,18 @@ public class Keyboard : MonoBehaviour
 			switch (touch.phase)
 			{
 				case TouchPhase.Began:
-					client.Send("Touch.Began", coor);
+					client.Send("Began", coor);
 					preLocal = local;
 					break;
 				case TouchPhase.Moved:
 					if (Vector2.Distance(local, preLocal) > 0.1f)
 					{
-						client.Send("Touch.Moved", coor);
+						client.Send("Moved", coor);
 						preLocal = local;
 					}
 					break;
 				case TouchPhase.Ended:
-					client.Send("Touch.Ended", coor);
+					client.Send("Ended", coor);
 					break;
 			}
 			//client.Send("Touch", );

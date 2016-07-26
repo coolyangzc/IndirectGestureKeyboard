@@ -28,7 +28,7 @@ public class Lexicon : MonoBehaviour
 
 	public static bool useRadialMenu = false;
 	public static Mode mode = Mode.Basic;
-	public static UserStudy userStudy = UserStudy.Train;
+	public static UserStudy userStudy = UserStudy.Basic;
 	public static Formula locationFormula = Formula.DTW, shapeFormula = Formula.Null;
 
 	//Internal Variables
@@ -279,10 +279,10 @@ public class Lexicon : MonoBehaviour
 	{
 		if (A.Length != B.Length || formula == Formula.Null)
 			return 0;
-		if (Vector2.Distance(A[0], B[0]) > KeyWidth)
+		/*if (Vector2.Distance(A[0], B[0]) > KeyWidth)
 			return 0;
 		if (Vector2.Distance(A[A.Length - 1], B[B.Length - 1]) > endOffset * KeyWidth)
-			return 0;
+			return 0;*/
 		dis = 0;
 		switch(formula)
 		{
