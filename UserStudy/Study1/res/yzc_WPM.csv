@@ -1,0 +1,61 @@
+user,scale,size,sentence,WPM
+1,1x1,1,the quick brown fox jumps over the lazy dog,26.8201
+1,1x1,1,you must be getting old,31.4795
+1,1x1,1,the five boxing wizards jump quickly,29.9843
+1,1x1,1,we run the risk of failure,28.26
+1,1x1,1,the force is with you,30.4101
+1,1x1,1,love means many things,30.6431
+1,1x1,1,time to go shopping,31.5338
+1,1x1,1,please provide your date of birth,32.5515
+1,1x1,1,my favorite place to visit,32.3232
+1,1x1,1,the world is a stage,27.093
+1,1x1,0.75,breathing is difficult,35.099
+1,1x1,0.75,the five boxing wizards jump quickly,34.2192
+1,1x1,0.75,one heck of a question,32.8502
+1,1x1,0.75,yes you are very smart,33.2461
+1,1x1,0.75,watch out for low flying objects,32.8914
+1,1x1,0.75,the quick brown fox jumps over the lazy dog,30.6894
+1,1x1,0.75,do not say anything,31.0976
+1,1x1,0.75,the facts get in the way,31.114
+1,1x1,0.75,are you talking to me,28.7819
+1,1x1,0.75,an offer you cannot refuse,31.0639
+1,1x1,0.5,the quick brown fox jumps over the lazy dog,27.1868
+1,1x1,0.5,the five boxing wizards jump quickly,29.9857
+1,1x1,0.5,if at first you do not succeed,30.1328
+1,1x1,0.5,the power of denial,28.7464
+1,1x1,0.5,question that must be answered,32.7346
+1,1x1,0.5,he is just like everyone else,30.3289
+1,1x1,0.5,all work and no play,25.7066
+1,1x1,0.5,never too rich and never too thin,32.4526
+1,1x1,0.5,my watch fell in the water,31.811
+1,1x1,0.5,a problem with the engine,30.3326
+1,1x3,1,yes you are very smart,26.1248
+1,1x3,1,love means many things,26.5734
+1,1x3,1,time to go shopping,32.1124
+1,1x3,1,you must be getting old,28.0305
+1,1x3,1,we run the risk of failure,26.0465
+1,1x3,1,do not say anything,24.6565
+1,1x3,1,one heck of a question,29.476
+1,1x3,1,the quick brown fox jumps over the lazy dog,26.7806
+1,1x3,1,the five boxing wizards jump quickly,29.3422
+1,1x3,1,breathing is difficult,33.7221
+1,1x3,0.75,if at first you do not succeed,30.5668
+1,1x3,0.75,please provide your date of birth,35.7713
+1,1x3,0.75,watch out for low flying objects,33.7184
+1,1x3,0.75,the force is with you,32.01
+1,1x3,0.75,the quick brown fox jumps over the lazy dog,31.7268
+1,1x3,0.75,are you talking to me,30.3571
+1,1x3,0.75,he is just like everyone else,32.0071
+1,1x3,0.75,a problem with the engine,32.2663
+1,1x3,0.75,the five boxing wizards jump quickly,32.0939
+1,1x3,0.75,the power of denial,29.5203
+1,1x3,0.5,my watch fell in the water,29.9287
+1,1x3,0.5,all work and no play,25.5659
+1,1x3,0.5,the quick brown fox jumps over the lazy dog,30
+1,1x3,0.5,an offer you cannot refuse,35.4362
+1,1x3,0.5,never too rich and never too thin,32.0792
+1,1x3,0.5,the five boxing wizards jump quickly,32.9204
+1,1x3,0.5,question that must be answered,37.9562
+1,1x3,0.5,the facts get in the way,29.4194
+1,1x3,0.5,the world is a stage,30
+1,1x3,0.5,my favorite place to visit,30

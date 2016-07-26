@@ -158,14 +158,14 @@ void ReadData(int id, string user)
     fin.close();
 }
 
-void CalcWPM(string fileName)
+void CalcWPM(string fileName, string userID)
 {
     fstream fout;
     fout.open(fileName.c_str(), fstream::out);
     fout << "user,scale,size,sentence,WPM" << endl;
     rep(i, PHRASES)
     {
-        fout<< "1" << ","
+        fout<< userID << ","
             << scale[i] << ","
             << keyboardSize[i] << ","
             << sentence[i] << ","
@@ -174,7 +174,7 @@ void CalcWPM(string fileName)
     fout.close();
 }
 
-void CalcDistance(int id, vector<int>& sampleNums, fstream& fout)
+void CalcDistance(int id, vector<int>& sampleNums, fstream& fout, string userID)
 {
     int line = 0;
     double keyWidth = width[id] / 10;
@@ -207,7 +207,7 @@ void CalcDistance(int id, vector<int>& sampleNums, fstream& fout)
             vector<Vector2> stroke = temporalSampling(rawstroke, sampleNums[i]);
 
             double result = match(location, stroke, dtw, Standard) / sampleNums[i];
-            fout<< "1" << ","
+            fout<< userID << ","
                 << scale[id] << ","
                 << keyboardSize[id] << ","
                 << word << ","
@@ -215,7 +215,7 @@ void CalcDistance(int id, vector<int>& sampleNums, fstream& fout)
                 << sampleNums[i] << ","
                 << "pixel" << ","
                 << result << endl;
-            fout<< "1" << ","
+            fout<< userID << ","
                 << scale[id] << ","
                 << keyboardSize[id] << ","
                 << word << ","
@@ -226,7 +226,7 @@ void CalcDistance(int id, vector<int>& sampleNums, fstream& fout)
 
             result = match(location, stroke, dtw, DTW) / sampleNums[i];
 
-            fout<< "1" << ","
+            fout<< userID << ","
                 << scale[id] << ","
                 << keyboardSize[id] << ","
                 << word << ","
@@ -234,7 +234,7 @@ void CalcDistance(int id, vector<int>& sampleNums, fstream& fout)
                 << sampleNums[i] << ","
                 << "pixel" << ","
                 << result << endl;
-            fout<< "1" << ","
+            fout<< userID << ","
                 << scale[id] << ","
                 << keyboardSize[id] << ","
                 << word << ","
@@ -251,7 +251,8 @@ int main()
     InitDTW();
     CalcKeyLayout();
 
-    string user = "yzc";
+    string user = "yzp";
+    string userID = "2";
     fstream fout;
     fout.open("distance.csv", fstream::out);
     fout << "user,scale,size,word,algorithm,sampleNum,coor,distance" << endl;
@@ -263,9 +264,9 @@ int main()
     rep(i, 60)
     {
         ReadData(i, user);
-        CalcDistance(i, sample, fout);
+        CalcDistance(i, sample, fout, userID);
     }
-    //CalcWPM("WPM.csv");
+    CalcWPM("WPM.csv", userID);
 
     return 0;
 }
