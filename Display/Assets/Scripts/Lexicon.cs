@@ -329,9 +329,14 @@ public class Lexicon : MonoBehaviour
 	{
 		float length = 0;
 		int count = stroke.Length;
-		if (count == 1)
-			return stroke;
 		Vector2[] vector = new Vector2[SampleSize];
+		if (count == 1)
+		{
+			for (int i = 0; i < SampleSize; ++i)
+				vector[i] = stroke[0];
+			return vector;
+		}
+
 		for (int i = 0; i < count - 1; ++i)
 			length += Vector2.Distance(stroke[i], stroke[i + 1]);
 		float increment = length / (SampleSize - 1);
@@ -388,7 +393,9 @@ public class Lexicon : MonoBehaviour
 
 	public Candidate[] Recognize(Vector2[] rawStroke)
 	{
+
 		Vector2[] stroke = TemporalSampling(rawStroke);
+		Debug.Log(stroke.Length.ToString());
 		Vector2[] nStroke = Normalize(stroke);
 
 		for (int i = 0; i < CandidatesNum; ++i)
@@ -408,8 +415,8 @@ public class Lexicon : MonoBehaviour
 			newCandidate.confidence = newCandidate.location = Match(stroke, entry.locationSample[(int)mode], locationFormula);
 			if (newCandidate.location == 0)
 				continue;
-			if (locationFormula == Formula.Null)
-				newCandidate.DTWDistance = dis;
+			if (locationFormula == Formula.DTW)
+				newCandidate.DTWDistance = dis * SampleSize;
 			if (shapeFormula != Formula.Null)
 			{
 				newCandidate.shape = Match(nStroke, entry.shapeSample[(int)mode], shapeFormula);
@@ -430,6 +437,8 @@ public class Lexicon : MonoBehaviour
 					break;
 				}
 		}
+		for (int i = 0; i < CandidatesNum; ++i)
+			Debug.Log(candsTmp[i].word + ":" + candsTmp[i].DTWDistance.ToString());
 		return candsTmp;
 	}
 

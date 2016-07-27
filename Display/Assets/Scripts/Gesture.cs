@@ -19,6 +19,8 @@ public class Gesture : MonoBehaviour {
 	private Vector2 beginPoint, prePoint, localPoint;
 	private List<Vector2> stroke = new List<Vector2>();
 
+	private const float RadiusMenuR = 0.13f;
+
 	// Use this for initialization
 	void Start() 
 	{
@@ -97,6 +99,12 @@ public class Gesture : MonoBehaviour {
 
 		if (Lexicon.useRadialMenu && chooseCandidate)
 		{
+
+			if (Vector2.Distance(new Vector2(x, y), StartPointRelative) < RadiusMenuR)
+			{
+				radialMenu.texture = (Texture)Resources.Load("RadialMenu", typeof(Texture));
+				return;
+			}
 			float rx = x - StartPointRelative.x;
 			float ry = y - StartPointRelative.y;
 			if (Mathf.Abs(rx) > Mathf.Abs(ry))
@@ -152,30 +160,29 @@ public class Gesture : MonoBehaviour {
 				if (!Lexicon.useRadialMenu )
 				{
 					lexicon.NextCandidate();
-				} else
-				{
-					chooseCandidate = false;
-					lexicon.SetRadialMenuDisplay(false);
+					return;
 				}
-				return;
 			}
 			if (Lexicon.useRadialMenu)
 			{
-				x -= StartPointRelative.x;
-				y -= StartPointRelative.y;
-				if (Mathf.Abs(x) > Mathf.Abs(y))
+				if (Vector2.Distance(new Vector2(x, y), StartPointRelative) > RadiusMenuR)
 				{
-					if (x > 0)
-						lexicon.Accept(2);
+					x -= StartPointRelative.x;
+					y -= StartPointRelative.y;
+					if (Mathf.Abs(x) > Mathf.Abs(y))
+					{
+						if (x > 0)
+							lexicon.Accept(2);
+						else
+							lexicon.Accept(1);
+					}
 					else
-						lexicon.Accept(1);
-				}
-				else
-				{
-					if (y > 0)
-						lexicon.Accept(0);
-					else
-						lexicon.Accept(3);
+					{
+						if (y > 0)
+							lexicon.Accept(0);
+						else
+							lexicon.Accept(3);
+					}
 				}
 				chooseCandidate = false;
 				lexicon.SetRadialMenuDisplay(false);
