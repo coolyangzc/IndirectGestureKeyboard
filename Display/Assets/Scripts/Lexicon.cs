@@ -5,7 +5,8 @@ using System.Collections.Generic;
 
 public class Lexicon : MonoBehaviour 
 {
-	public Image keyboard, candidates, radialCandidates;
+	public Image keyboard, candidates;
+	public RawImage radialMenu;
 	public Info info;
 	public Text inputText, underText, phraseText;
 	public string text = "", under = "";
@@ -13,6 +14,7 @@ public class Lexicon : MonoBehaviour
 	//Constants
 	private const int LexiconSize = 10000;
 	private const int SampleSize = 32;
+	private const int RadialNum = 4;
 	private const int CandidatesNum = 5;
 	private const float DTWConst = 0.1f;
 	private const float AnyStartThr = 3.0f;
@@ -21,12 +23,12 @@ public class Lexicon : MonoBehaviour
 	public static Vector2 StartPointRelative = new Vector2(0f, 0f);
 
 	//Parameters
-	private float endOffset = 1.5f;
+	private float endOffset = 2.0f;
 	private float radiusMul = 0.5f, radius = 0;
 	private float languageWeight = 0.00001f;
 	private bool debugOn = false;
 
-	public static bool useRadialMenu = false;
+	public static bool useRadialMenu = true;
 	public static Mode mode = Mode.Basic;
 	public static UserStudy userStudy = UserStudy.Basic;
 	public static Formula locationFormula = Formula.DTW, shapeFormula = Formula.Null;
@@ -37,6 +39,7 @@ public class Lexicon : MonoBehaviour
 	private int highLight = 0;
 	private string[] words;
 	private Button[] btn = new Button[CandidatesNum];
+	private Text[] radialText = new Text[RadialNum];
 	private Candidate[] cands = new Candidate[CandidatesNum], candsTmp = new Candidate[CandidatesNum];
 	private Vector2[] keyPos = new Vector2[26];
 
@@ -137,6 +140,7 @@ public class Lexicon : MonoBehaviour
 		info.Log("[S]hape", shapeFormula.ToString());
 		history.Clear();
 		ChangeCandidatesChoose(false);
+		SetRadialMenuDisplay(false);
 		CalcKeyLayout();
 		CalcLexicon();
 		ChangeRadius(0);
@@ -281,9 +285,9 @@ public class Lexicon : MonoBehaviour
 		if (A.Length != B.Length || formula == Formula.Null)
 			return 0;
 		/*if (Vector2.Distance(A[0], B[0]) > KeyWidth)
-			return 0;
-		if (Vector2.Distance(A[A.Length - 1], B[B.Length - 1]) > endOffset * KeyWidth)
 			return 0;*/
+		if (Vector2.Distance(A[A.Length - 1], B[B.Length - 1]) > endOffset * KeyWidth)
+			return 0;
 		dis = 0;
 		switch(formula)
 		{
@@ -304,14 +308,14 @@ public class Lexicon : MonoBehaviour
 			case (Formula.DTW):
 				for (int i = 0; i < SampleSize; ++i)
 				{
-					//float gap = float.MaxValue;
+					float gap = float.MaxValue;
 					for (int j = DTWL[i]; j < DTWR[i]; ++j)
 					{
 						dtw[i+1][j+1] = Vector2.Distance(A[i], B[j]) + Mathf.Min(dtw[i][j], Mathf.Min(dtw[i][j+1], dtw[i+1][j]));
-						//gap = Mathf.Min(gap, dtw[i+1][j+1]);
+						gap = Mathf.Min(gap, dtw[i+1][j+1]);
 					}
-					//if (gap > 1.5f * candsTmp[CandidatesNum - 1].DTWDistance)
-						//return 0;
+					if (gap > candsTmp[CandidatesNum - 1].DTWDistance)
+						return 0;
 				}
 				dis = dtw[SampleSize][SampleSize];
 				break;
@@ -433,31 +437,31 @@ public class Lexicon : MonoBehaviour
 	{
 		if (!useRadialMenu)
 			btn[choose = 0].Select();
-		else
-			btn[CandidatesNum - 1].Select();
 		for (int i = 0; i < candList.Length; ++i)
 		{
 			cands[i] = candList[i];
+			string text = cands[i].word;
 			if (debugOn)
-				btn[i].GetComponentInChildren<Text>().text = 
-					cands[i].word + "\n" + cands[i].location.ToString(".00") + " " + cands[i].shape.ToString(".00") + " " + cands[i].language.ToString(".00");
-			else
+				text += "\n" + cands[i].location.ToString(".00") + " " + cands[i].shape.ToString(".00") + " " + cands[i].language.ToString(".00");
+			if (useRadialMenu)
 			{
-				btn[i].GetComponentInChildren<Text>().text = cands[i].word;
-				if (cands[i].word.Length > 10)
-					btn[i].GetComponentInChildren<Text>().resizeTextMaxSize = 40;
-				else
-					btn[i].GetComponentInChildren<Text>().resizeTextMaxSize = 48;
+				if (i < RadialNum)
+					radialText[i].text = text;
 			}
+			else
+				btn[i].GetComponentInChildren<Text>().text = text;
 		}
 		if (cands[0].confidence == 0)
 			return;
-		history.Add(new Candidate(cands[0]));
-		string space = "";
-		if (text.Length > 0)
-			space = " ";
-		inputText.text = text + space + cands[0].word;
-		underText.text = under + space + underline('_', cands[0].word.Length);
+		if (!useRadialMenu)
+		{
+			history.Add(new Candidate(cands[0]));
+			string space = "";
+			if (text.Length > 0)
+				space = " ";
+			inputText.text = text + space + cands[0].word;
+			underText.text = under + space + underline('_', cands[0].word.Length);
+		}
 	}
 
 	public void NextCandidate()
@@ -484,23 +488,29 @@ public class Lexicon : MonoBehaviour
 			under += " ";
 		}
 		text += cands[id].word;
-		under += underline(' ', cands[id].word.Length);
 		inputText.text = text;
-		underText.text = under;
+		if (useRadialMenu)
+			history.Add(new Candidate(cands[id]));
+		else
+		{
+			under += underline(' ', cands[id].word.Length);
+			underText.text = under;
+		}
 
 		for (int i = 0; i < CandidatesNum; ++i)
 		{
 			btn[i].GetComponentInChildren<Text>().text = "";
 			cands[i].word = "";
 		}
+
+		for (int i = 0; i < RadialNum; ++i)
+			radialText[i].text = "";
 	}
 
 	public void Delete()
 	{
 		if (!useRadialMenu)
 			btn[choose = 0].Select();
-		else
-			btn[CandidatesNum - 1].Select();
 		for (int i = 0; i < CandidatesNum; ++i)
 		{
 			btn[i].GetComponentInChildren<Text>().text = "";
@@ -523,7 +533,8 @@ public class Lexicon : MonoBehaviour
 			under += underline('_', history[history.Count - 1].word.Length);
 		}
 		inputText.text = text;
-		underText.text = under;
+		if (!useRadialMenu)
+			underText.text = under;
 	}
 
 	public void SetDebugDisplay(bool debugOn)
@@ -597,33 +608,33 @@ public class Lexicon : MonoBehaviour
 
 	public void ChangeCandidatesChoose(bool change)
 	{
-		useRadialMenu ^= change;
+		for (int i = 0; i < RadialNum; ++i)
+			radialText[i] = radialMenu.transform.FindChild("Candidate" + i.ToString()).GetComponent<Text>();
 		for (int i = 0; i < CandidatesNum; ++i)
-		{
-			if (useRadialMenu)
-				btn[i] = radialCandidates.transform.FindChild("Candidate" + i.ToString()).GetComponent<Button>();
-			else
-				btn[i] = candidates.transform.FindChild("Candidate" + i.ToString()).GetComponent<Button>();
-		}
+			btn[i] = candidates.transform.FindChild("Candidate" + i.ToString()).GetComponent<Button>();
+		useRadialMenu ^= change;
 		if (useRadialMenu)
+		{
 			info.Log("[C]hoose", "Radial");
+		}
 		else
+		{
 			info.Log("[C]hoose", "Tap");
+		}
 	}
 
 	public void SetRadialMenuDisplay(bool display)
 	{
-		for (int i = 0; i < CandidatesNum; ++i)
+		for (int i = 0; i < RadialNum; ++i)
 		{
-			ColorBlock cb = btn[i].colors;
-			Color c = cb.normalColor;
+			Color c = radialText[i].color;
 			c.a = display?1f:0;
-			cb.normalColor = c;
-			btn[i].colors = cb;
+			radialText[i].color = c;
 		}	
-		Color color = radialCandidates.color;
-		color.a = display?0.5f:0;
-		radialCandidates.color = color;
+		radialMenu.texture = (Texture)Resources.Load("RadialMenu", typeof(Texture));
+		Color color = radialMenu.color;
+		color.a = display?0.9f:0;
+		radialMenu.color = color;
 	}
 
 	public void HighLight(int delta)

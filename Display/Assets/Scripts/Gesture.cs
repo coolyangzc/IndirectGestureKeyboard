@@ -6,8 +6,8 @@ using System.Collections.Generic;
 public class Gesture : MonoBehaviour {
 
 	public Server server;
-	public Image keyboard, radialCandidates;
-	public RawImage cursor;
+	public Image keyboard;
+	public RawImage cursor, radialMenu;
 	public Text text;
 	public Lexicon lexicon;
 	
@@ -45,9 +45,9 @@ public class Gesture : MonoBehaviour {
 		}
 		else
 		{
-			size.x = 600;
-			size.y = 540;
-			pos.y = 0.3f;
+			size.x = 700;
+			size.y = 630;
+			pos.y = -0.1f;
 		}
 		keyboard.GetComponent<RectTransform>().sizeDelta = size;
 		keyboard.GetComponent<RectTransform>().localPosition = pos;
@@ -86,16 +86,6 @@ public class Gesture : MonoBehaviour {
 	{
 		localPoint = new Vector2(x, y);
 		length += Vector2.Distance(prePoint, localPoint);
-		if (length > 0.1f)
-		{
-			lexicon.under = lexicon.under.Replace("_", " ");
-			lexicon.underText.text = lexicon.under;
-			if (chooseCandidate && !Lexicon.useRadialMenu)
-			{
-				chooseCandidate = false;
-				lexicon.Accept(-1);
-			}
-		}
 		prePoint = localPoint;
 		if (Lexicon.mode == Lexicon.Mode.FixStart)
 		{
@@ -104,6 +94,41 @@ public class Gesture : MonoBehaviour {
 		}
 		cursor.transform.localPosition = new Vector3(x * keyboardWidth, y * keyboardHeight, -0.2f);
 		stroke.Add(new Vector2(x, y));
+
+		if (Lexicon.useRadialMenu && chooseCandidate)
+		{
+			float rx = x - StartPointRelative.x;
+			float ry = y - StartPointRelative.y;
+			if (Mathf.Abs(rx) > Mathf.Abs(ry))
+			{
+				if (rx > 0)
+					radialMenu.texture = (Texture)Resources.Load("RadialMenu_RIGHT", typeof(Texture));
+				else
+					radialMenu.texture = (Texture)Resources.Load("RadialMenu_LEFT", typeof(Texture));
+			}
+			else
+			{
+				if (ry > 0)
+					radialMenu.texture = (Texture)Resources.Load("RadialMenu_UP", typeof(Texture));
+				else
+					radialMenu.texture = (Texture)Resources.Load("RadialMenu_DOWN", typeof(Texture));
+			}
+		}
+		else
+		{
+			if (length > 0.1f)
+			{
+				lexicon.under = lexicon.under.Replace("_", " ");
+				lexicon.underText.text = lexicon.under;
+				if (chooseCandidate)
+				{
+					chooseCandidate = false;
+					lexicon.Accept(-1);
+				}
+			}
+		}
+
+
 	}
 
 	public void End(float x, float y)
@@ -114,6 +139,7 @@ public class Gesture : MonoBehaviour {
 			y = y - beginPoint.y + StartPointRelative.y;
 		}
 		cursor.transform.localPosition = new Vector3(x * keyboardWidth, y * keyboardHeight, -0.2f);
+		stroke.Add(new Vector2(x, y));
 		if (Lexicon.userStudy == Lexicon.UserStudy.Study1 || Lexicon.userStudy == Lexicon.UserStudy.Train)
 		{
 			lexicon.HighLight(+1);
@@ -128,7 +154,6 @@ public class Gesture : MonoBehaviour {
 					lexicon.NextCandidate();
 				} else
 				{
-					lexicon.Delete();
 					chooseCandidate = false;
 					lexicon.SetRadialMenuDisplay(false);
 				}
@@ -159,12 +184,13 @@ public class Gesture : MonoBehaviour {
 		}
 		if (y <= -0.5f && length <= 2.0f)
 		{
+			Debug.Log("Delete");
 			lexicon.Delete();
 			chooseCandidate = false;
 			return;
 		}
 
-		stroke.Add(new Vector2(x, y));
+
 		for (int i = 0; i < stroke.Count; ++i)
 			stroke[i] = new Vector2(stroke[i].x * keyboardWidth, stroke[i].y * keyboardHeight);
 		Lexicon.Candidate[] candidates = lexicon.Recognize(stroke.ToArray());
@@ -172,7 +198,14 @@ public class Gesture : MonoBehaviour {
 		{
 			chooseCandidate = true;
 			if (Lexicon.useRadialMenu)
+			{
+				if (Lexicon.mode == Lexicon.Mode.FixStart)
+				{
+					cursor.transform.localPosition = new Vector3(StartPointRelative.x * keyboardWidth, StartPointRelative.y * keyboardHeight, -0.2f);
+				}
+				cursor.GetComponent<TrailRendererHelper>().Reset();
 				lexicon.SetRadialMenuDisplay(true);
+			}
 		}
 		lexicon.SetCandidates(candidates);
 		string msg = "";
