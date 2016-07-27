@@ -4,13 +4,11 @@ using System.Collections;
 public class TrailRendererHelper : MonoBehaviour 
 {
 	protected TrailRenderer mTrail;
-	protected float mTime;
 	
 	// Use this for initialization
 	void Start () 
 	{
 		mTrail = gameObject.GetComponent<TrailRenderer>();
-		mTime = mTrail.time;
 	}
 	
 	// Update is called once per frame
@@ -19,15 +17,15 @@ public class TrailRendererHelper : MonoBehaviour
 	
 	}
 
-	public void Reset()
+	public void Reset(float time = 1f)
 	{
-		StartCoroutine(ResetTrails());
+		StartCoroutine(ResetTrails(time));
 	}
 
-	IEnumerator ResetTrails()
+	IEnumerator ResetTrails(float time)
 	{
 		mTrail.time = -1f;
 		yield return new WaitForEndOfFrame();
-		mTrail.time = mTime;
+		mTrail.time = time;
 	}
 }

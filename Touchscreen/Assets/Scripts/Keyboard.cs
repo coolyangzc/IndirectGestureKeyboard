@@ -11,12 +11,12 @@ public class Keyboard : MonoBehaviour
 	public DebugInfo debugInfo;
 	public Client client;
 
+	private int userStudy = 0;
 
 	private string path = "sdcard/";
 	private string buffer = "";
 	private string phraseInfo;
 	private StreamWriter writer;
-	private int userStudy = 0;
 
 	private const int CandidateNum = 5;
 
@@ -151,8 +151,22 @@ public class Keyboard : MonoBehaviour
 
 	public void SetCandidates(string[] word)
 	{
-		for (int i = 0; i < word.Length; ++i)
-			btn[i+1].GetComponentInChildren<Text>().text = word[i];
+
+		if (userStudy == 2)
+		{
+			string line = "";
+			int cnt = 0;
+			for (int i = 0; i < word.Length; ++i)
+				if (word[i].Length > 0)
+				{
+					line += " " + word[i];
+					cnt = i + 1;
+				}
+			buffer += "Candidates " + Time.time.ToString() + " " + cnt.ToString() + line + "\n";
+		}
+
+		//for (int i = 0; i < word.Length; ++i)
+			//btn[i+1].GetComponentInChildren<Text>().text = word[i];
 	}
 
 	public void ChangeRatio()
@@ -169,9 +183,9 @@ public class Keyboard : MonoBehaviour
 		SetKeyboard();
 	}
 
-	public void NewDataFile(string str)
+	public void NewDataFile(string str, int study)
 	{
-		userStudy = 1;
+		userStudy = study;
 		string fileName = str.Split('\n')[0]; 
 		phraseInfo = str.Split('\n')[1];
 		FileInfo file = new FileInfo(path + "//" + fileName);
@@ -183,10 +197,10 @@ public class Keyboard : MonoBehaviour
 		buffer = "";
 	}
 
-	public void EndDataFile(string mode)
+	public void EndDataFile(string msg)
 	{
 		buffer = phraseInfo + "\n" + 
-				 mode + "\n" + 
+				 msg + "\n" + 
 				 (widthRatio * overallRatio).ToString("0.0") + " " + (heightRatio * overallRatio).ToString("0.0") + "\n" +
 				 (keyboardWidth * widthRatio * overallRatio).ToString() + " " + (keyboardHeight * heightRatio * overallRatio).ToString() + "\n" +
 				 buffer + 
@@ -194,6 +208,26 @@ public class Keyboard : MonoBehaviour
 		writer.WriteLine(buffer);
 		writer.Close();
 		writer.Dispose();
+	}
+
+	public void Accept(string word)
+	{
+		buffer += "Accept " + Time.time.ToString() + " " + word + "\n";
+	}
+
+	public void SingleKey(string key)
+	{
+		buffer += "SingleKey " + Time.time.ToString() + " " + key + "\n";
+	}
+
+	public void Cancel()
+	{
+		buffer += "Cancel" + " " + Time.time.ToString() + "\n"; 
+	}
+
+	public void Delete()
+	{
+		buffer += "Delete" + " " + Time.time.ToString() + "\n";
 	}
 
 	public void Backspace()

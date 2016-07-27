@@ -99,8 +99,10 @@ public class PCControl : MonoBehaviour {
 			{
 				Lexicon.userStudy = Lexicon.UserStudy.Study2;
 				lexicon.ChangePhrase();
+				SendPhraseMessage();
 				info.Clear();
-				info.Log("Phrase", (phraseID+1).ToString() + "/60");
+				info.Log("Mode", Lexicon.mode.ToString());
+				info.Log("Phrase", (phraseID+1).ToString() + "/30");
 				server.Send("Get Keyboard Size", "");
 			}
 		}
@@ -160,14 +162,30 @@ public class PCControl : MonoBehaviour {
 					lexicon.HighLight(-100);
 					info.Log("Phrase", (phraseID+1).ToString() + "/60");
 					break;
+				case Lexicon.UserStudy.Study2:
+					server.Send("Study2 End Phrase", lexicon.inputText.text + "\n" + Lexicon.mode.ToString());
+					phraseID++;
+					if (phraseID % 10 == 0)
+					{
+						Lexicon.userStudy = Lexicon.UserStudy.Basic;
+						lexicon.ChangePhrase();
+						info.Log("Phrase", "Warmup");
+						return;
+					}
+					lexicon.ChangePhrase();
+					SendPhraseMessage();
+					info.Log("Phrase", (phraseID+1).ToString() + "/30");
+					break;
 			}
 		}
 		if (Input.GetKeyDown(KeyCode.Backspace))
 		{
-			if (Lexicon.userStudy == Lexicon.UserStudy.Study1)
-				server.Send("Study1 Backspace", "");
+			if (Lexicon.userStudy == Lexicon.UserStudy.Study1 || Lexicon.userStudy == Lexicon.UserStudy.Study2)
+				server.Send("Backspace", "");
 			if (Lexicon.userStudy == Lexicon.UserStudy.Study1 || Lexicon.userStudy == Lexicon.UserStudy.Train)
 				lexicon.HighLight(-100);
+			if (Lexicon.userStudy == Lexicon.UserStudy.Study2 || Lexicon.userStudy == Lexicon.UserStudy.Basic)
+				lexicon.Clear();
 		}
 
 	}

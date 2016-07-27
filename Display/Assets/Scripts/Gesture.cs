@@ -11,7 +11,7 @@ public class Gesture : MonoBehaviour {
 	public Text text;
 	public Lexicon lexicon;
 	
-	private bool chooseCandidate = false;
+	public bool chooseCandidate = false;
 	private bool ratioChanged = false;
 	private float keyboardWidth, keyboardHeight;
 	private float length;
@@ -60,10 +60,19 @@ public class Gesture : MonoBehaviour {
 
 	public void Begin(float x, float y)
 	{
-		cursor.GetComponent<TrailRendererHelper>().Reset();
+		if (chooseCandidate)
+			cursor.GetComponent<TrailRendererHelper>().Reset(0.2f);
+		else
+			cursor.GetComponent<TrailRendererHelper>().Reset(1.0f);
 		beginPoint = new Vector2(x, y);
 		prePoint = new Vector2(x, y);
 		length = 0;
+		if (Lexicon.useRadialMenu && chooseCandidate)
+		{
+			cursor.transform.localPosition = new Vector3(StartPointRelative.x * keyboardWidth, 
+			                                             StartPointRelative.y * keyboardHeight, -0.2f);
+			return;
+		}
 		switch (Lexicon.mode)
 		{
 			case (Lexicon.Mode.Basic):
@@ -89,7 +98,7 @@ public class Gesture : MonoBehaviour {
 		localPoint = new Vector2(x, y);
 		length += Vector2.Distance(prePoint, localPoint);
 		prePoint = localPoint;
-		if (Lexicon.mode == Lexicon.Mode.FixStart)
+		if (Lexicon.mode == Lexicon.Mode.FixStart || (Lexicon.useRadialMenu && chooseCandidate))
 		{
 			x = x - beginPoint.x + StartPointRelative.x;
 			y = y - beginPoint.y + StartPointRelative.y;
@@ -135,13 +144,11 @@ public class Gesture : MonoBehaviour {
 				}
 			}
 		}
-
-
 	}
 
 	public void End(float x, float y)
 	{
-		if (Lexicon.mode == Lexicon.Mode.FixStart)
+		if (Lexicon.mode == Lexicon.Mode.FixStart || (Lexicon.useRadialMenu && chooseCandidate))
 		{
 			x = x - beginPoint.x + StartPointRelative.x;
 			y = y - beginPoint.y + StartPointRelative.y;
@@ -157,7 +164,7 @@ public class Gesture : MonoBehaviour {
 		{
 			if (length < 0.1f)
 			{
-				if (!Lexicon.useRadialMenu )
+				if (!Lexicon.useRadialMenu)
 				{
 					lexicon.NextCandidate();
 					return;
@@ -169,21 +176,28 @@ public class Gesture : MonoBehaviour {
 				{
 					x -= StartPointRelative.x;
 					y -= StartPointRelative.y;
+					int choose = -1;
 					if (Mathf.Abs(x) > Mathf.Abs(y))
 					{
 						if (x > 0)
-							lexicon.Accept(2);
+							choose = 2;
 						else
-							lexicon.Accept(1);
+							choose = 1;
 					}
 					else
 					{
 						if (y > 0)
-							lexicon.Accept(0);
+							choose = 0;
 						else
-							lexicon.Accept(3);
+							choose = 3;
 					}
+					string word = lexicon.Accept(choose);
+					if (Lexicon.userStudy == Lexicon.UserStudy.Study2)
+						server.Send("Accept", word);
 				}
+				else
+					if (Lexicon.userStudy == Lexicon.UserStudy.Study2)
+						server.Send("Cancel", "");
 				chooseCandidate = false;
 				lexicon.SetRadialMenuDisplay(false);
 				return;
@@ -191,16 +205,18 @@ public class Gesture : MonoBehaviour {
 		}
 		if (Lexicon.useRadialMenu && length <= 0.05f)
 		{
-			lexicon.TapSingleKey(new Vector2(x * keyboardWidth, y * keyboardHeight));
+			char key = lexicon.TapSingleKey(new Vector2(x * keyboardWidth, y * keyboardHeight));
+			server.Send("SingleKey", key.ToString());
+			return;
 		}
 		if (x <= -0.5f && length <= 2.0f)
 		{
+			if (Lexicon.userStudy == Lexicon.UserStudy.Study2)
+				server.Send("Delete", "");
 			lexicon.Delete();
 			chooseCandidate = false;
 			return;
 		}
-
-
 		for (int i = 0; i < stroke.Count; ++i)
 			stroke[i] = new Vector2(stroke[i].x * keyboardWidth, stroke[i].y * keyboardHeight);
 		Lexicon.Candidate[] candidates = lexicon.Recognize(stroke.ToArray());
@@ -209,17 +225,14 @@ public class Gesture : MonoBehaviour {
 			chooseCandidate = true;
 			if (Lexicon.useRadialMenu)
 			{
-				if (Lexicon.mode == Lexicon.Mode.FixStart)
-				{
-					cursor.transform.localPosition = new Vector3(StartPointRelative.x * keyboardWidth, StartPointRelative.y * keyboardHeight, -0.2f);
-				}
+				cursor.transform.localPosition = new Vector3(StartPointRelative.x * keyboardWidth, StartPointRelative.y * keyboardHeight, -0.2f);
 				cursor.GetComponent<TrailRendererHelper>().Reset();
 				lexicon.SetRadialMenuDisplay(true);
 			}
 		}
 		lexicon.SetCandidates(candidates);
 		string msg = "";
-		for (int i = 1; i < candidates.Length; ++i)
+		for (int i = 0; i < candidates.Length; ++i)
 			if (i < candidates.Length - 1)
 				msg += candidates[i].word + ",";
 			else

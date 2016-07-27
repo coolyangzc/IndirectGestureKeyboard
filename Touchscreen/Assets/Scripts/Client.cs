@@ -89,12 +89,28 @@ public class Client : MonoBehaviour
 				keyboard.SetCandidates(msg.Split(','));
 				break;
 			case "Study1 New Phrase":
-				keyboard.NewDataFile(msg);
+				keyboard.NewDataFile(msg, 1);
+				break;
+			case "Study2 New Phrase":
+				keyboard.NewDataFile(msg, 2);
 				break;
 			case "Study1 End Phrase":
+			case "Study2 End Phrase":
 				keyboard.EndDataFile(msg);
 				break;
-			case "Study1 Backspace":
+			case "Accept":
+				keyboard.Accept(msg);
+				break;
+			case "SingleKey":
+				keyboard.SingleKey(msg);
+				break;
+			case "Cancel":
+				keyboard.Cancel();
+				break;
+			case "Delete":
+				keyboard.Delete();
+				break;
+			case "Backspace":
 				keyboard.Backspace();
 				break;
 			case "Change Ratio":

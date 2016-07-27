@@ -8,6 +8,7 @@ public class Lexicon : MonoBehaviour
 	public Image keyboard, candidates;
 	public RawImage radialMenu;
 	public Info info;
+	public Gesture gesture;
 	public Text inputText, underText, phraseText;
 	public string text = "", under = "";
 	
@@ -484,7 +485,7 @@ public class Lexicon : MonoBehaviour
 		btn[choose].Select();
 	}
 
-	public void Accept(int id)
+	public string Accept(int id)
 	{
 		if (id == -1)
 			id = choose;
@@ -502,7 +503,7 @@ public class Lexicon : MonoBehaviour
 			under += underline(' ', cands[id].word.Length);
 			underText.text = under;
 		}
-
+		string word = cands[id].word;
 		for (int i = 0; i < CandidatesNum; ++i)
 		{
 			btn[i].GetComponentInChildren<Text>().text = "";
@@ -511,6 +512,7 @@ public class Lexicon : MonoBehaviour
 
 		for (int i = 0; i < RadialNum; ++i)
 			radialText[i].text = "";
+		return word;
 	}
 
 	public void Delete()
@@ -543,7 +545,23 @@ public class Lexicon : MonoBehaviour
 			underText.text = under;
 	}
 
-	public void TapSingleKey(Vector2 point)
+	public void Clear()
+	{
+		for (int i = 0; i < CandidatesNum; ++i)
+		{
+			btn[i].GetComponentInChildren<Text>().text = "";
+			if (cands[i] != null)
+				cands[i].word = "";
+		}
+		for (int i = 0; i < RadialNum; ++i)
+			radialText[i].text = "";
+		SetRadialMenuDisplay(false);
+		gesture.chooseCandidate = false;
+		history.Clear();
+		inputText.text = underText.text = under = text = "";
+	}
+
+	public char TapSingleKey(Vector2 point)
 	{
 		float minDis = float.MaxValue;
 		char key = ' ';
@@ -562,6 +580,7 @@ public class Lexicon : MonoBehaviour
 		text += key.ToString();
 		inputText.text = text;
 		history.Add(new Candidate(key.ToString()));
+		return key;
 
 	}
 
@@ -623,15 +642,9 @@ public class Lexicon : MonoBehaviour
 		else
 			phraseText.text = phrase[phraseList[id]];
 		words = phraseText.text.Split(' ');
-		history.Clear();
-		inputText.text = underText.text = under = text = "";
-		for (int i = 0; i < CandidatesNum; ++i)
-		{
-			btn[i].GetComponentInChildren<Text>().text = "";
-			if (cands[i] != null)
-				cands[i].word = "";
-		}
-		btn[0].Select();
+		Clear();
+		if (!useRadialMenu)
+			btn[0].Select();
 	}
 
 	public void ChangeCandidatesChoose(bool change)
