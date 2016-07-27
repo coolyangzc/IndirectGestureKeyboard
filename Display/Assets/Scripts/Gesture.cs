@@ -189,9 +189,12 @@ public class Gesture : MonoBehaviour {
 				return;
 			}
 		}
-		if (y <= -0.5f && length <= 2.0f)
+		if (Lexicon.useRadialMenu && length <= 0.05f)
 		{
-			Debug.Log("Delete");
+			lexicon.TapSingleKey(new Vector2(x * keyboardWidth, y * keyboardHeight));
+		}
+		if (x <= -0.5f && length <= 2.0f)
+		{
 			lexicon.Delete();
 			chooseCandidate = false;
 			return;

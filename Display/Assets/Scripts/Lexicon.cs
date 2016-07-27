@@ -23,7 +23,7 @@ public class Lexicon : MonoBehaviour
 	public static Vector2 StartPointRelative = new Vector2(0f, 0f);
 
 	//Parameters
-	private float endOffset = 2.0f;
+	private float endOffset = 2.5f;
 	private float radiusMul = 0.5f, radius = 0;
 	private float languageWeight = 0.00001f;
 	private bool debugOn = false;
@@ -113,9 +113,9 @@ public class Lexicon : MonoBehaviour
 	{
 		public string word;
 		public float location, shape, language, confidence, DTWDistance;
-		public Candidate()
+		public Candidate(string word_ = "")
 		{
-			word = "";
+			word = word_;
 			confidence = 0;
 			DTWDistance = float.MaxValue;
 		}
@@ -188,7 +188,7 @@ public class Lexicon : MonoBehaviour
 
 			}
 		}
-		float l = dict[dict.Count - 1].frequency, r = dict[1000].frequency; 
+		float l = dict[dict.Count - 1].frequency, r = dict[2000].frequency; 
 		foreach (Entry entry in dict)
 		{
 			if (entry.frequency >= r)
@@ -308,14 +308,14 @@ public class Lexicon : MonoBehaviour
 			case (Formula.DTW):
 				for (int i = 0; i < SampleSize; ++i)
 				{
-					float gap = float.MaxValue;
+					//float gap = float.MaxValue;
 					for (int j = DTWL[i]; j < DTWR[i]; ++j)
 					{
 						dtw[i+1][j+1] = Vector2.Distance(A[i], B[j]) + Mathf.Min(dtw[i][j], Mathf.Min(dtw[i][j+1], dtw[i+1][j]));
-						gap = Mathf.Min(gap, dtw[i+1][j+1]);
+						//gap = Mathf.Min(gap, dtw[i+1][j+1]);
 					}
-					if (gap > candsTmp[CandidatesNum - 1].DTWDistance)
-						return 0;
+					//if (gap > candsTmp[CandidatesNum - 1].DTWDistance)
+						//return 0;
 				}
 				dis = dtw[SampleSize][SampleSize];
 				break;
@@ -395,7 +395,6 @@ public class Lexicon : MonoBehaviour
 	{
 
 		Vector2[] stroke = TemporalSampling(rawStroke);
-		Debug.Log(stroke.Length.ToString());
 		Vector2[] nStroke = Normalize(stroke);
 
 		for (int i = 0; i < CandidatesNum; ++i)
@@ -437,8 +436,6 @@ public class Lexicon : MonoBehaviour
 					break;
 				}
 		}
-		for (int i = 0; i < CandidatesNum; ++i)
-			Debug.Log(candsTmp[i].word + ":" + candsTmp[i].DTWDistance.ToString());
 		return candsTmp;
 	}
 
@@ -544,6 +541,28 @@ public class Lexicon : MonoBehaviour
 		inputText.text = text;
 		if (!useRadialMenu)
 			underText.text = under;
+	}
+
+	public void TapSingleKey(Vector2 point)
+	{
+		float minDis = float.MaxValue;
+		char key = ' ';
+		for (int i = 0; i < 26; ++i)
+		{
+			float dis = Vector2.Distance(point, keyPos[i]);
+			if (dis < minDis)
+			{
+				minDis = dis;
+				key = (char)(i + 97);
+			}
+		}
+
+		if (text.Length > 0)
+			text += " ";
+		text += key.ToString();
+		inputText.text = text;
+		history.Add(new Candidate(key.ToString()));
+
 	}
 
 	public void SetDebugDisplay(bool debugOn)
