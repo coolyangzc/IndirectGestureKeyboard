@@ -18,7 +18,7 @@ public class Lexicon : MonoBehaviour
 	private const int RadialNum = 4;
 	private const int CandidatesNum = 5;
 	private const float DTWConst = 0.1f;
-	private const float AnyStartThr = 3.0f;
+	private const float AnyStartThr = 2.5f;
 	private float KeyWidth = 0f;
 	public static Vector2 StartPoint;
 	public static Vector2 StartPointRelative = new Vector2(0f, 0f);
@@ -407,6 +407,8 @@ public class Lexicon : MonoBehaviour
 			newCandidate.word = entry.word;
 			if (mode == Mode.AnyStart)
 			{
+				if (Vector2.Distance(entry.locationSample[0][0], stroke[0]) > AnyStartThr * KeyWidth)
+					continue;
 				entry.pts.Insert(0, stroke[0]);
 				entry.locationSample[(int)mode] = TemporalSampling(entry.pts.ToArray());
 				entry.shapeSample[(int)mode] = Normalize(entry.locationSample[(int)mode]);

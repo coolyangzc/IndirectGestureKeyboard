@@ -102,7 +102,7 @@ public class PCControl : MonoBehaviour {
 				SendPhraseMessage();
 				info.Clear();
 				info.Log("Mode", Lexicon.mode.ToString());
-				info.Log("Phrase", (phraseID+1).ToString() + "/30");
+				info.Log("Phrase", (phraseID+1).ToString() + "/20");
 				server.Send("Get Keyboard Size", "");
 			}
 		}
@@ -174,7 +174,7 @@ public class PCControl : MonoBehaviour {
 					}
 					lexicon.ChangePhrase();
 					SendPhraseMessage();
-					info.Log("Phrase", (phraseID+1).ToString() + "/30");
+					info.Log("Phrase", (phraseID+1).ToString() + "/20");
 					break;
 			}
 		}

@@ -61,7 +61,7 @@ public class Gesture : MonoBehaviour {
 	public void Begin(float x, float y)
 	{
 		if (chooseCandidate)
-			cursor.GetComponent<TrailRendererHelper>().Reset(0.2f);
+			cursor.GetComponent<TrailRendererHelper>().Reset(0.3f);
 		else
 			cursor.GetComponent<TrailRendererHelper>().Reset(1.0f);
 		beginPoint = new Vector2(x, y);
@@ -200,6 +200,11 @@ public class Gesture : MonoBehaviour {
 						server.Send("Cancel", "");
 				chooseCandidate = false;
 				lexicon.SetRadialMenuDisplay(false);
+				if (Lexicon.mode == Lexicon.Mode.FixStart)
+				{
+					cursor.GetComponent<TrailRendererHelper>().Reset();
+					cursor.transform.localPosition = new Vector3(StartPointRelative.x * keyboardWidth, StartPointRelative.y * keyboardHeight, -0.2f);
+				}
 				return;
 			}
 		}
@@ -209,7 +214,7 @@ public class Gesture : MonoBehaviour {
 			server.Send("SingleKey", key.ToString());
 			return;
 		}
-		if (x <= -0.5f && length <= 2.0f)
+		if (y <= -0.5f && length <= 2.0f)
 		{
 			if (Lexicon.userStudy == Lexicon.UserStudy.Study2)
 				server.Send("Delete", "");
@@ -230,6 +235,7 @@ public class Gesture : MonoBehaviour {
 				lexicon.SetRadialMenuDisplay(true);
 			}
 		}
+
 		lexicon.SetCandidates(candidates);
 		string msg = "";
 		for (int i = 0; i < candidates.Length; ++i)
