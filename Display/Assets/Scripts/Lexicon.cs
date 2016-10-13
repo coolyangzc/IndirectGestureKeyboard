@@ -9,6 +9,7 @@ public class Lexicon : MonoBehaviour
 	public RawImage radialMenu;
 	public Info info;
 	public Gesture gesture;
+	public Lexicon lexicon;
 	public Text inputText, underText, phraseText;
 	public string text = "", under = "";
 	
@@ -137,8 +138,8 @@ public class Lexicon : MonoBehaviour
 	void Start () 
 	{
 		info.Log("Mode", mode.ToString());
-		info.Log("[L]ocation", locationFormula.ToString());
-		info.Log("[S]hape", shapeFormula.ToString());
+		//info.Log("[L]ocation", locationFormula.ToString());
+		//info.Log("[S]hape", shapeFormula.ToString());
 		history.Clear();
 		ChangeCandidatesChoose(false);
 		SetRadialMenuDisplay(false);
@@ -148,6 +149,9 @@ public class Lexicon : MonoBehaviour
 		ChangeEndOffset(0);
 		InitDTW();
 		InitPhrases();
+
+		//Alternative Start Option
+		ChangeMode();
 	}
 	
 	// Update is called once per frame
@@ -607,7 +611,8 @@ public class Lexicon : MonoBehaviour
 		locationFormula = locationFormula + 1;
 		if (locationFormula >= Formula.End)
 			locationFormula = 0;
-		info.Log("[L]ocation", locationFormula.ToString());
+		if (debugOn)
+			info.Log("[L]ocation", locationFormula.ToString());
 	}
 
 	public void ChangeShapeFormula()
@@ -615,7 +620,8 @@ public class Lexicon : MonoBehaviour
 		shapeFormula = shapeFormula + 1;
 		if (shapeFormula >= Formula.End)
 			shapeFormula = 0;
-		info.Log("[S]hape", shapeFormula.ToString());
+		if (debugOn)
+			info.Log("[S]hape", shapeFormula.ToString());
 	}
 
 	public void ChangeRadius(float delta)
@@ -624,7 +630,8 @@ public class Lexicon : MonoBehaviour
 			return;
 		radiusMul += delta;
 		radius = KeyWidth * radiusMul;
-		info.Log("[R]adius", radiusMul.ToString("0.0"));
+		if (debugOn)
+			info.Log("[R]adius", radiusMul.ToString("0.0"));
 	}
 
 	public void ChangeEndOffset(float delta)
@@ -632,7 +639,8 @@ public class Lexicon : MonoBehaviour
 		if (endOffset + delta <= 0)
 			return;
 		endOffset += delta;
-		info.Log("[E]ndOffset", endOffset.ToString("0.0"));
+		if (debugOn)
+			info.Log("[E]ndOffset", endOffset.ToString("0.0"));
 	}
 
 	public void ChangePhrase(int id = -1)
@@ -656,14 +664,15 @@ public class Lexicon : MonoBehaviour
 		for (int i = 0; i < CandidatesNum; ++i)
 			btn[i] = candidates.transform.FindChild("Candidate" + i.ToString()).GetComponent<Button>();
 		useRadialMenu ^= change;
-		if (useRadialMenu)
-		{
-			info.Log("[C]hoose", "Radial");
-		}
-		else
-		{
-			info.Log("[C]hoose", "Tap");
-		}
+		if (debugOn)
+			if (useRadialMenu)
+			{
+				info.Log("[C]hoose", "Radial");
+			}
+			else
+			{
+				info.Log("[C]hoose", "Tap");
+			}
 	}
 
 	public void SetRadialMenuDisplay(bool display)

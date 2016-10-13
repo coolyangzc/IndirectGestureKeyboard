@@ -45,6 +45,10 @@ public class Keyboard : MonoBehaviour
 		keyboardWidth = keyboard.rectTransform.rect.width;
 		keyboardHeight = keyboard.rectTransform.rect.height;
 		SetKeyboard();
+		ZoomOut(true);ZoomOut(true);
+		ZoomOut(false);ZoomOut(false);
+		ZoomOut(false, true);
+		ChangeRatio();
 	}
 	
 	// Update is called once per frame

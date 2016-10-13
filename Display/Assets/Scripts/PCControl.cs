@@ -30,6 +30,11 @@ public class PCControl : MonoBehaviour {
 	{
 		distance = canvas.transform.localPosition.z;
 		info.Log("Debug", debugOn.ToString());
+
+		//Alternative Start Option
+		gesture.ChangeRatio();
+		lexicon.CalcKeyLayout();
+		lexicon.CalcLexicon();
 	}
 	
 	// Update is called once per frame

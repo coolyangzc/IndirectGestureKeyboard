@@ -160,6 +160,11 @@ public class Gesture : MonoBehaviour {
 			lexicon.HighLight(+1);
 			return;
 		}
+		if (Lexicon.mode == Lexicon.Mode.FixStart)
+		{
+			cursor.GetComponent<TrailRendererHelper>().Reset();
+			cursor.transform.localPosition = new Vector3(StartPointRelative.x * keyboardWidth, StartPointRelative.y * keyboardHeight, -0.2f);
+		}
 		if (chooseCandidate)
 		{
 			if (length < 0.1f)
@@ -200,11 +205,7 @@ public class Gesture : MonoBehaviour {
 						server.Send("Cancel", "");
 				chooseCandidate = false;
 				lexicon.SetRadialMenuDisplay(false);
-				if (Lexicon.mode == Lexicon.Mode.FixStart)
-				{
-					cursor.GetComponent<TrailRendererHelper>().Reset();
-					cursor.transform.localPosition = new Vector3(StartPointRelative.x * keyboardWidth, StartPointRelative.y * keyboardHeight, -0.2f);
-				}
+
 				return;
 			}
 		}
@@ -220,6 +221,11 @@ public class Gesture : MonoBehaviour {
 				server.Send("Delete", "");
 			lexicon.Delete();
 			chooseCandidate = false;
+			return;
+		}
+		if (x >= 0.6f && length <= 2.0f)
+		{
+			lexicon.ChangePhrase();
 			return;
 		}
 		for (int i = 0; i < stroke.Count; ++i)
