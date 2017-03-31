@@ -88,6 +88,8 @@ public class PCControl : MonoBehaviour {
 				lexicon.ChangePhrase(phraseID);
 				SendPhraseMessage();
 				lexicon.HighLight(-100);
+
+
 				info.Clear();
 				info.Log("Phrase", (phraseID+1).ToString() + "/60");
 				server.Send("Get Keyboard Size", "");

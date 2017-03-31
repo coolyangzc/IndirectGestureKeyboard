@@ -45,13 +45,8 @@ public class Server : MonoBehaviour
 	
 	string GetIP()
 	{
-		IPHostEntry host;
-        string localIP = "";
-        host = Dns.GetHostEntry(Dns.GetHostName());
-		var addr = host.AddressList;
-		localIP = addr[addr.Length-1].ToString();
-        return localIP;
-	}
+        return Network.player.ipAddress;
+    }
 	
 	void StartServer() 
 	{
