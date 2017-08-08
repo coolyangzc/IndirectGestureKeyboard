@@ -32,7 +32,7 @@ public class Keyboard : MonoBehaviour
 	{
 		for (int i = 1; i < CandidateNum; ++i)
 		{
-			btn[i] = candidates.transform.FindChild("Candidate" + i.ToString()).GetComponent<Button>();
+			btn[i] = candidates.transform.Find("Candidate" + i.ToString()).GetComponent<Button>();
 		}
 		/*
 		btn[1].onClick.AddListener(delegate(){ChooseCandidate(1);});

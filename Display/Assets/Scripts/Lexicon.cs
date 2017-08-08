@@ -166,7 +166,7 @@ public class Lexicon : MonoBehaviour
 		KeyWidth = width * 0.1f;
 		for (int i = 0; i < 26; ++i)
 		{
-			RectTransform key = keyboard.rectTransform.FindChild(((char)(i + 65)).ToString()).GetComponent<RectTransform>();
+			RectTransform key = keyboard.rectTransform.Find(((char)(i + 65)).ToString()).GetComponent<RectTransform>();
 			keyPos[i] = new Vector2(key.localPosition.x, key.localPosition.y);
 			Debug.Log(((char)(i + 65)).ToString() + ":" + keyPos[i].x.ToString() + "," + keyPos[i].y.ToString());
 		}
@@ -660,9 +660,9 @@ public class Lexicon : MonoBehaviour
 	public void ChangeCandidatesChoose(bool change)
 	{
 		for (int i = 0; i < RadialNum; ++i)
-			radialText[i] = radialMenu.transform.FindChild("Candidate" + i.ToString()).GetComponent<Text>();
+			radialText[i] = radialMenu.transform.Find("Candidate" + i.ToString()).GetComponent<Text>();
 		for (int i = 0; i < CandidatesNum; ++i)
-			btn[i] = candidates.transform.FindChild("Candidate" + i.ToString()).GetComponent<Button>();
+			btn[i] = candidates.transform.Find("Candidate" + i.ToString()).GetComponent<Button>();
 		useRadialMenu ^= change;
 		if (debugOn)
 			if (useRadialMenu)

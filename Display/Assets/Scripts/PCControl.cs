@@ -4,7 +4,6 @@ using System.Collections;
 
 public class PCControl : MonoBehaviour {
 
-	public GameObject trackingSpace;
 	public Server server;
 	public Canvas canvas;
 	public Image keyboard;
@@ -23,7 +22,6 @@ public class PCControl : MonoBehaviour {
 	private float MinDistance = 4;
 	private float MaxDistance = 12;
 	private float ScrollKeySpeed = -1f;
-	private float rotationX, rotationY;
 	
 	// Use this for initialization
 	void Start() 
@@ -98,9 +96,9 @@ public class PCControl : MonoBehaviour {
 				c.a = 0;
 				cb.normalColor = c;
 				userID.colors = cb;
-				c = userID.transform.FindChild("Text").GetComponent<Text>().color;
+				c = userID.transform.Find("Text").GetComponent<Text>().color;
 				c.a = 0;
-				userID.transform.FindChild("Text").GetComponent<Text>().color = c;
+				userID.transform.Find("Text").GetComponent<Text>().color = c;
 			}
 			if (Input.GetKeyDown(KeyCode.Alpha2))
 			{
@@ -219,10 +217,6 @@ public class PCControl : MonoBehaviour {
 		{
 			Cursor.lockState = CursorLockMode.Locked;
 			Cursor.visible = false;
-			rotationX = trackingSpace.transform.localEulerAngles.y + Input.GetAxis("Mouse X") * 5f;
-			rotationY += Input.GetAxis("Mouse Y") * 5f; 
-			rotationY = Mathf.Clamp(rotationY, -60f, 60f);
-			trackingSpace.transform.localEulerAngles = new Vector3(-rotationY, rotationX, 0);
 		} else 
 		{
 			Cursor.lockState = CursorLockMode.None;
