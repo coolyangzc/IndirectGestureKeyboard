@@ -215,7 +215,7 @@ public class Gesture : MonoBehaviour {
 			server.Send("SingleKey", key.ToString());
 			return;
 		}
-		if (y <= -0.5f && length <= 2.0f)
+		if (x <= -0.5f && length <= 2.0f)
 		{
 			if (Lexicon.userStudy == Lexicon.UserStudy.Study2)
 				server.Send("Delete", "");

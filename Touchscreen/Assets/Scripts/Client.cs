@@ -1,6 +1,25 @@
 ﻿using UnityEngine;
 using UnityEngine.UI;
-using System.Collections;
+using UnityEngine.Networking;
+
+public class MyMsgType
+{
+    public static short Message = 1024;
+};
+
+public class MyMessage : MessageBase
+{
+    public string tag, msg;
+    public MyMessage()
+    {
+
+    }
+    public MyMessage(string tag, string msg)
+    {
+        this.tag = tag;
+        this.msg = msg;
+    }
+}
 
 public class Client : MonoBehaviour 
 {
@@ -12,6 +31,7 @@ public class Client : MonoBehaviour
 	public DebugInfo debugInfo;
 	private string serverIP = "";
 	private int port = 9973;
+    private NetworkClient client;
 
 	// Use this for initialization
 	void Start() 
@@ -34,37 +54,24 @@ public class Client : MonoBehaviour
 
 	public void StartConnect()
 	{
-		NetworkConnectionError error = Network.Connect(serverIP, port);
-		switch (error) 
-		{
-			case NetworkConnectionError.NoError:
-				break;
-			default:
-				Debug.Log("client:" + error);
-				debugInfo.Log("Client", error.ToString());
-				break;
-		}
+        client = new NetworkClient();
+        client.RegisterHandler(MyMsgType.Message, ReceiveMessage);
+        client.Connect(serverIP, port);
 	}
 	
 	public void Send(string tag, string message)
 	{
-		Send(tag + ":" + message);
-	}
-
-	public void Send(string message)
-	{
-        GetComponent<NetworkView>().RPC("ReceiveMessage", RPCMode.All, message);
+        client.Send(MyMsgType.Message, new MyMessage(tag, message));
     }
 	
-	[RPC]
-	void ReceiveMessage(string message, NetworkMessageInfo info)
-	{
-		Debug.Log(message);
-		string tag = message.Split(':')[0];
-		string msg = message.Split(':')[1];
-		switch (tag)
-		{
-			case "TouchScreen Keyboard Width":
+    void ReceiveMessage(NetworkMessage netMsg)
+    {
+        //Debug.Log(message);
+        var m = netMsg.ReadMessage<MyMessage>();
+        string msg = m.msg;
+        switch (m.tag)
+        { 
+            case "TouchScreen Keyboard Width":
 				if (msg == "+")
 					keyboard.ZoomIn(true);
 				else if (msg == "-")
