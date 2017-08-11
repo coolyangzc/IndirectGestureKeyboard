@@ -20,14 +20,14 @@ public class Lexicon : MonoBehaviour
 	private const int CandidatesNum = 5;
 	private const float DTWConst = 0.1f;
 	private const float AnyStartThr = 2.5f;
+    private const float eps = 1e-6;
 	private float KeyWidth = 0f;
 	public static Vector2 StartPoint;
 	public static Vector2 StartPointRelative = new Vector2(0f, 0f);
 
 	//Parameters
 	private float endOffset = 2.5f;
-	private float radiusMul = 0.5f, radius = 0;
-	private float languageWeight = 0.00001f;
+	private float radiusMul = 0.3f, radius = 0;
 	private bool debugOn = false;
 
 	public static bool useRadialMenu = true;
@@ -175,7 +175,7 @@ public class Lexicon : MonoBehaviour
 
 	public void CalcLexicon()
 	{
-		TextAsset textAsset = Resources.Load("corpus") as TextAsset;
+		TextAsset textAsset = Resources.Load("ANC-written-noduplicate") as TextAsset;
 		string[] lines = textAsset.text.Split('\n');
 		int size = lines.Length;
 		if (LexiconSize > 0)
@@ -185,14 +185,14 @@ public class Lexicon : MonoBehaviour
 		for (int i = 0; i < size; ++i)
 		{
 			string line = lines[i];
-			Entry entry = new Entry(line.Split('	')[0], int.Parse(line.Split('	')[1]), this);
+			Entry entry = new Entry(line.Split(' ')[0], int.Parse(line.Split(' ')[1]), this);
 			if (entry.locationSample[(int)Mode.FixStart].Length > 1)
 			{
 				dict.Add(entry);
-				allWords.Add(line.Split('	')[0]);
-
+				allWords.Add(entry.word);
 			}
 		}
+        /*
 		float l = dict[dict.Count - 1].frequency, r = dict[2000].frequency; 
 		foreach (Entry entry in dict)
 		{
@@ -201,7 +201,9 @@ public class Lexicon : MonoBehaviour
 			else
 				//entry.languageModelPossibilty = 1;
 				entry.languageModelPossibilty = 0.8f + (entry.frequency - l) / (r - l) * 0.2f;
-		}
+		}*/
+        foreach (Entry entry in dict)
+            entry.languageModelPossibilty = entry.frequency;
 
 	}
 
@@ -626,7 +628,7 @@ public class Lexicon : MonoBehaviour
 
 	public void ChangeRadius(float delta)
 	{
-		if (radiusMul + delta <= 0)
+		if (radiusMul + delta <= eps)
 			return;
 		radiusMul += delta;
 		radius = KeyWidth * radiusMul;
