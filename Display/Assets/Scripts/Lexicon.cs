@@ -20,7 +20,7 @@ public class Lexicon : MonoBehaviour
 	private const int CandidatesNum = 5;
 	private const float DTWConst = 0.1f;
 	private const float AnyStartThr = 2.5f;
-    private const float eps = 1e-6;
+    private const float eps = 1e-6f;
 	private float KeyWidth = 0f;
 	public static Vector2 StartPoint;
 	public static Vector2 StartPointRelative = new Vector2(0f, 0f);
@@ -192,18 +192,8 @@ public class Lexicon : MonoBehaviour
 				allWords.Add(entry.word);
 			}
 		}
-        /*
-		float l = dict[dict.Count - 1].frequency, r = dict[2000].frequency; 
-		foreach (Entry entry in dict)
-		{
-			if (entry.frequency >= r)
-				entry.languageModelPossibilty = 1;
-			else
-				//entry.languageModelPossibilty = 1;
-				entry.languageModelPossibilty = 0.8f + (entry.frequency - l) / (r - l) * 0.2f;
-		}*/
         foreach (Entry entry in dict)
-            entry.languageModelPossibilty = entry.frequency;
+            entry.languageModelPossibilty = Mathf.Log(entry.frequency);
 
 	}
 

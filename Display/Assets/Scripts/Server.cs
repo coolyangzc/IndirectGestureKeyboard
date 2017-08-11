@@ -27,7 +27,6 @@ public class Server : MonoBehaviour
 	public Lexicon lexicon;
 	public Info info;
 
-	private int clientCount = 0;
 	private int port = 9973;
 	private string IP;
 	

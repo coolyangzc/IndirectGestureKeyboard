@@ -176,10 +176,10 @@ public class Keyboard : MonoBehaviour
 	public void ChangeRatio()
 	{
 		Vector2 v = keyboard.GetComponent<RectTransform>().anchorMax;
-		if (ratioChanged)
-			v.y = 0.3f;
-		else
-			v.y = 0.5f;
+        if (ratioChanged)
+            v.y = 0.05f + 0.16875f;
+        else
+            v.y = 0.05f + 0.16875f * 3;
 		keyboard.GetComponent<RectTransform>().anchorMax = v;
 		keyboardWidth = keyboard.rectTransform.rect.width;
 		keyboardHeight = keyboard.rectTransform.rect.height;
