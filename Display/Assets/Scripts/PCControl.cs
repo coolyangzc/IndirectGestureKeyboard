@@ -15,7 +15,7 @@ public class PCControl : MonoBehaviour {
 	//public Text userID;
 
 	private bool mouseHidden = false;
-	private bool debugOn = false;
+	private bool debugOn = true;
 	private bool ratioChanged = false;
 	private float distance = 0;
 
@@ -28,9 +28,10 @@ public class PCControl : MonoBehaviour {
 	{
 		distance = canvas.transform.localPosition.z;
 		info.Log("Debug", debugOn.ToString());
+        lexicon.SetDebugDisplay(debugOn);
 
-		//Alternative Start Option
-		gesture.ChangeRatio();
+        //Alternative Start Option
+        gesture.ChangeRatio();
 		lexicon.CalcKeyLayout();
 		lexicon.CalcLexicon();
 	}

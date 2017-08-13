@@ -26,7 +26,7 @@ public class Lexicon : MonoBehaviour
 	public static Vector2 StartPointRelative = new Vector2(0f, 0f);
 
 	//Parameters
-	private float endOffset = 2.5f;
+	private float endOffset = 3.0f;
 	private float radiusMul = 0.3f, radius = 0;
 	private bool debugOn = false;
 
@@ -193,9 +193,9 @@ public class Lexicon : MonoBehaviour
 			}
 		}
         foreach (Entry entry in dict)
-            entry.languageModelPossibilty = Mathf.Log(entry.frequency);
-
-	}
+            //entry.languageModelPossibilty = Mathf.Log(entry.frequency);
+            entry.languageModelPossibilty = entry.frequency;
+    }
 
 	void InitDTW()
 	{
@@ -277,7 +277,7 @@ public class Lexicon : MonoBehaviour
 		return under;
 	}
 
-	float Match(Vector2[] A, Vector2[] B, Formula formula)
+	float Match(Vector2[] A, Vector2[] B, Formula formula, bool isShape = false)
 	{
 		if (A.Length != B.Length || formula == Formula.Null)
 			return 0;
@@ -292,14 +292,12 @@ public class Lexicon : MonoBehaviour
 				for (int i = 0; i < SampleSize; ++i)
 				{
 					dis += Vector2.Distance(A[i], B[i]);
-
 				}
 				break;
 			case (Formula.MinusR):
 				for (int i = 0; i < SampleSize; ++i)
 				{
 					dis += Mathf.Max(0, Vector2.Distance(A[i], B[i]) - radius);
-		
 				}
 				break;
 			case (Formula.DTW):
@@ -317,10 +315,13 @@ public class Lexicon : MonoBehaviour
 				dis = dtw[SampleSize][SampleSize];
 				break;
 		}
-		
 		dis /= SampleSize;
-		return Mathf.Exp(-0.5f * (dis / radius) * (dis / radius));
-	}
+        if (!isShape)
+	        return Mathf.Exp(-0.5f * dis * dis / radius / radius);
+        else
+            return Mathf.Exp(-0.5f * dis * dis / (radiusMul*0.1f) / (radiusMul*0.1f));
+
+    }
 
 	public Vector2[] TemporalSampling(Vector2[] stroke)
 	{
@@ -417,7 +418,7 @@ public class Lexicon : MonoBehaviour
 				newCandidate.DTWDistance = dis * SampleSize;
 			if (shapeFormula != Formula.Null)
 			{
-				newCandidate.shape = Match(nStroke, entry.shapeSample[(int)mode], shapeFormula);
+				newCandidate.shape = Match(nStroke, entry.shapeSample[(int)mode], shapeFormula, true);
 				if (newCandidate.shape == 0)
 					continue;
 				newCandidate.confidence *= newCandidate.shape;

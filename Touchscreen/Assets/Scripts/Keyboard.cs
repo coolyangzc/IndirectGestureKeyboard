@@ -10,10 +10,11 @@ public class Keyboard : MonoBehaviour
 	public Button button;
 	public DebugInfo debugInfo;
 	public Client client;
+    public GameObject connectWindow;
 
 	private int userStudy = 0;
 
-	private string path = "sdcard/";
+	private string path = "sdcard//G-Keyboard//";
 	private string buffer = "";
 	private string phraseInfo;
 	private StreamWriter writer;
@@ -192,13 +193,14 @@ public class Keyboard : MonoBehaviour
 		userStudy = study;
 		string fileName = str.Split('\n')[0]; 
 		phraseInfo = str.Split('\n')[1];
-		FileInfo file = new FileInfo(path + "//" + fileName);
+		FileInfo file = new FileInfo(path + fileName);
 		if (!file.Exists)
 			writer = file.CreateText();
 		else
 			writer = file.AppendText();
 		debugInfo.Log("FileName", file.FullName);
 		buffer = "";
+        connectWindow.SetActive(false);
 	}
 
 	public void EndDataFile(string msg)
