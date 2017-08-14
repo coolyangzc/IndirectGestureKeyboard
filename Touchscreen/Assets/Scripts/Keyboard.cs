@@ -176,12 +176,21 @@ public class Keyboard : MonoBehaviour
 
 	public void ChangeRatio()
 	{
-		Vector2 v = keyboard.GetComponent<RectTransform>().anchorMax;
+        Vector2 minV = keyboard.GetComponent<RectTransform>().anchorMin;
+		Vector2 maxV = keyboard.GetComponent<RectTransform>().anchorMax;
         if (ratioChanged)
-            v.y = 0.05f + 0.16875f;
+        {
+            minV.y = 0.21875f;
+            maxV.y = minV.y + 0.16875f;
+        }
         else
-            v.y = 0.05f + 0.16875f * 3;
-		keyboard.GetComponent<RectTransform>().anchorMax = v;
+        {
+            minV.y = 0.05f;
+            maxV.y = 0.05f + 0.16875f * 3;
+        }
+            
+        keyboard.GetComponent<RectTransform>().anchorMin = minV;
+		keyboard.GetComponent<RectTransform>().anchorMax = maxV;
 		keyboardWidth = keyboard.rectTransform.rect.width;
 		keyboardHeight = keyboard.rectTransform.rect.height;
 		ratioChanged ^= true;
@@ -244,9 +253,9 @@ public class Keyboard : MonoBehaviour
 	public void SendSizeMsg()
 	{
 		if (ratioChanged)
-			client.Send("Keyboard Size Msg", overallRatio.ToString("0.00") + " " + "3");
+			client.Send("Keyboard Size Msg", (overallRatio+0.25f).ToString("0.00") + " " + "3");
 		else
-			client.Send("Keyboard Size Msg", overallRatio.ToString("0.00") + " " + "1");
+			client.Send("Keyboard Size Msg", (overallRatio+0.25f).ToString("0.00") + " " + "1");
 			
 	}
 }		
