@@ -177,35 +177,36 @@ public class Gesture : MonoBehaviour {
 			}
 			if (Lexicon.useRadialMenu)
 			{
-				if (Vector2.Distance(new Vector2(x, y), StartPointRelative) > RadiusMenuR)
-				{
-					x -= StartPointRelative.x;
-					y -= StartPointRelative.y;
-					int choose = -1;
-					if (Mathf.Abs(x) > Mathf.Abs(y))
-					{
-						if (x > 0)
-							choose = 2;
-						else
-							choose = 1;
-					}
-					else
-					{
-						if (y > 0)
-							choose = 0;
-						else
-							choose = 3;
-					}
-					string word = lexicon.Accept(choose);
-					if (Lexicon.userStudy == Lexicon.UserStudy.Study2)
-						server.Send("Accept", word);
-				}
-				else
-					if (Lexicon.userStudy == Lexicon.UserStudy.Study2)
-						server.Send("Cancel", "");
-				chooseCandidate = false;
-				lexicon.SetRadialMenuDisplay(false);
-
+                if (Vector2.Distance(new Vector2(x, y), StartPointRelative) > RadiusMenuR)
+                {
+                    x -= StartPointRelative.x;
+                    y -= StartPointRelative.y;
+                    int choose = -1;
+                    if (Mathf.Abs(x) > Mathf.Abs(y))
+                    {
+                        if (x > 0)
+                            choose = 2;
+                        else
+                            choose = 1;
+                    }
+                    else
+                    {
+                        if (y > 0)
+                            choose = 0;
+                        else
+                            choose = 3;
+                    }
+                    string word = lexicon.Accept(choose);
+                    if (Lexicon.userStudy == Lexicon.UserStudy.Study2)
+                        server.Send("Accept", word);
+                    chooseCandidate = false;
+                    lexicon.SetRadialMenuDisplay(false);
+                }
+                else
+                {
+                    lexicon.NextCandidatePanel();
+                }
+				
 				return;
 			}
 		}
@@ -215,7 +216,7 @@ public class Gesture : MonoBehaviour {
 			server.Send("SingleKey", key.ToString());
 			return;
 		}
-		if (x <= -0.5f && length <= 2.0f)
+		if (x <= -0.55f && length <= 2.0f)
 		{
 			if (Lexicon.userStudy == Lexicon.UserStudy.Study2)
 				server.Send("Delete", "");
@@ -223,7 +224,7 @@ public class Gesture : MonoBehaviour {
 			chooseCandidate = false;
 			return;
 		}
-		if (x >= 0.6f && length <= 2.0f)
+		if (x >= 0.55f && length <= 2.0f && Lexicon.userStudy == Lexicon.UserStudy.Basic)
 		{
 			lexicon.ChangePhrase();
 			return;

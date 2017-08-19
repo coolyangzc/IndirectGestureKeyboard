@@ -17,7 +17,7 @@ public class Lexicon : MonoBehaviour
 	private const int LexiconSize = 10000;
 	private const int SampleSize = 32;
 	private const int RadialNum = 4;
-	private const int CandidatesNum = 5;
+	private const int CandidatesNum = 12;
 	private const float DTWConst = 0.1f;
 	private const float AnyStartThr = 2.5f;
     private const float eps = 1e-6f;
@@ -27,7 +27,7 @@ public class Lexicon : MonoBehaviour
 
 	//Parameters
 	private float endOffset = 3.0f;
-	private float radiusMul = 0.3f, radius = 0;
+	private float radiusMul = 0.2f, radius = 0;
 	private bool debugOn = false;
 
 	public static bool useRadialMenu = true;
@@ -42,6 +42,7 @@ public class Lexicon : MonoBehaviour
 	private string[] words;
 	private Button[] btn = new Button[CandidatesNum];
 	private Text[] radialText = new Text[RadialNum];
+    private int panel;
 	private Candidate[] cands = new Candidate[CandidatesNum], candsTmp = new Candidate[CandidatesNum];
 	private Vector2[] keyPos = new Vector2[26];
 
@@ -175,7 +176,7 @@ public class Lexicon : MonoBehaviour
 
 	public void CalcLexicon()
 	{
-		TextAsset textAsset = Resources.Load("ANC-written-noduplicate") as TextAsset;
+		TextAsset textAsset = Resources.Load("ANC-written-noduplicate+pangram") as TextAsset;
 		string[] lines = textAsset.text.Split('\n');
 		int size = lines.Length;
 		if (LexiconSize > 0)
@@ -322,7 +323,6 @@ public class Lexicon : MonoBehaviour
             return Mathf.Exp(-0.5f * dis * dis / (radiusMul*0.1f) / (radiusMul*0.1f));
 
     }
-
 	public Vector2[] TemporalSampling(Vector2[] stroke)
 	{
 		float length = 0;
@@ -443,21 +443,13 @@ public class Lexicon : MonoBehaviour
 	{
 		if (!useRadialMenu)
 			btn[choose = 0].Select();
+        
 		for (int i = 0; i < candList.Length; ++i)
-		{
 			cands[i] = candList[i];
-			string text = cands[i].word;
-			if (debugOn)
-				text += "\n" + cands[i].location.ToString(".00") + " " + cands[i].shape.ToString(".00") + " " + cands[i].language.ToString(".00");
-			if (useRadialMenu)
-			{
-				if (i < RadialNum)
-					radialText[i].text = text;
-			}
-			else
-				btn[i].GetComponentInChildren<Text>().text = text;
-		}
-		if (cands[0].confidence == 0)
+        panel = -1;
+        NextCandidatePanel();
+
+        if (cands[0].confidence == 0)
 			return;
 		if (!useRadialMenu)
 		{
@@ -469,6 +461,23 @@ public class Lexicon : MonoBehaviour
 			underText.text = under + space + underline('_', cands[0].word.Length);
 		}
 	}
+
+    public void NextCandidatePanel()
+    {
+        panel = (panel + 1) % 3;
+        for (int i = 0; i < 4; ++i)
+        {
+            int id = panel * 4 + i;
+            string text = cands[id].word;
+            if (debugOn)
+                text += "\n" + cands[id].location.ToString(".00") + " " + cands[id].shape.ToString(".00") + " " + cands[id].language.ToString(".00");
+            if (useRadialMenu)
+                radialText[i].text = text;
+            else
+                btn[i].GetComponentInChildren<Text>().text = text;
+        }
+
+    }
 
 	public void NextCandidate()
 	{
@@ -493,7 +502,8 @@ public class Lexicon : MonoBehaviour
 			text += " ";
 			under += " ";
 		}
-		text += cands[id].word;
+        string word = cands[panel * 4 + id].word;
+        text += word;
 		inputText.text = text;
 		if (useRadialMenu)
 			history.Add(new Candidate(cands[id]));
@@ -502,10 +512,10 @@ public class Lexicon : MonoBehaviour
 			under += underline(' ', cands[id].word.Length);
 			underText.text = under;
 		}
-		string word = cands[id].word;
+		
 		for (int i = 0; i < CandidatesNum; ++i)
 		{
-			btn[i].GetComponentInChildren<Text>().text = "";
+			//btn[i].GetComponentInChildren<Text>().text = "";
 			cands[i].word = "";
 		}
 
@@ -520,7 +530,7 @@ public class Lexicon : MonoBehaviour
 			btn[choose = 0].Select();
 		for (int i = 0; i < CandidatesNum; ++i)
 		{
-			btn[i].GetComponentInChildren<Text>().text = "";
+			//btn[i].GetComponentInChildren<Text>().text = "";
 			cands[i].word = "";
 		}
 		if (history.Count == 0)
@@ -548,7 +558,7 @@ public class Lexicon : MonoBehaviour
 	{
 		for (int i = 0; i < CandidatesNum; ++i)
 		{
-			btn[i].GetComponentInChildren<Text>().text = "";
+			//btn[i].GetComponentInChildren<Text>().text = "";
 			if (cands[i] != null)
 				cands[i].word = "";
 		}
@@ -624,7 +634,7 @@ public class Lexicon : MonoBehaviour
 		radiusMul += delta;
 		radius = KeyWidth * radiusMul;
 		if (debugOn)
-			info.Log("[R]adius", radiusMul.ToString("0.0"));
+			info.Log("[R]adius", radiusMul.ToString("0.0") + "key");
 	}
 
 	public void ChangeEndOffset(float delta)
@@ -654,8 +664,8 @@ public class Lexicon : MonoBehaviour
 	{
 		for (int i = 0; i < RadialNum; ++i)
 			radialText[i] = radialMenu.transform.Find("Candidate" + i.ToString()).GetComponent<Text>();
-		for (int i = 0; i < CandidatesNum; ++i)
-			btn[i] = candidates.transform.Find("Candidate" + i.ToString()).GetComponent<Button>();
+		//for (int i = 0; i < CandidatesNum; ++i)
+			//btn[i] = candidates.transform.Find("Candidate" + i.ToString()).GetComponent<Button>();
 		useRadialMenu ^= change;
 		if (debugOn)
 			if (useRadialMenu)
