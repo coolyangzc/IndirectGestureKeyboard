@@ -104,9 +104,14 @@ public class Lexicon : MonoBehaviour
 				}
 			}
 			locationSample[0] = lexicon.TemporalSampling(pts.ToArray());
-			pts.Insert(0, StartPoint);
+            bool ins = false;
+            if (Vector2.Distance(pts[0], StartPoint) > eps)
+                ins = true;
+            if (ins)
+                pts.Insert(0, StartPoint);
 			locationSample[1] = lexicon.TemporalSampling(pts.ToArray());
-			pts.RemoveAt(0);
+            if (ins)
+                pts.RemoveAt(0);
 			for(int i = 0; i < (int)Mode.End; ++i)
 				shapeSample[i] = lexicon.Normalize(locationSample[i]);
 		}
@@ -194,7 +199,6 @@ public class Lexicon : MonoBehaviour
 			}
 		}
         foreach (Entry entry in dict)
-            //entry.languageModelPossibilty = Mathf.Log(entry.frequency);
             entry.languageModelPossibilty = entry.frequency;
     }
 
@@ -400,6 +404,8 @@ public class Lexicon : MonoBehaviour
 
 		foreach (Entry entry in dict)
 		{
+            if (rawStroke.Length == 1 && entry.word.Length != 1)
+                continue;
 			Candidate newCandidate = new Candidate();
 			newCandidate.word = entry.word;
 			if (mode == Mode.AnyStart)
@@ -412,7 +418,7 @@ public class Lexicon : MonoBehaviour
 				entry.pts.RemoveAt(0);
 			}
 			newCandidate.confidence = newCandidate.location = Match(stroke, entry.locationSample[(int)mode], locationFormula);
-			if (newCandidate.location == 0)
+            if (newCandidate.location == 0)
 				continue;
 			if (locationFormula == Formula.DTW)
 				newCandidate.DTWDistance = dis * SampleSize;
@@ -506,10 +512,10 @@ public class Lexicon : MonoBehaviour
         text += word;
 		inputText.text = text;
 		if (useRadialMenu)
-			history.Add(new Candidate(cands[id]));
+			history.Add(new Candidate(word));
 		else
 		{
-			under += underline(' ', cands[id].word.Length);
+			under += underline(' ', word.Length);
 			underText.text = under;
 		}
 		

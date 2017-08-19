@@ -435,8 +435,8 @@ MonoBehaviour:
   m_DepthBufferBits: 32
   m_Pos:
     serializedVersion: 2
-    x: 455
-    y: 112
+    x: -31554
+    y: -31951
     width: 1089
     height: 618
   m_SceneLighting: 1

@@ -16,7 +16,6 @@ public class PCControl : MonoBehaviour {
 
 	private bool mouseHidden = false;
 	private bool debugOn = true;
-	private bool ratioChanged = false;
 	private float distance = 0;
 
 	private float MinDistance = 4;
