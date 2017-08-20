@@ -115,7 +115,7 @@ public class Client : MonoBehaviour
 				keyboard.Cancel();
 				break;
 			case "Delete":
-				keyboard.Delete();
+				keyboard.Delete(msg);
 				break;
 			case "Backspace":
 				keyboard.Backspace();
@@ -123,8 +123,11 @@ public class Client : MonoBehaviour
 			case "Change Ratio":
 				keyboard.ChangeRatio();
 				break;
-			default:
-				//Debug.Log("Unknown tag: " + tag);
+            case "NextCandidatePanel":
+                keyboard.NextCandidatePanel();
+                break;
+            default:
+				Debug.Log("Unknown tag: " + tag);
 				break;
 		}
 	}

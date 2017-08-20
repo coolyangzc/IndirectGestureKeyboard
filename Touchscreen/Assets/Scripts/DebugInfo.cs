@@ -61,6 +61,4 @@ public class DebugInfo : MonoBehaviour
 		}
 		changed = true;
 	}
-
-
 }

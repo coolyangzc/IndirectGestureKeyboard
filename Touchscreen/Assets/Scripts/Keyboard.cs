@@ -61,10 +61,10 @@ public class Keyboard : MonoBehaviour
 			Vector2 local;
 			RectTransformUtility.ScreenPointToLocalPointInRectangle(
 				keyboard.transform as RectTransform, touch.position, Camera.main, out local);
-			debugInfo.Log("World", touch.position.x.ToString() + "," + touch.position.y.ToString());
-			debugInfo.Log("Local", local.x.ToString() + "," + local.y.ToString());
-			Vector2 relative = new Vector2(local.x / keyboardWidth, local.y / keyboardHeight);
-			debugInfo.Log("Relative", relative.x.ToString() + "," + relative.y.ToString());
+            Vector2 relative = new Vector2(local.x / keyboardWidth, local.y / keyboardHeight);
+            debugInfo.Log("World", touch.position.x.ToString("f2") + "," + touch.position.y.ToString("f2"));
+			debugInfo.Log("Local", local.x.ToString("f2") + "," + local.y.ToString("f2"));
+			debugInfo.Log("Relative", relative.x.ToString("f2") + "," + relative.y.ToString("f2"));
 			string coor = relative.x.ToString() + "," + relative.y.ToString();
 			if (userStudy > 0)
 				buffer += touch.phase.ToString() + " " + Time.time.ToString() + " " +
@@ -87,7 +87,6 @@ public class Keyboard : MonoBehaviour
 					client.Send("Ended", coor);
 					break;
 			}
-			//client.Send("Touch", );
 		}
 	}
 
@@ -232,7 +231,7 @@ public class Keyboard : MonoBehaviour
 
 	public void SingleKey(string key)
 	{
-		buffer += "SingleKey " + Time.time.ToString() + " " + key + "\n";
+		buffer += "SingleKey" + " " + Time.time.ToString() + " " + key + "\n";
 	}
 
 	public void Cancel()
@@ -240,9 +239,9 @@ public class Keyboard : MonoBehaviour
 		buffer += "Cancel" + " " + Time.time.ToString() + "\n"; 
 	}
 
-	public void Delete()
+	public void Delete(string type)
 	{
-		buffer += "Delete" + " " + Time.time.ToString() + "\n";
+		buffer += "Delete" + " " + Time.time.ToString() + " " + type + "\n";
 	}
 
 	public void Backspace()
@@ -250,12 +249,17 @@ public class Keyboard : MonoBehaviour
 		buffer += "Backspace" + " " + Time.time.ToString() + "\n";
 	}
 
-	public void SendSizeMsg()
+    public void NextCandidatePanel()
+    {
+        buffer += "NextCandidatePanel" + " " + Time.time.ToString() + "\n";
+    }
+
+
+    public void SendSizeMsg()
 	{
 		if (ratioChanged)
 			client.Send("Keyboard Size Msg", (overallRatio+0.25f).ToString("0.00") + " " + "3");
 		else
 			client.Send("Keyboard Size Msg", (overallRatio+0.25f).ToString("0.00") + " " + "1");
-			
 	}
 }		

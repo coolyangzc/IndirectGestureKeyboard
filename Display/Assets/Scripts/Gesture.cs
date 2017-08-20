@@ -169,7 +169,10 @@ public class Gesture : MonoBehaviour {
                 chooseCandidate = false;
                 lexicon.SetRadialMenuDisplay(false);
                 if (menuGestureCount == 0)
+                {
                     lexicon.Delete();
+                    server.Send("Delete", "double-click");
+                }
             }
             lastEndTime = -1;
             return;
@@ -226,9 +229,9 @@ public class Gesture : MonoBehaviour {
                 }
                 else
                 {
+                    server.Send("NextCandidatePanel", "");
                     lexicon.NextCandidatePanel();
                 }
-				
 				return;
 			}
 		}
@@ -245,7 +248,7 @@ public class Gesture : MonoBehaviour {
 		if (x <= -0.4f && length <= 1.0f && Time.time - lastBeginTime < 0.5)
 		{
 			if (Lexicon.userStudy == Lexicon.UserStudy.Study2)
-				server.Send("Delete", "");
+				server.Send("Delete", "LeftSwipe");
 			lexicon.Delete();
 			chooseCandidate = false;
 			return;
@@ -269,7 +272,6 @@ public class Gesture : MonoBehaviour {
 				lexicon.SetRadialMenuDisplay(true);
 			}
 		}
-
 		lexicon.SetCandidates(candidates);
 		string msg = "";
 		for (int i = 0; i < candidates.Length; ++i)

@@ -82,23 +82,30 @@ public class PCControl : MonoBehaviour {
 			}
 			if (Input.GetKeyDown(KeyCode.Alpha1))
 			{
+                ColorBlock cb = userID.colors;
+                Color c = userID.colors.normalColor;
+                c.a = 0;
+                cb.normalColor = c;
+                userID.colors = cb;
+                c = userID.transform.Find("Text").GetComponent<Text>().color;
+                c.a = 0;
+                userID.transform.Find("Text").GetComponent<Text>().color = c;
+                info.Clear();
+                if (Lexicon.userStudy == Lexicon.UserStudy.Basic)
+                {
+                    Lexicon.userStudy = Lexicon.UserStudy.Train;
+                    lexicon.ChangePhrase();
+                    lexicon.HighLight(-100);
+                    info.Log("Phrase", "Warmup");
+                    return;
+                }
 				Lexicon.userStudy = Lexicon.UserStudy.Study1;
 				lexicon.ChangePhrase(phraseID);
 				SendPhraseMessage();
 				lexicon.HighLight(-100);
-
-
-				info.Clear();
 				info.Log("Phrase", (phraseID+1).ToString() + "/60");
 				server.Send("Get Keyboard Size", "");
-				ColorBlock cb = userID.colors;
-				Color c = userID.colors.normalColor;
-				c.a = 0;
-				cb.normalColor = c;
-				userID.colors = cb;
-				c = userID.transform.Find("Text").GetComponent<Text>().color;
-				c.a = 0;
-				userID.transform.Find("Text").GetComponent<Text>().color = c;
+				
 			}
 			if (Input.GetKeyDown(KeyCode.Alpha2))
 			{
