@@ -171,7 +171,7 @@ public class Gesture : MonoBehaviour {
                 if (menuGestureCount == 0)
                 {
                     lexicon.Delete();
-                    server.Send("Delete", "double-click");
+                    server.Send("Delete", "DoubleClick");
                 }
             }
             lastEndTime = -1;
@@ -245,7 +245,7 @@ public class Gesture : MonoBehaviour {
 		}
         */
 
-		if (x <= -0.4f && length <= 1.0f && Time.time - lastBeginTime < 0.5)
+		if (stroke[stroke.Count - 1].x - stroke[0].x <= -0.15f && length <= 1.0f && Time.time - lastBeginTime < 0.2)
 		{
 			if (Lexicon.userStudy == Lexicon.UserStudy.Study2)
 				server.Send("Delete", "LeftSwipe");

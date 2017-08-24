@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using UnityEngine.UI;
+using System.IO;
 using System.Collections;
 using System.Collections.Generic;
 
@@ -27,7 +28,7 @@ public class Lexicon : MonoBehaviour
 
 	//Parameters
 	private float endOffset = 3.0f;
-	private float radiusMul = 0.2f, radius = 0;
+	private float radiusMul = 0.25f, radius = 0;
 	private bool debugOn = false;
 
 	public static bool useRadialMenu = true;
@@ -218,13 +219,16 @@ public class Lexicon : MonoBehaviour
 
 	void InitPhrases()
 	{
-		TextAsset textAsset = Resources.Load("phrases") as TextAsset;
+		TextAsset textAsset = Resources.Load("3000words") as TextAsset;
 		string[] lines = textAsset.text.Split('\n');
 		for (int i = 0; i < lines.Length; ++i)
 		{
 			if (lines[i].Length <= 1)
 				continue;
-			string line = lines[i].Substring(0, lines[i].Length - 1);
+            string line = lines[i];
+            if (line[line.Length - 1] < 'a' || line[line.Length - 1] > 'z')
+                line = line.Substring(0, line.Length - 1);
+                
 			string[] words = line.Split(' ');
 			bool available = true;
 			foreach(string word in words)
@@ -238,6 +242,10 @@ public class Lexicon : MonoBehaviour
 		}
 		Debug.Log("Phrases: " + phrase.Count + "/" + lines.Length);
 		textAsset = Resources.Load("pangrams") as TextAsset;
+        StreamWriter sw = new StreamWriter("available_phrases.txt");
+        for (int i = 0; i < phrase.Count; ++i)
+            sw.WriteLine(phrase[i]);
+        sw.Close();
 		lines = textAsset.text.Split('\n');
 		for (int i = 0; i < lines.Length; ++i)
 			phrase.Add(lines[i]);
@@ -640,7 +648,7 @@ public class Lexicon : MonoBehaviour
 		radiusMul += delta;
 		radius = KeyWidth * radiusMul;
 		if (debugOn)
-			info.Log("[R]adius", radiusMul.ToString("0.0") + "key");
+			info.Log("[R]adius", radiusMul.ToString("0.00") + "key");
 	}
 
 	public void ChangeEndOffset(float delta)

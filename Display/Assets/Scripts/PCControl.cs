@@ -10,12 +10,12 @@ public class PCControl : MonoBehaviour {
 	public Lexicon lexicon;
 	public Gesture gesture;
 	public Info info;
-	public int phraseID = 0; 
+	public int blockID = 0, phraseID = 0; 
 	public InputField userID;
 	//public Text userID;
 
 	private bool mouseHidden = false;
-	private bool debugOn = true;
+	private bool debugOn = false;
 	private float distance = 0;
 
 	private float MinDistance = 4;
@@ -113,10 +113,11 @@ public class PCControl : MonoBehaviour {
 				lexicon.ChangePhrase();
 				SendPhraseMessage();
 				info.Clear();
-				info.Log("Mode", Lexicon.mode.ToString());
-				info.Log("Phrase", (phraseID+1).ToString() + "/20");
-				server.Send("Get Keyboard Size", "");
-			}
+                info.Log("Mode", Lexicon.mode.ToString());
+                info.Log("Block", (blockID+1).ToString() + "/8");
+				info.Log("Phrase", (phraseID+1).ToString() + "/48");
+                blockID = (blockID + 1) % 8;
+            }
 		}
 		if (Input.GetKeyDown(KeyCode.UpArrow))
 		{
@@ -177,16 +178,17 @@ public class PCControl : MonoBehaviour {
 				case Lexicon.UserStudy.Study2:
 					server.Send("Study2 End Phrase", lexicon.inputText.text + "\n" + Lexicon.mode.ToString());
 					phraseID++;
-					if (phraseID % 10 == 0)
+					if (phraseID % 6 == 0)
 					{
 						Lexicon.userStudy = Lexicon.UserStudy.Basic;
 						lexicon.ChangePhrase();
-						info.Log("Phrase", "Warmup");
+                        info.Log("Block", "Rest");
+						info.Log("Phrase", "Rest");
 						return;
 					}
 					lexicon.ChangePhrase();
 					SendPhraseMessage();
-					info.Log("Phrase", (phraseID+1).ToString() + "/20");
+					info.Log("Phrase", (phraseID+1).ToString() + "/48");
 					break;
 			}
 		}
