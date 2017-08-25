@@ -121,7 +121,7 @@ public class PCControl : MonoBehaviour {
 				info.Clear();
                 info.Log("Mode", Lexicon.mode.ToString());
                 info.Log("Block", (blockID+1).ToString() + "/8");
-				info.Log("Phrase", (phraseID+1).ToString() + "/48");
+				info.Log("Phrase", (phraseID % 6 + 1).ToString() + "/6");
                 blockID = (blockID + 1) % 8;
             }
 		}
@@ -194,7 +194,7 @@ public class PCControl : MonoBehaviour {
 					}
 					lexicon.ChangePhrase();
 					SendPhraseMessage();
-					info.Log("Phrase", (phraseID+1).ToString() + "/48");
+					info.Log("Phrase", (phraseID % 6 + 1).ToString() + "/6");
 					break;
 			}
 		}
