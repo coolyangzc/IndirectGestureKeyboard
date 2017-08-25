@@ -45,6 +45,18 @@ public class PCControl : MonoBehaviour {
 		}
 	}
 
+    private void HideDisplay()
+    {
+        ColorBlock cb = userID.colors;
+        Color c = userID.colors.normalColor;
+        c.a = 0;
+        cb.normalColor = c;
+        userID.colors = cb;
+        c = userID.transform.Find("Text").GetComponent<Text>().color;
+        c.a = 0;
+        userID.transform.Find("Text").GetComponent<Text>().color = c;
+    }
+
 	void KeyControl()
 	{
 		if (Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift))
@@ -82,14 +94,7 @@ public class PCControl : MonoBehaviour {
 			}
 			if (Input.GetKeyDown(KeyCode.Alpha1))
 			{
-                ColorBlock cb = userID.colors;
-                Color c = userID.colors.normalColor;
-                c.a = 0;
-                cb.normalColor = c;
-                userID.colors = cb;
-                c = userID.transform.Find("Text").GetComponent<Text>().color;
-                c.a = 0;
-                userID.transform.Find("Text").GetComponent<Text>().color = c;
+                HideDisplay();
                 info.Clear();
                 if (Lexicon.userStudy == Lexicon.UserStudy.Basic)
                 {
@@ -109,6 +114,7 @@ public class PCControl : MonoBehaviour {
 			}
 			if (Input.GetKeyDown(KeyCode.Alpha2))
 			{
+                HideDisplay();
 				Lexicon.userStudy = Lexicon.UserStudy.Study2;
 				lexicon.ChangePhrase();
 				SendPhraseMessage();
@@ -182,8 +188,8 @@ public class PCControl : MonoBehaviour {
 					{
 						Lexicon.userStudy = Lexicon.UserStudy.Basic;
 						lexicon.ChangePhrase();
-                        info.Log("Block", "Rest");
-						info.Log("Phrase", "Rest");
+                        info.Log("Block", "<color=red>Rest</color>");
+						info.Log("Phrase", "<color=red>Rest</color>");
 						return;
 					}
 					lexicon.ChangePhrase();

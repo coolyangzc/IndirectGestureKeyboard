@@ -31,6 +31,7 @@ public class Lexicon : MonoBehaviour
 	private float radiusMul = 0.25f, radius = 0;
 	private bool debugOn = false;
 
+    public static bool isCut = true;
 	public static bool useRadialMenu = true;
 	public static Mode mode = Mode.Basic;
 	public static UserStudy userStudy = UserStudy.Basic;
@@ -238,14 +239,30 @@ public class Lexicon : MonoBehaviour
 					break;
 				}
 			if (available)
-				phrase.Add(lines[i]);
+				phrase.Add(line);
 		}
-		Debug.Log("Phrases: " + phrase.Count + "/" + lines.Length);
-		textAsset = Resources.Load("pangrams") as TextAsset;
+        /*
+        string tmp;
+        for (int i = 0; i < phrase.Count; ++i)
+            for (int j = i + 1; j < phrase.Count; ++j)
+            {
+                int iCnt = phrase[i].Split(' ').Length, jCnt = phrase[j].Split(' ').Length;
+                if (iCnt > jCnt || iCnt == jCnt && phrase[i].Length < phrase[j].Length)
+                {
+                    tmp = phrase[i];
+                    phrase[i] = phrase[j];
+                    phrase[j] = tmp;
+                }
+            }
         StreamWriter sw = new StreamWriter("available_phrases.txt");
         for (int i = 0; i < phrase.Count; ++i)
             sw.WriteLine(phrase[i]);
         sw.Close();
+        */
+
+        Debug.Log("Phrases: " + phrase.Count + "/" + lines.Length);
+		textAsset = Resources.Load("pangrams") as TextAsset;
+        
 		lines = textAsset.text.Split('\n');
 		for (int i = 0; i < lines.Length; ++i)
 			phrase.Add(lines[i]);
@@ -507,7 +524,7 @@ public class Lexicon : MonoBehaviour
 		btn[choose].Select();
 	}
 
-	public string Accept(int id)
+	public string Accept(ref int id)
 	{
 		if (id == -1)
 			id = choose;
@@ -516,7 +533,8 @@ public class Lexicon : MonoBehaviour
 			text += " ";
 			under += " ";
 		}
-        string word = cands[panel * 4 + id].word;
+        id = panel * 4 + id;
+        string word = cands[id].word;
         text += word;
 		inputText.text = text;
 		if (useRadialMenu)

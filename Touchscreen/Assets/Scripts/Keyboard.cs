@@ -209,6 +209,9 @@ public class Keyboard : MonoBehaviour
 		debugInfo.Log("FileName", file.FullName);
 		buffer = "";
         connectWindow.SetActive(false);
+        Color c = keyboard.color;
+        c.a = 0;
+        keyboard.color = c;
 	}
 
 	public void EndDataFile(string msg)

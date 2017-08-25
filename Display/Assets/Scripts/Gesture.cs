@@ -20,7 +20,7 @@ public class Gesture : MonoBehaviour {
 	private Vector2 beginPoint, prePoint, localPoint;
 	private List<Vector2> stroke = new List<Vector2>();
 
-	private const float RadiusMenuR = 0.13f;
+	private const float RadiusMenuR = 0.09f;
     private const float eps = 1e-6f;
 
 	// Use this for initialization
@@ -67,7 +67,7 @@ public class Gesture : MonoBehaviour {
         if (chooseCandidate)
 			cursor.GetComponent<TrailRendererHelper>().Reset(0.3f);
 		else
-			cursor.GetComponent<TrailRendererHelper>().Reset(1.0f);
+			cursor.GetComponent<TrailRendererHelper>().Reset(0.6f);
 		beginPoint = new Vector2(x, y);
 		prePoint = new Vector2(x, y);
 		length = 0;
@@ -137,6 +137,7 @@ public class Gesture : MonoBehaviour {
 		}
 		else
 		{
+            /*
 			if (length > 0.1f)
 			{
 				lexicon.under = lexicon.under.Replace("_", " ");
@@ -144,9 +145,10 @@ public class Gesture : MonoBehaviour {
 				if (chooseCandidate)
 				{
 					chooseCandidate = false;
-					lexicon.Accept(-1);
+					lexicon.Accept(ref -1);
 				}
 			}
+            */
 		}
 	}
 
@@ -221,9 +223,9 @@ public class Gesture : MonoBehaviour {
                         else
                             choose = 3;
                     }
-                    string word = lexicon.Accept(choose);
+                    string word = lexicon.Accept(ref choose);
                     if (Lexicon.userStudy == Lexicon.UserStudy.Study2)
-                        server.Send("Accept", word);
+                        server.Send("Accept", choose.ToString() + " " + word);
                     chooseCandidate = false;
                     lexicon.SetRadialMenuDisplay(false);
                 }
@@ -258,6 +260,17 @@ public class Gesture : MonoBehaviour {
 			lexicon.ChangePhrase();
 			return;
 		}
+        if (Lexicon.isCut)
+        {
+            int l = 0, r = stroke.Count - 1;
+            while (outKeyboard(stroke[l]) && l < r) ++l;
+            while (outKeyboard(stroke[r]) && l < r) --r;
+            if (l < r)
+            {
+                stroke.RemoveRange(r + 1, stroke.Count - r - 1);
+                stroke.RemoveRange(0, l);
+            }
+        }
 		for (int i = 0; i < stroke.Count; ++i)
             stroke[i] = new Vector2(stroke[i].x * keyboardWidth, stroke[i].y * keyboardHeight);
 		Lexicon.Candidate[] candidates = lexicon.Recognize(stroke.ToArray());
@@ -281,4 +294,9 @@ public class Gesture : MonoBehaviour {
 				msg += candidates[i].word;
 		server.Send("Candidates", msg);
 	}
+
+    private bool outKeyboard(Vector2 v)
+    {
+        return v.x > 0.5 || v.x < -0.5 || v.y > 0.5 || v.y < -0.5;
+    }
 }
