@@ -28,7 +28,7 @@ public class Lexicon : MonoBehaviour
 
 	//Parameters
 	private float endOffset = 3.0f;
-	private float radiusMul = 0.25f, radius = 0;
+	private float radiusMul = 0.20f, radius = 0;
 	private bool debugOn = false;
 
     public static bool isCut = true;
