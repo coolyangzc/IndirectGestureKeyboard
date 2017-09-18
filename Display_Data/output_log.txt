@@ -19,11 +19,11 @@ Platform assembly: D:\我的坚果铺子\Tsinghua\pcg\IndirectGestureKeyboard\Di
 Loading D:\我的坚果铺子\Tsinghua\pcg\IndirectGestureKeyboard\Display_Data\Managed\UnityEngine.Timeline.dll into Unity Child Domain
 Platform assembly: D:\我的坚果铺子\Tsinghua\pcg\IndirectGestureKeyboard\Display_Data\Managed\System.dll (this message is harmless)
 Platform assembly: D:\我的坚果铺子\Tsinghua\pcg\IndirectGestureKeyboard\Display_Data\Managed\System.Core.dll (this message is harmless)
-- Completed reload, in  0.020 seconds
+- Completed reload, in  0.058 seconds
 <RI> Initializing input.
 <RI> Input initialized.
 <RI> Initialized touch support.
-UnloadTime: 1.034658 ms
+UnloadTime: 2.633824 ms
 A:-280,-0.03149414
  
 (Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/DebugBindings.gen.cpp Line: 51)
@@ -237,32 +237,13 @@ Phrases: 93/93
 (Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/DebugBindings.gen.cpp Line: 51)
 
 Setting up 2 worker threads for Enlighten.
-  Thread -> id: 2550 -> priority: 1 
-  Thread -> id: 23b4 -> priority: 1 
+  Thread -> id: 29b8 -> priority: 1 
+  Thread -> id: 1c20 -> priority: 1 
 2
  
 (Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/DebugBindings.gen.cpp Line: 51)
 
-客户端ip::ffff:192.168.1.101
+客户端ip::ffff:192.168.1.172
  
 (Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/DebugBindings.gen.cpp Line: 51)
 
-Log: connection {1} has been disconnected by timeout; address {::ffff:192.168.1.101:39126} time {194876}, last rec time {192614} rtt {167} timeout {2000}
-2
- 
-(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/DebugBindings.gen.cpp Line: 51)
-
-客户端ip::ffff:192.168.1.101
- 
-(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/DebugBindings.gen.cpp Line: 51)
-
-Log: connection {1} has been disconnected by timeout; address {::ffff:192.168.1.101:32918} time {1684071}, last rec time {1681851} rtt {220} timeout {2000}
-2
- 
-(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/DebugBindings.gen.cpp Line: 51)
-
-客户端ip::ffff:192.168.1.101
- 
-(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/DebugBindings.gen.cpp Line: 51)
-
-Log: connection {1} has been disconnected by timeout; address {::ffff:192.168.1.101:39128} time {2808906}, last rec time {2806846} rtt {38} timeout {2000}
