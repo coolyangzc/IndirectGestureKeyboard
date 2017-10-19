@@ -22,6 +22,7 @@ public class Keyboard : MonoBehaviour
 	private const int CandidateNum = 5;
 
 	private const float eps = 1e-10f;
+    private const bool PhoneSize_5_1_inch = true;
 	private Vector2 preLocal;
 	private Button[] btn = new Button[CandidateNum];
 	private float keyboardWidth, keyboardHeight;
@@ -46,9 +47,17 @@ public class Keyboard : MonoBehaviour
 		keyboardWidth = keyboard.rectTransform.rect.width;
 		keyboardHeight = keyboard.rectTransform.rect.height;
 		SetKeyboard();
-		ZoomOut(true);ZoomOut(true);
-		ZoomOut(false);ZoomOut(false);
-		ZoomOut(false, true);
+        if (PhoneSize_5_1_inch)
+        {
+            ZoomOut(false, true);
+            ZoomOut(false, true);
+        }
+        else
+        {
+            ZoomOut(true); ZoomOut(true);
+            ZoomOut(false); ZoomOut(false);
+            ZoomOut(false, true);
+        }
 		ChangeRatio();
 	}
 	
