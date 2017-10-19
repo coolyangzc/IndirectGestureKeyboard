@@ -21,6 +21,7 @@ public class PCControl : MonoBehaviour {
 	private float MinDistance = 4;
 	private float MaxDistance = 12;
 	private float ScrollKeySpeed = -1f;
+    private int display_cnt = 0;
 	
 	// Use this for initialization
 	void Start() 
@@ -59,7 +60,15 @@ public class PCControl : MonoBehaviour {
 
 	void KeyControl()
 	{
-		if (Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift))
+        if ((Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl)) && Input.GetKeyDown(KeyCode.D))
+        {
+            display_cnt++;
+            if (display_cnt % 2 == 0)
+                lexicon.SetPhrase("thanks for watching");
+            else
+                lexicon.SetPhrase("a subject one can really enjoy");
+        }
+        if (Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift))
 		{
 			if (Input.GetKeyDown(KeyCode.RightArrow))
 				server.Send("TouchScreen Keyboard Width", "+");

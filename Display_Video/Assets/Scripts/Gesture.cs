@@ -67,7 +67,7 @@ public class Gesture : MonoBehaviour {
         if (chooseCandidate)
 			cursor.GetComponent<TrailRendererHelper>().Reset(0.3f);
 		else
-			cursor.GetComponent<TrailRendererHelper>().Reset(3.0f); //0.6f
+			cursor.GetComponent<TrailRendererHelper>().Reset(0.6f); //0.6f
 		beginPoint = new Vector2(x, y);
 		prePoint = new Vector2(x, y);
 		length = 0;

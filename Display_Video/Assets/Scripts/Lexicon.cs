@@ -692,6 +692,13 @@ public class Lexicon : MonoBehaviour
 			btn[0].Select();
 	}
 
+    public void SetPhrase(string s)
+    {
+        phraseText.text = s;
+        words = phraseText.text.Split(' ');
+        Clear();
+    }
+
 	public void ChangeCandidatesChoose(bool change)
 	{
 		for (int i = 0; i < RadialNum; ++i)
