@@ -18,9 +18,9 @@ public class PCControl : MonoBehaviour {
 	private bool debugOn = false;
 	private float distance = 0;
 
-	private float MinDistance = 4;
-	private float MaxDistance = 12;
-	private float ScrollKeySpeed = -1f;
+	private const float MinScrollDistance = 4;
+	private const float MaxScrollDistance = 12;
+	private const float ScrollKeySpeed = -1f;
 	
 	// Use this for initialization
 	void Start() 
@@ -217,10 +217,10 @@ public class PCControl : MonoBehaviour {
 			if (Input.GetAxis("Mouse ScrollWheel") != 0)
 			{
 				distance += Input.GetAxis("Mouse ScrollWheel") * ScrollKeySpeed;
-				if (distance < MinDistance)
-					distance = MinDistance;
-				else if (distance > MaxDistance)
-					distance = MaxDistance;
+				if (distance < MinScrollDistance)
+					distance = MinScrollDistance;
+				else if (distance > MaxScrollDistance)
+					distance = MaxScrollDistance;
 			}
 			Vector3 pos = canvas.transform.localPosition;
 			canvas.transform.localPosition = new Vector3(pos.x, pos.y, distance);

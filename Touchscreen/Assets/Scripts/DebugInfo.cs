@@ -12,7 +12,6 @@ public class DebugInfo : MonoBehaviour
 	private bool changed = false;
 	private float ClearTime = 5;
 	private float nowTime = 0;
-	int num;
 	
 	// Use this for initialization
 	void Start() 

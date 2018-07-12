@@ -22,7 +22,7 @@ public class Keyboard : MonoBehaviour
 	private const int CandidateNum = 5;
 
 	private const float eps = 1e-10f;
-    private const bool PhoneSize_5_1_inch = true;
+    private const bool PhoneSize_5_1_inch = false;
 	private Vector2 preLocal;
 	private Button[] btn = new Button[CandidateNum];
 	private float keyboardWidth, keyboardHeight;
