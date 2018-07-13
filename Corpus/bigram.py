@@ -1,6 +1,7 @@
 import os, re, string
 
 words = {}
+unigrams = {}
 bigrams = {}
 
 
@@ -31,15 +32,22 @@ def process(file_path):
             if data[-1] != '#' and ch in string.punctuation or ch.isdigit():
                 data.append('#')
     for i in range(len(data)):
-        if data[i] != '#' and data[i] not in words:
+        if data[i] == '#':
+            continue
+        if data[i] not in words:
             data[i] = 'OOV'
+        else:
+            if data[i] in unigrams:
+                unigrams[data[i]] += 1
+            else:
+                unigrams[data[i]] = 1
     for i in range(len(data) - 1):
         if data[i] != '#' and data[i+1] != '#' and data[i] != 'OOV' and data[i+1] != 'OOV':
             s = data[i] + ' ' + data[i+1]
-            if s not in bigrams:
-                bigrams[s] = 1
-            else:
+            if s in bigrams:
                 bigrams[s] += 1
+            else:
+                bigrams[s] = 1
     f.close()
 
 
@@ -57,14 +65,24 @@ def scan_files():
                     print("Processed " + str(cnt) + " files")
 
 
-def save_bigrams():
-    f = open("bigrams-written.txt", "w")
+def save_results():
+    f = open('unigrams-written.txt', 'w')
+    sorted_unigrams = sorted(unigrams.items(), key=lambda d: d[1], reverse=True)
+    for unigram in sorted_unigrams:
+        print(unigram[0], unigram[1], file=f)
+    f.close()
+
+    f = open('bigrams-written.txt', 'w')
     sorted_bigrams = sorted(bigrams.items(), key=lambda d: d[1], reverse=True)
     for bigram in sorted_bigrams:
-        print(bigram[0], bigram[1], file = f)
+        print(bigram[0], bigram[1], file=f)
+    f.close()
+
+    f = open('bigrams-written-prob.txt', 'w')
+
     f.close()
 
 
 read_corpus()
 scan_files()
-save_bigrams()
+save_results()
