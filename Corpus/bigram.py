@@ -3,16 +3,16 @@ import os, re, string
 words = {}
 unigrams = {}
 bigrams = {}
+N = 10000
 
 
 def read_corpus():
     corpus_file = "ANC-written-noduplicate+pangram.txt"
     f = open(corpus_file, "r")
     lines = f.readlines()
-    for line in lines[:10000]:
+    for line in lines[:N]:
         data = line.split(' ')
         words[data[0]] = int(data[1])
-    print(len(words))
     f.close()
 
 
@@ -79,7 +79,11 @@ def save_results():
     f.close()
 
     f = open('bigrams-written-prob.txt', 'w')
-
+    eps = 0.5
+    print('eps ' + str(eps), file=f)
+    for bigram in sorted_bigrams:
+        pair, feq, word = bigram[0], bigram[1], bigram[0].split(' ')[0]
+        print(pair, (bigram[1] + eps) / (unigrams[word] + N * eps), file=f)
     f.close()
 
 
