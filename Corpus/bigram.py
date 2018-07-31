@@ -67,6 +67,9 @@ def scan_files():
 
 def save_results():
     f = open('unigrams-written.txt', 'w')
+    for word in words:
+        if word not in unigrams:
+            unigrams[word] = 0
     sorted_unigrams = sorted(unigrams.items(), key=lambda d: d[1], reverse=True)
     for unigram in sorted_unigrams:
         print(unigram[0], unigram[1], file=f)
@@ -112,13 +115,13 @@ def save_results():
             beta[pre] -= prob
         else:
             beta[pre] = 1 - prob
-    for pre in words:
+    for pre in unigrams:
         if pre in beta:
             b = beta[pre]
         else:
             b = 1
         sum = 0
-        for suc in words:
+        for suc in unigrams:
             s = pre + ' ' + suc
             if s not in bigrams and suc in unigrams:
                 sum += unigrams[suc]
