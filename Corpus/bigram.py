@@ -1,4 +1,6 @@
-import os, re, string
+import os
+import string
+from enum import Enum
 
 words = {}
 unigrams = {}
@@ -57,8 +59,6 @@ def scan_files():
     for parent, dir_names, file_names in os.walk(data_dir):
         for filename in file_names:
             if filename[-4:] == ".txt" and "written_" in parent:
-                #print("filename with full path:" + os.path.join(parent, filename))
-                #print("Processing " + filename)
                 process(os.path.join(parent, filename))
                 cnt += 1
                 if cnt % 100 == 0:
@@ -78,12 +78,51 @@ def save_results():
         print(bigram[0], bigram[1], file=f)
     f.close()
 
+
+    #Additive Smoothing
     f = open('bigrams-written-prob.txt', 'w')
     eps = 0.5
     print('eps ' + str(eps), file=f)
     for bigram in sorted_bigrams:
-        pair, feq, word = bigram[0], bigram[1], bigram[0].split(' ')[0]
-        print(pair, (bigram[1] + eps) / (unigrams[word] + N * eps), file=f)
+        pair, freq, word = bigram[0], bigram[1], bigram[0].split(' ')[0]
+        print(pair, (freq + eps) / (unigrams[word] + N * eps), file=f)
+    f.close()
+
+    #Katz Smoothing
+    f = open('bigrams-written-katz.txt', 'w')
+    cnt = {}
+    for bigram in sorted_bigrams:
+        pair, freq = bigram[0], bigram[1]
+        if freq in cnt:
+            cnt[freq] += 1
+        else:
+            cnt[freq] = 1
+    print(len(sorted_bigrams), file=f)
+    k = 5
+    beta = {}
+    for bigram in sorted_bigrams:
+        pair, c, [pre, suc] = bigram[0], bigram[1], bigram[0].split(' ')
+        if c > k:
+            d = 1
+        else:
+            d = ((c+1)/c * cnt[c+1]/cnt[c] - (k+1)*cnt[k+1]/cnt[1]) / (1 - (k+1)*cnt[k+1] / cnt[1])
+        prob = d * c / unigrams[pre]
+        print(pair, prob, file = f)
+        if pre in beta:
+            beta[pre] -= prob
+        else:
+            beta[pre] = 1 - prob
+    for pre in words:
+        if pre in beta:
+            b = beta[pre]
+        else:
+            b = 1
+        sum = 0
+        for suc in words:
+            s = pre + ' ' + suc
+            if s not in bigrams and suc in unigrams:
+                sum += unigrams[suc]
+        print(pre, b/sum, file=f)
     f.close()
 
 
