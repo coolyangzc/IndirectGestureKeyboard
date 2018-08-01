@@ -1,6 +1,5 @@
 import os
 import string
-from enum import Enum
 
 words = {}
 unigrams = {}
