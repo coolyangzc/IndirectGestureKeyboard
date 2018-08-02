@@ -6,6 +6,7 @@ words = {}
 unigrams = {}
 bigrams = {}
 N = 10000
+BIGRAM_PAIRS = 10000000
 
 
 def read_corpus():
@@ -61,7 +62,7 @@ def save_results():
 
 
 def read_bigrams():
-    f = open('bigrams-LDC-10k.txt', 'r')
+    f = open('../../LDC2006T13 (Google 1T 5gram language model)/bigrams-LDC-10k.txt', 'r')
     global bigrams
     bigrams = {}
     lines = f.readlines()
@@ -90,20 +91,20 @@ def read_bigrams():
             cnt[freq] += 1
         else:
             cnt[freq] = 1
-    print(len(bigrams), file=f)
+    print(BIGRAM_PAIRS, file=f)
     k = 2000
     beta = {}
     done = 0
-    for bigram in sorted_bigrams:
+    for bigram in sorted_bigrams[:BIGRAM_PAIRS]:
         done += 1
         pair, c, [pre, suc] = bigram[0], bigram[1], bigram[0].split(' ')
         if c > k:
             d = 1
         else:
-            d = ((c + 1) / c * cnt[c + 1] / cnt[c] - (k + 1) * cnt[k + 1] / cnt[40]) / (
-                        1 - (k + 1) * cnt[k + 1] / cnt[40])
+            d = ((c + 1) / c * cnt[c+1] / cnt[c] - (k + 1) * cnt[k+1] / cnt[40]) / (
+                        1 - (k + 1) * cnt[k+1] / cnt[40])
         prob = d * c / unigrams[pre]
-        print(pair, prob, file=f)
+        print("%s %.8g" % (pair, prob), file=f)
         if pre in beta:
             beta[pre] -= prob
         else:
@@ -111,6 +112,7 @@ def read_bigrams():
         if done % 100000 == 0:
             print('Bigram', done / 100000, '/', len(sorted_bigrams) / 100000)
     print('Finish bigram part')
+    print(len(unigrams), file=f)
     for pre in unigrams:
         if pre in beta:
             b = beta[pre]
@@ -121,9 +123,9 @@ def read_bigrams():
             if suc == '<s>':
                 continue
             s = pre + ' ' + suc
-            if s not in bigrams and suc in unigrams:
+            if s not in bigrams:
                 tot += unigrams[suc]
-        print(pre, unigrams[pre], b / tot, file=f)
+        print("%s %d %.8g" % (pre, unigrams[pre], b / tot), file=f)
     f.close()
 
 

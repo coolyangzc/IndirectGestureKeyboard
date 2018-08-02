@@ -122,7 +122,7 @@ def save_results():
         sum = 0
         for suc in unigrams:
             s = pre + ' ' + suc
-            if s not in bigrams and suc in unigrams:
+            if s not in bigrams:
                 sum += unigrams[suc]
         print(pre, b/sum, file=f)
     f.close()
