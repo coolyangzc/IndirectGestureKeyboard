@@ -1,4 +1,5 @@
 ﻿using System.Net;
+using System.Net.Sockets;
 using UnityEngine;
 using UnityEngine.Networking;
 
@@ -49,7 +50,13 @@ public class Server : MonoBehaviour
 	string GetIP()
 	{
         IPAddress[] ips = Dns.GetHostAddresses(Dns.GetHostName());
-        return ips[1].ToString();
+        string ipv4 = "";
+        foreach (IPAddress ip in ips)
+            if (ip.AddressFamily == AddressFamily.InterNetwork)
+            {
+                ipv4 = ip.ToString();  //ipv4
+            }
+        return ipv4;
     }
 
     void OnConnected(NetworkMessage netMsg)

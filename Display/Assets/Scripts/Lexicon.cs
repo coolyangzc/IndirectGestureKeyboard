@@ -139,7 +139,6 @@ public class Lexicon : MonoBehaviour
 		}
 	}
 
-	private HashSet<string> allWords = new HashSet<string>();
 	private List<Entry> dict = new List<Entry>();
 
 	// Use this for initialization
@@ -170,8 +169,7 @@ public class Lexicon : MonoBehaviour
 
 	public void CalcKeyLayout()
 	{
-		float width = keyboard.rectTransform.rect.width;
-		KeyWidth = width * 0.1f;
+		KeyWidth = keyboard.rectTransform.rect.width * 0.1f;
 		for (int i = 0; i < 26; ++i)
 		{
 			RectTransform key = keyboard.rectTransform.Find(((char)(i + 65)).ToString()).GetComponent<RectTransform>();
@@ -189,16 +187,12 @@ public class Lexicon : MonoBehaviour
 		if (LexiconSize > 0)
 			size = LexiconSize;
 		dict.Clear();
-		allWords.Clear();
 		for (int i = 0; i < size; ++i)
 		{
 			string line = lines[i];
 			Entry entry = new Entry(line.Split(' ')[0], int.Parse(line.Split(' ')[1]), this);
 			if (entry.locationSample[(int)Mode.FixStart].Length > 1)
-			{
 				dict.Add(entry);
-				allWords.Add(entry.word);
-			}
 		}
         foreach (Entry entry in dict)
             entry.languageModelPossibilty = entry.frequency;
@@ -220,52 +214,18 @@ public class Lexicon : MonoBehaviour
 
 	void InitPhrases()
 	{
-		TextAsset textAsset = Resources.Load("3000words") as TextAsset;
+		TextAsset textAsset = Resources.Load("pangrams_phrases") as TextAsset;
 		string[] lines = textAsset.text.Split('\n');
 		for (int i = 0; i < lines.Length; ++i)
 		{
-			if (lines[i].Length <= 1)
-				continue;
             string line = lines[i];
             if (line[line.Length - 1] < 'a' || line[line.Length - 1] > 'z')
                 line = line.Substring(0, line.Length - 1);
-                
-			string[] words = line.Split(' ');
-			bool available = true;
-			foreach(string word in words)
-				if (!allWords.Contains(word))
-				{
-					available = false;
-					break;
-				}
-			if (available)
-				phrase.Add(line);
+			phrase.Add(line);
 		}
-        /*
-        string tmp;
-        for (int i = 0; i < phrase.Count; ++i)
-            for (int j = i + 1; j < phrase.Count; ++j)
-            {
-                int iCnt = phrase[i].Split(' ').Length, jCnt = phrase[j].Split(' ').Length;
-                if (iCnt > jCnt || iCnt == jCnt && phrase[i].Length < phrase[j].Length)
-                {
-                    tmp = phrase[i];
-                    phrase[i] = phrase[j];
-                    phrase[j] = tmp;
-                }
-            }
-        StreamWriter sw = new StreamWriter("available_phrases.txt");
-        for (int i = 0; i < phrase.Count; ++i)
-            sw.WriteLine(phrase[i]);
-        sw.Close();
-        */
 
         Debug.Log("Phrases: " + phrase.Count + "/" + lines.Length);
-		textAsset = Resources.Load("pangrams") as TextAsset;
-        
-		lines = textAsset.text.Split('\n');
-		for (int i = 0; i < lines.Length; ++i)
-			phrase.Add(lines[i]);
+		
 		ChangePhrase();
 
 		int[] id = new int[24];
@@ -680,10 +640,8 @@ public class Lexicon : MonoBehaviour
 
 	public void ChangePhrase(int id = -1)
 	{
-		if (id >= 30)
-			id -= 30;
 		if (id == -1)
-			phraseText.text = phrase[Random.Range(0, phrase.Count - 3)];
+			phraseText.text = phrase[Random.Range(0, phrase.Count)];
 		else
 			phraseText.text = phrase[phraseList[id]];
 		words = phraseText.text.Split(' ');
