@@ -10,6 +10,7 @@ public class PCControl : MonoBehaviour {
 	public Lexicon lexicon;
 	public Gesture gesture;
 	public Info info;
+    public Parameter parameter;
 	public int blockID = 0, phraseID = 0; 
 	public InputField userID;
 	//public Text userID;
@@ -72,11 +73,11 @@ public class PCControl : MonoBehaviour {
 				lexicon.SetDebugDisplay(debugOn);
 			}
 			if (Input.GetKeyDown(KeyCode.M))
-				lexicon.ChangeMode();
+                parameter.ChangeMode();
 			if (Input.GetKeyDown(KeyCode.S))
-				lexicon.ChangeShapeFormula();
+                parameter.ChangeShapeFormula();
 			if (Input.GetKeyDown(KeyCode.L))
-				lexicon.ChangeLocationFormula();
+                parameter.ChangeLocationFormula();
 			if (Input.GetKeyDown(KeyCode.N))
 				lexicon.ChangePhrase();
 			if (Input.GetKeyDown(KeyCode.C))
@@ -96,15 +97,15 @@ public class PCControl : MonoBehaviour {
 			{
                 HideDisplay();
                 info.Clear();
-                if (Lexicon.userStudy == Lexicon.UserStudy.Basic)
+                if (Parameter.userStudy == Parameter.UserStudy.Basic)
                 {
-                    Lexicon.userStudy = Lexicon.UserStudy.Train;
+                    Parameter.userStudy = Parameter.UserStudy.Train;
                     lexicon.ChangePhrase();
                     lexicon.HighLight(-100);
                     info.Log("Phrase", "Warmup");
                     return;
                 }
-				Lexicon.userStudy = Lexicon.UserStudy.Study1;
+                Parameter.userStudy = Parameter.UserStudy.Study1;
 				lexicon.ChangePhrase(phraseID);
 				SendPhraseMessage();
 				lexicon.HighLight(-100);
@@ -115,11 +116,11 @@ public class PCControl : MonoBehaviour {
 			if (Input.GetKeyDown(KeyCode.Alpha2))
 			{
                 HideDisplay();
-				Lexicon.userStudy = Lexicon.UserStudy.Study2;
+                Parameter.userStudy = Parameter.UserStudy.Study2;
 				lexicon.ChangePhrase();
 				SendPhraseMessage();
 				info.Clear();
-                info.Log("Mode", Lexicon.mode.ToString());
+                info.Log("Mode", Parameter.mode.ToString());
                 info.Log("Block", (blockID+1).ToString() + "/8");
 				info.Log("Phrase", (phraseID % 6 + 1).ToString() + "/6");
                 blockID = (blockID + 1) % 8;
@@ -128,9 +129,9 @@ public class PCControl : MonoBehaviour {
 		if (Input.GetKeyDown(KeyCode.UpArrow))
 		{
 			if (Input.GetKey(KeyCode.E))
-				lexicon.ChangeEndOffset(0.1f);
+                parameter.ChangeEndOffset(0.1f);
 			if (Input.GetKey(KeyCode.R))
-				lexicon.ChangeRadius(0.1f);
+                parameter.ChangeRadius(0.1f);
 			if (Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift))
 				server.Send("TouchScreen Keyboard Height", "+");
 			if (Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl))
@@ -142,9 +143,9 @@ public class PCControl : MonoBehaviour {
 		if (Input.GetKeyDown(KeyCode.DownArrow))
 		{
 			if (Input.GetKey(KeyCode.E))
-				lexicon.ChangeEndOffset(-0.1f);
+                parameter.ChangeEndOffset(-0.1f);
 			if (Input.GetKey(KeyCode.R))
-				lexicon.ChangeRadius(-0.1f);
+                parameter.ChangeRadius(-0.1f);
 			if (Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift))
 				server.Send("TouchScreen Keyboard Height", "-");
 			if (Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl))
@@ -155,22 +156,22 @@ public class PCControl : MonoBehaviour {
 		}
 		if (Input.GetKeyDown(KeyCode.Space))
 		{
-			switch(Lexicon.userStudy)
+			switch(Parameter.userStudy)
 			{
-				case Lexicon.UserStudy.Basic:
+				case Parameter.UserStudy.Basic:
 					lexicon.ChangePhrase();
 					break;
-				case Lexicon.UserStudy.Train:
+				case Parameter.UserStudy.Train:
 					lexicon.ChangePhrase();
 					lexicon.HighLight(-1000);
 					break;
-				case Lexicon.UserStudy.Study1:
-					server.Send("Study1 End Phrase", Lexicon.mode.ToString());
+				case Parameter.UserStudy.Study1:
+					server.Send("Study1 End Phrase", Parameter.mode.ToString());
 					phraseID++;
 					
 					if (phraseID % 10 == 0)
 					{
-						Lexicon.userStudy = Lexicon.UserStudy.Train;
+                        Parameter.userStudy = Parameter.UserStudy.Train;
 						lexicon.ChangePhrase();
 						lexicon.HighLight(-100);
 						info.Log("Phrase", "Warmup");
@@ -181,12 +182,12 @@ public class PCControl : MonoBehaviour {
 					lexicon.HighLight(-100);
 					info.Log("Phrase", (phraseID+1).ToString() + "/60");
 					break;
-				case Lexicon.UserStudy.Study2:
-					server.Send("Study2 End Phrase", lexicon.inputText.text + "\n" + Lexicon.mode.ToString());
+				case Parameter.UserStudy.Study2:
+					server.Send("Study2 End Phrase", lexicon.inputText.text + "\n" + Parameter.mode.ToString());
 					phraseID++;
 					if (phraseID % 6 == 0)
 					{
-						Lexicon.userStudy = Lexicon.UserStudy.Basic;
+                        Parameter.userStudy = Parameter.UserStudy.Basic;
 						lexicon.ChangePhrase();
                         info.Log("Block", "<color=red>Rest</color>");
 						info.Log("Phrase", "<color=red>Rest</color>");
@@ -200,11 +201,11 @@ public class PCControl : MonoBehaviour {
 		}
 		if (Input.GetKeyDown(KeyCode.Backspace))
 		{
-			if (Lexicon.userStudy == Lexicon.UserStudy.Study1 || Lexicon.userStudy == Lexicon.UserStudy.Study2)
+			if (Parameter.userStudy == Parameter.UserStudy.Study1 || Parameter.userStudy == Parameter.UserStudy.Study2)
 				server.Send("Backspace", "");
-			if (Lexicon.userStudy == Lexicon.UserStudy.Study1 || Lexicon.userStudy == Lexicon.UserStudy.Train)
+			if (Parameter.userStudy == Parameter.UserStudy.Study1 || Parameter.userStudy == Parameter.UserStudy.Train)
 				lexicon.HighLight(-100);
-			if (Lexicon.userStudy == Lexicon.UserStudy.Study2 || Lexicon.userStudy == Lexicon.UserStudy.Basic)
+			if (Parameter.userStudy == Parameter.UserStudy.Study2 || Parameter.userStudy == Parameter.UserStudy.Basic)
 				lexicon.Clear();
 		}
 
@@ -241,11 +242,11 @@ public class PCControl : MonoBehaviour {
 
 	void SendPhraseMessage()
 	{
-		if (Lexicon.userStudy == Lexicon.UserStudy.Study1)
+		if (Parameter.userStudy == Parameter.UserStudy.Study1)
 			server.Send("Study1 New Phrase", 
 			            userID.text + "_" + phraseID.ToString() + ".txt" + "\n" + 
 			            lexicon.phraseText.text);
-		else if (Lexicon.userStudy == Lexicon.UserStudy.Study2)
+		else if (Parameter.userStudy == Parameter.UserStudy.Study2)
 			server.Send("Study2 New Phrase", 
 			            userID.text + "_" + phraseID.ToString() + ".txt" + "\n" + 
 			            lexicon.phraseText.text);

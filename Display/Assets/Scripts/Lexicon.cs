@@ -1,7 +1,5 @@
 ﻿using UnityEngine;
 using UnityEngine.UI;
-using System.IO;
-using System.Collections;
 using System.Collections.Generic;
 
 public class Lexicon : MonoBehaviour 
@@ -19,23 +17,15 @@ public class Lexicon : MonoBehaviour
 	private const int SampleSize = 32;
 	private const int RadialNum = 4;
 	private const int CandidatesNum = 12;
-	private const float DTWConst = 0.1f;
 	private const float AnyStartThr = 2.5f;
-    private const float eps = 1e-6f;
-	private float KeyWidth = 0f;
-	public static Vector2 StartPoint;
+    private const float eps = Parameter.eps;
+
+    public static Vector2 StartPoint;
 	public static Vector2 StartPointRelative = new Vector2(0f, 0f);
 
-	//Parameters
-	private float endOffset = 3.0f;
-	private float radiusMul = 0.20f, radius = 0;
-	private bool debugOn = false;
-
-    public static bool isCut = true;
+    //Parameters
+    public static bool isCut = false;
 	public static bool useRadialMenu = true;
-	public static Mode mode = Mode.Basic;
-	public static UserStudy userStudy = UserStudy.Basic;
-	public static Formula locationFormula = Formula.DTW, shapeFormula = Formula.Null;
 
 	//Internal Variables
 	private int choose = 0;
@@ -48,74 +38,40 @@ public class Lexicon : MonoBehaviour
 	private Candidate[] cands = new Candidate[CandidatesNum], candsTmp = new Candidate[CandidatesNum];
 	private Vector2[] keyPos = new Vector2[26];
 
-	private int[] DTWL = new int[SampleSize + 1], DTWR = new int[SampleSize + 1];
-	private float[][] dtw = new float[SampleSize+1][];
-
 	private List<string> phrase = new List<string>();
 	private int[] phraseList = new int[30];
 	private List<Candidate> history = new List<Candidate>();
-
-	//Definitions
-	public enum Mode
-	{
-		Basic = 0,
-		FixStart = 1,
-		AnyStart = 2,
-		End = 3,
-	};
-	
-	public enum Formula
-	{
-		Basic = 0,
-		MinusR = 1,
-		DTW = 2,
-		Null = 3,
-		End = 4,
-	}
-
-	public enum UserStudy
-	{
-		Basic = 0,
-		Train = 1,
-		Study1 = 2,
-		Study2 = 3,
-		End = 4,
-	}
+    private List<Entry> dict = new List<Entry>();
 
 	public class Entry
 	{
 		public string word;
-		public int frequency;
+		public long frequency;
 		public float languageModelPossibilty;
 		public List<Vector2> pts = new List<Vector2>();
 		public Vector2[][] locationSample = new Vector2[3][];
 		public Vector2[][] shapeSample = new Vector2[3][];
-		public Entry(string word, int frequency, Lexicon lexicon)
+		public Entry(string word, long frequency, Lexicon lexicon)
 		{
 			this.word = word;
 			this.frequency = frequency;
 			int key = -1;
 			for (int i = 0; i < word.Length; ++i)
 			{
-				key = word[i] - 97;
-				if (key >= 0 && key <= 25 || key+32 >=0 && key+32 <=25) 
-				{
-					if (key < 0)
-						key += 32;
-					pts.Add(lexicon.keyPos[key]);
-				}
+				key = word[i] - 'a';
+				pts.Add(lexicon.keyPos[key]);
 			}
-			locationSample[0] = lexicon.TemporalSampling(pts.ToArray());
+			locationSample[0] = PathCalc.TemporalSampling(pts.ToArray());
             bool ins = false;
             if (Vector2.Distance(pts[0], StartPoint) > eps)
                 ins = true;
             if (ins)
                 pts.Insert(0, StartPoint);
-			locationSample[1] = lexicon.TemporalSampling(pts.ToArray());
+			locationSample[1] = PathCalc.TemporalSampling(pts.ToArray());
             if (ins)
                 pts.RemoveAt(0);
-			for(int i = 0; i < (int)Mode.End; ++i)
-				shapeSample[i] = lexicon.Normalize(locationSample[i]);
+			for(int i = 0; i < (int)Parameter.Mode.End; ++i)
+				shapeSample[i] = PathCalc.Normalize(locationSample[i]);
 		}
 	}
 
@@ -139,12 +95,10 @@ public class Lexicon : MonoBehaviour
 		}
 	}
 
-	private List<Entry> dict = new List<Entry>();
-
 	// Use this for initialization
 	void Start () 
 	{
-		info.Log("Mode", mode.ToString());
+		info.Log("Mode", Parameter.mode.ToString());
 		//info.Log("[L]ocation", locationFormula.ToString());
 		//info.Log("[S]hape", shapeFormula.ToString());
 		history.Clear();
@@ -152,13 +106,7 @@ public class Lexicon : MonoBehaviour
 		SetRadialMenuDisplay(false);
 		CalcKeyLayout();
 		CalcLexicon();
-		ChangeRadius(0);
-		ChangeEndOffset(0);
-		InitDTW();
 		InitPhrases();
-
-		//Alternative Start Option
-		ChangeMode();
 	}
 	
 	// Update is called once per frame
@@ -169,7 +117,6 @@ public class Lexicon : MonoBehaviour
 
 	public void CalcKeyLayout()
 	{
-		KeyWidth = keyboard.rectTransform.rect.width * 0.1f;
 		for (int i = 0; i < 26; ++i)
 		{
 			RectTransform key = keyboard.rectTransform.Find(((char)(i + 65)).ToString()).GetComponent<RectTransform>();
@@ -191,26 +138,12 @@ public class Lexicon : MonoBehaviour
 		{
 			string line = lines[i];
 			Entry entry = new Entry(line.Split(' ')[0], int.Parse(line.Split(' ')[1]), this);
-			if (entry.locationSample[(int)Mode.FixStart].Length > 1)
+			if (entry.locationSample[(int)Parameter.Mode.FixStart].Length > 1)
 				dict.Add(entry);
 		}
         foreach (Entry entry in dict)
             entry.languageModelPossibilty = entry.frequency;
     }
-
-	void InitDTW()
-	{
-		int w = (int)(SampleSize * DTWConst);
-		for (int i = 0; i <= SampleSize; ++i)
-		{
-			dtw[i] = new float[SampleSize + 1];
-			DTWL[i] = Mathf.Max(i - w, 0);
-			DTWR[i] = Mathf.Min(i + w, SampleSize);
-			for (int j = 0; j <= SampleSize; ++j)
-				dtw[i][j] = float.MaxValue;
-		}
-		dtw[0][0] = 0;
-	}
 
 	void InitPhrases()
 	{
@@ -228,6 +161,7 @@ public class Lexicon : MonoBehaviour
 		
 		ChangePhrase();
 
+        /*
 		int[] id = new int[24];
 		for (int i = 0; i < 24; ++i)
 			id[i] = i;
@@ -252,11 +186,7 @@ public class Lexicon : MonoBehaviour
 			while (phraseList[p] > 0) ++p;
 			phraseList[p++] = id[i];
         }
-	}
-
-	float sqr(float x)
-	{
-		return x * x;
+        */
 	}
 
 	string underline(char ch, int length)
@@ -267,122 +197,13 @@ public class Lexicon : MonoBehaviour
 		return under;
 	}
 
-	float Match(Vector2[] A, Vector2[] B, Formula formula, bool isShape = false)
-	{
-		if (A.Length != B.Length || formula == Formula.Null)
-			return 0;
-		/*if (Vector2.Distance(A[0], B[0]) > KeyWidth)
-			return 0;*/
-		if (Vector2.Distance(A[A.Length - 1], B[B.Length - 1]) > endOffset * KeyWidth)
-			return 0;
-		dis = 0;
-		switch(formula)
-		{
-			case (Formula.Basic):
-				for (int i = 0; i < SampleSize; ++i)
-				{
-					dis += Vector2.Distance(A[i], B[i]);
-				}
-				break;
-			case (Formula.MinusR):
-				for (int i = 0; i < SampleSize; ++i)
-				{
-					dis += Mathf.Max(0, Vector2.Distance(A[i], B[i]) - radius);
-				}
-				break;
-			case (Formula.DTW):
-				for (int i = 0; i < SampleSize; ++i)
-				{
-					//float gap = float.MaxValue;
-					for (int j = DTWL[i]; j < DTWR[i]; ++j)
-					{
-						dtw[i+1][j+1] = Vector2.Distance(A[i], B[j]) + Mathf.Min(dtw[i][j], Mathf.Min(dtw[i][j+1], dtw[i+1][j]));
-						//gap = Mathf.Min(gap, dtw[i+1][j+1]);
-					}
-					//if (gap > candsTmp[CandidatesNum - 1].DTWDistance)
-						//return 0;
-				}
-				dis = dtw[SampleSize][SampleSize];
-				break;
-		}
-		dis /= SampleSize;
-        if (!isShape)
-	        return Mathf.Exp(-0.5f * dis * dis / radius / radius);
-        else
-            return Mathf.Exp(-0.5f * dis * dis / (radiusMul*0.1f) / (radiusMul*0.1f));
-
-    }
-	public Vector2[] TemporalSampling(Vector2[] stroke)
-	{
-		float length = 0;
-		int count = stroke.Length;
-		Vector2[] vector = new Vector2[SampleSize];
-		if (count == 1)
-		{
-			for (int i = 0; i < SampleSize; ++i)
-				vector[i] = stroke[0];
-			return vector;
-		}
-
-		for (int i = 0; i < count - 1; ++i)
-			length += Vector2.Distance(stroke[i], stroke[i + 1]);
-		float increment = length / (SampleSize - 1);
-
-		Vector2 last = stroke[0];
-		float distSoFar = 0;
-		int id = 1, vecID = 1;
-		vector[0] = stroke[0];
-		while (id < count)
-		{
-			float dist = Vector2.Distance(last, stroke[id]);
-			if (distSoFar + dist >= increment)
-			{
-				float ratio = (increment - distSoFar) / dist;
-				last = last + ratio * (stroke[id] - last);
-				vector[vecID++] = last;
-				distSoFar = 0;
-			}
-			else
-			{
-				distSoFar += dist;
-				last = stroke[id++];
-			}
-		}
-		for (int i = vecID; i < SampleSize; ++i)
-			vector[i] = stroke[count - 1];
-		return vector;
-	}
-
-	public Vector2[] Normalize(Vector2[] pts)
-	{
-		if (pts == null)
-			return null;
-		float minX = 1f, minY = 1f;
-		float maxX = -1f, maxY = -1f;
-
-		Vector2 center = new Vector2(0, 0);
-		int size = pts.Length;
-		for (int i = 0; i < size; ++i)
-		{
-			center += pts[i];
-			minX = Mathf.Min(minX, pts[i].x);
-			maxX = Mathf.Max(maxX, pts[i].x);
-			minY = Mathf.Min(minY, pts[i].y);
-			maxY = Mathf.Max(maxY, pts[i].y);
-		}
-		center = center / size;
-		float ratio = 1.0f / Mathf.Max(maxX - minX, maxY - minY);
-		Vector2[] nPts = new Vector2[size];
-		for(int i = 0; i < size; ++i)
-			nPts[i] = (pts[i] - center) * ratio;
-		return nPts;
-	}
+	
+	
 
 	public Candidate[] Recognize(Vector2[] rawStroke)
 	{
-
-		Vector2[] stroke = TemporalSampling(rawStroke);
-		Vector2[] nStroke = Normalize(stroke);
+		Vector2[] stroke = PathCalc.TemporalSampling(rawStroke);
+		Vector2[] nStroke = PathCalc.Normalize(stroke);
 
 		for (int i = 0; i < CandidatesNum; ++i)
 			candsTmp[i] = new Candidate();
@@ -391,25 +212,27 @@ public class Lexicon : MonoBehaviour
 		{
             if (rawStroke.Length == 1 && entry.word.Length != 1)
                 continue;
-			Candidate newCandidate = new Candidate();
-			newCandidate.word = entry.word;
-			if (mode == Mode.AnyStart)
+            Candidate newCandidate = new Candidate
+            {
+                word = entry.word
+            };
+            if (Parameter.mode == Parameter.Mode.AnyStart)
 			{
-				if (Vector2.Distance(entry.locationSample[0][0], stroke[0]) > AnyStartThr * KeyWidth)
+				if (Vector2.Distance(entry.locationSample[0][0], stroke[0]) > AnyStartThr * Parameter.KeyWidth)
 					continue;
 				entry.pts.Insert(0, stroke[0]);
-				entry.locationSample[(int)mode] = TemporalSampling(entry.pts.ToArray());
-				entry.shapeSample[(int)mode] = Normalize(entry.locationSample[(int)mode]);
+				entry.locationSample[(int)Parameter.mode] = PathCalc.TemporalSampling(entry.pts.ToArray());
+				entry.shapeSample[(int)Parameter.mode] = PathCalc.Normalize(entry.locationSample[(int)Parameter.mode]);
 				entry.pts.RemoveAt(0);
 			}
-			newCandidate.confidence = newCandidate.location = Match(stroke, entry.locationSample[(int)mode], locationFormula);
+			newCandidate.confidence = newCandidate.location = PathCalc.Match(stroke, entry.locationSample[(int)Parameter.mode], Parameter.locationFormula);
             if (newCandidate.location == 0)
 				continue;
-			if (locationFormula == Formula.DTW)
+			if (Parameter.locationFormula == Parameter.Formula.DTW)
 				newCandidate.DTWDistance = dis * SampleSize;
-			if (shapeFormula != Formula.Null)
+			if (Parameter.shapeFormula != Parameter.Formula.Null)
 			{
-				newCandidate.shape = Match(nStroke, entry.shapeSample[(int)mode], shapeFormula, true);
+				newCandidate.shape = PathCalc.Match(nStroke, entry.shapeSample[(int)Parameter.mode], Parameter.shapeFormula, true);
 				if (newCandidate.shape == 0)
 					continue;
 				newCandidate.confidence *= newCandidate.shape;
@@ -460,7 +283,7 @@ public class Lexicon : MonoBehaviour
         {
             int id = panel * 4 + i;
             string text = cands[id].word;
-            if (debugOn)
+            if (Parameter.debugOn)
                 text += "\n" + cands[id].location.ToString(".00") + " " + cands[id].shape.ToString(".00") + " " + cands[id].language.ToString(".00");
             if (useRadialMenu)
                 radialText[i].text = text;
@@ -587,55 +410,10 @@ public class Lexicon : MonoBehaviour
 
 	public void SetDebugDisplay(bool debugOn)
 	{
-		this.debugOn = debugOn;
+		Parameter.debugOn = debugOn;
 		if (cands[0] == null || cands[0].word.Length <= 0)
 			return;
 		SetCandidates(cands);
-	}
-
-	public void ChangeMode()
-	{
-		mode = mode + 1;
-		if (mode >= Mode.End)
-			mode = 0;
-		info.Log("Mode", mode.ToString());
-	}
-
-	public void ChangeLocationFormula()
-	{
-		locationFormula = locationFormula + 1;
-		if (locationFormula >= Formula.End)
-			locationFormula = 0;
-		if (debugOn)
-			info.Log("[L]ocation", locationFormula.ToString());
-	}
-
-	public void ChangeShapeFormula()
-	{
-		shapeFormula = shapeFormula + 1;
-		if (shapeFormula >= Formula.End)
-			shapeFormula = 0;
-		if (debugOn)
-			info.Log("[S]hape", shapeFormula.ToString());
-	}
-
-	public void ChangeRadius(float delta)
-	{
-		if (radiusMul + delta <= eps)
-			return;
-		radiusMul += delta;
-		radius = KeyWidth * radiusMul;
-		if (debugOn)
-			info.Log("[R]adius", radiusMul.ToString("0.00") + "key");
-	}
-
-	public void ChangeEndOffset(float delta)
-	{
-		if (endOffset + delta <= 0)
-			return;
-		endOffset += delta;
-		if (debugOn)
-			info.Log("[E]ndOffset", endOffset.ToString("0.0"));
 	}
 
 	public void ChangePhrase(int id = -1)
@@ -657,7 +435,7 @@ public class Lexicon : MonoBehaviour
 		//for (int i = 0; i < CandidatesNum; ++i)
 			//btn[i] = candidates.transform.Find("Candidate" + i.ToString()).GetComponent<Button>();
 		useRadialMenu ^= change;
-		if (debugOn)
+		if (Parameter.debugOn)
 			if (useRadialMenu)
 			{
 				info.Log("[C]hoose", "Radial");
