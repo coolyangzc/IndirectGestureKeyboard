@@ -14,8 +14,8 @@ lines = phrase_fd.readlines()
 print('the quick brown fox jumps over the lazy dog', file=outfd)
 print('the five boxing wizards jump quickly', file=outfd)
 for line in lines:
-    line = line.decode('utf-8').strip().lower()
-    words = line.split(' ')
+    line = line.decode('utf-8').strip()
+    words = line.lower().split(' ')
     ok = True
     for word in words:
         if word not in dict:
