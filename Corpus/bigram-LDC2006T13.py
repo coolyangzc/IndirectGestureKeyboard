@@ -3,8 +3,8 @@ import re
 import string
 
 words = {}
-unigrams = {}
-bigrams = {}
+unigrams, bigrams = {}, {}
+phrase_bigrams = {}
 N = 10000
 BIGRAM_PAIRS = 1000000
 
@@ -17,6 +17,17 @@ def read_corpus():
         data = line.split(' ')
         words[data[0]] = int(data[1])
     words['<s>'] = 0
+    f.close()
+
+
+def read_phrases():
+    f = open('pangrams_phrases.txt', 'r')
+    lines = f.readlines()
+    for line in lines:
+        words = line.strip().split(' ')
+        words.insert(0, '<s>')
+        for i in range(len(words)-1):
+            phrase_bigrams[words[i] + ' ' + words[i+1]] = 1
     f.close()
 
 
@@ -78,11 +89,21 @@ def calc_bigrams():
         unigrams[pre] += freq
         unigrams[suc] += freq
         bigrams[pair] = freq
-        if done <= BIGRAM_PAIRS:
+        if pair in phrase_bigrams:
             used_bigrams[pair] = freq
         if done % 100000 == 0:
             print('Read', done / 100000, '/', len(lines) / 100000)
     f.close()
+    for pair, freq in bigrams.items():
+        if pair not in used_bigrams:
+            used_bigrams[pair] = freq
+            if len(used_bigrams) == BIGRAM_PAIRS:
+                break
+
+    sorted_bigrams = sorted(used_bigrams.items(), key=lambda d: d[1], reverse=True)
+    used_bigrams = {}
+    for bigram in sorted_bigrams:
+        used_bigrams[bigram[0]] = bigram[1]
 
     f = open('bigrams-LDC-10k-katz.txt', 'w')
     cnt = {}
@@ -136,6 +157,7 @@ def calc_bigrams():
 
 
 read_corpus()
+read_phrases()
 
 # Clean 2gms for 10K words
 # scan_files()
