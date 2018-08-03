@@ -1,6 +1,6 @@
-﻿using UnityEngine;
+﻿using System.Net;
+using UnityEngine;
 using UnityEngine.Networking;
-using UnityEngine.Networking.NetworkSystem;
 
 public class MyMsgType
 {
@@ -48,7 +48,8 @@ public class Server : MonoBehaviour
 	
 	string GetIP()
 	{
-        return Network.player.ipAddress;
+        IPAddress[] ips = Dns.GetHostAddresses(Dns.GetHostName());
+        return ips[1].ToString();
     }
 
     void OnConnected(NetworkMessage netMsg)
