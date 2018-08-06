@@ -223,9 +223,9 @@ public class Lexicon : MonoBehaviour
 				entry.shapeSample[(int)Parameter.mode] = PathCalc.Normalize(entry.locationSample[(int)Parameter.mode]);
 				entry.pts.RemoveAt(0);
 			}
-            newCandidate.location = PathCalc.Match(stroke, entry.locationSample[(int)Parameter.mode], Parameter.locationFormula);
-            if (newCandidate.location == Parameter.inf)
-				continue;
+            if (Vector2.Distance(stroke[SampleSize - 1], entry.locationSample[(int)Parameter.mode][SampleSize - 1]) 
+                > Parameter.endOffset * Parameter.keyWidth)
+                continue;
             int w = history.Count - 1;
             w = System.Math.Min(w, words.Length - 1);
             string pre = "<s>";
@@ -238,12 +238,17 @@ public class Lexicon : MonoBehaviour
             {
                 biF = katzAlpha[pre] * entry.frequency;
                 if (biF == 0)
-                    biF = -Parameter.inf;
+                    continue;
             }
             newCandidate.language = Mathf.Log(biF);
+            newCandidate.location = PathCalc.Match(stroke, entry.locationSample[(int)Parameter.mode], Parameter.locationFormula,
+                (newCandidate.language - candsTmp[CandidatesNum - 1].confidence) / 100 * Parameter.keyboardWidth * SampleSize);
+            if (newCandidate.location == Parameter.inf)
+                continue;
+
             newCandidate.confidence = newCandidate.language - 100 * newCandidate.location;
-            if (newCandidate.confidence < candsTmp[CandidatesNum - 1].confidence)
-				continue;
+            //if (newCandidate.confidence < candsTmp[CandidatesNum - 1].confidence)
+				//continue;
 			for (int i = 0; i < CandidatesNum; ++i)
 				if (newCandidate.confidence > candsTmp[i].confidence)
 				{

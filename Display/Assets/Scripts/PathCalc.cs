@@ -95,14 +95,13 @@ public class PathCalc : MonoBehaviour {
         return nPts;
     }
 
-    public static float Match(Vector2[] A, Vector2[] B, Parameter.Formula formula, bool isShape = false)
+    public static float Match(Vector2[] A, Vector2[] B, Parameter.Formula formula, 
+                              float threshold = Parameter.inf, bool isShape = false)
     {
         if (A.Length != B.Length || formula == Parameter.Formula.Null)
             return inf;
         /*if (Vector2.Distance(A[0], B[0]) > KeyWidth)
 			return 0;*/
-        if (Vector2.Distance(A[A.Length - 1], B[B.Length - 1]) > Parameter.endOffset * Parameter.keyWidth)
-            return inf;
         float dis = 0;
         
         switch (formula)
@@ -122,14 +121,14 @@ public class PathCalc : MonoBehaviour {
             case (Parameter.Formula.DTW):
                 for (int i = 0; i < SampleSize; ++i)
                 {
-                    //float gap = float.MaxValue;
+                    float gap = float.MaxValue;
                     for (int j = DTWL[i]; j < DTWR[i]; ++j)
                     {
                         dtw[i + 1][j + 1] = Vector2.Distance(A[i], B[j]) + Mathf.Min(dtw[i][j], Mathf.Min(dtw[i][j + 1], dtw[i + 1][j]));
-                        //gap = Mathf.Min(gap, dtw[i+1][j+1]);
+                        gap = Mathf.Min(gap, dtw[i+1][j+1]);
                     }
-                    //if (gap > candsTmp[CandidatesNum - 1].DTWDistance)
-                    //return 0;
+                    if (gap > threshold)
+                        return Parameter.inf;
                 }
                 dis = dtw[SampleSize][SampleSize];
                 break;
