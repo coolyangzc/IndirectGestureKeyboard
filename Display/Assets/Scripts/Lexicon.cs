@@ -29,7 +29,6 @@ public class Lexicon : MonoBehaviour
 
 	//Internal Variables
 	private int choose = 0;
-	private float dis = 0;
 	private int highLight = 0;
 	private string[] words;
 	private Button[] btn = new Button[CandidatesNum];
@@ -42,12 +41,13 @@ public class Lexicon : MonoBehaviour
 	private int[] phraseList = new int[30];
 	private List<Candidate> history = new List<Candidate>();
     private List<Entry> dict = new List<Entry>();
+    private Dictionary<string, float> katzAlpha = new Dictionary<string, float>();
+    private Dictionary<string, float> bigramMap = new Dictionary<string, float>();
 
-	public class Entry
+    public class Entry
 	{
 		public string word;
 		public long frequency;
-		public float languageModelPossibilty;
 		public List<Vector2> pts = new List<Vector2>();
 		public Vector2[][] locationSample = new Vector2[3][];
 		public Vector2[][] shapeSample = new Vector2[3][];
@@ -78,12 +78,11 @@ public class Lexicon : MonoBehaviour
 	public class Candidate
 	{
 		public string word;
-		public float location, shape, language, confidence, DTWDistance;
+		public float location, shape, language, confidence;
 		public Candidate(string word_ = "")
 		{
 			word = word_;
-			confidence = 0;
-			DTWDistance = float.MaxValue;
+			confidence = -Parameter.inf;
 		}
 		public Candidate(Candidate x)
 		{
@@ -91,7 +90,6 @@ public class Lexicon : MonoBehaviour
 			location = x.location;
 			shape = x.shape;
 			confidence = x.confidence;
-			DTWDistance = x.DTWDistance;
 		}
 	}
 
@@ -104,8 +102,8 @@ public class Lexicon : MonoBehaviour
 		history.Clear();
 		ChangeCandidatesChoose(false);
 		SetRadialMenuDisplay(false);
-		CalcKeyLayout();
-		CalcLexicon();
+		//CalcKeyLayout();
+		//CalcLexicon();
 		InitPhrases();
 	}
 	
@@ -121,28 +119,32 @@ public class Lexicon : MonoBehaviour
 		{
 			RectTransform key = keyboard.rectTransform.Find(((char)(i + 65)).ToString()).GetComponent<RectTransform>();
 			keyPos[i] = new Vector2(key.localPosition.x, key.localPosition.y);
-			Debug.Log(((char)(i + 65)).ToString() + ":" + keyPos[i].x.ToString() + "," + keyPos[i].y.ToString());
 		}
 		StartPoint = keyPos[6]; //keyG
 	}
 
 	public void CalcLexicon()
 	{
-		TextAsset textAsset = Resources.Load("ANC-written-noduplicate+pangram") as TextAsset;
-		string[] lines = textAsset.text.Split('\n');
-		int size = lines.Length;
-		if (LexiconSize > 0)
-			size = LexiconSize;
-		dict.Clear();
-		for (int i = 0; i < size; ++i)
-		{
-			string line = lines[i];
-			Entry entry = new Entry(line.Split(' ')[0], int.Parse(line.Split(' ')[1]), this);
-			if (entry.locationSample[(int)Parameter.Mode.FixStart].Length > 1)
-				dict.Add(entry);
-		}
-        foreach (Entry entry in dict)
-            entry.languageModelPossibilty = entry.frequency;
+        TextAsset textAsset = Resources.Load("bigrams-LDC-10k-katz-1m-phrase") as TextAsset;
+        string[] lines = textAsset.text.Split('\n');
+        int bigramsNum = int.Parse(lines[0]);
+        for (int i = 1; i <= bigramsNum; ++i)
+        {
+            string[] data = lines[i].Split(' ');
+            bigramMap.Add(data[0] + ' ' + data[1], float.Parse(data[2]));
+        }
+        int unigramsNum = int.Parse(lines[bigramsNum + 1]);
+        Debug.Log(unigramsNum);
+        dict.Clear();
+        for (int i = 0; i < unigramsNum; ++i)
+        {
+            string[] data = lines[i + bigramsNum + 2].Split(' ');
+            katzAlpha.Add(data[0], float.Parse(data[2]));
+            if (data[0] == "<s>")
+                continue;
+            Entry entry = new Entry(data[0], long.Parse(data[1]), this);
+            dict.Add(entry);
+        }
     }
 
 	void InitPhrases()
@@ -189,7 +191,7 @@ public class Lexicon : MonoBehaviour
         */
 	}
 
-	string underline(char ch, int length)
+	string Underline(char ch, int length)
 	{
 		string under = "";
 		for(int i = 0; i < length; ++i)
@@ -197,13 +199,9 @@ public class Lexicon : MonoBehaviour
 		return under;
 	}
 
-	
-	
-
 	public Candidate[] Recognize(Vector2[] rawStroke)
 	{
 		Vector2[] stroke = PathCalc.TemporalSampling(rawStroke);
-		Vector2[] nStroke = PathCalc.Normalize(stroke);
 
 		for (int i = 0; i < CandidatesNum; ++i)
 			candsTmp[i] = new Candidate();
@@ -218,28 +216,33 @@ public class Lexicon : MonoBehaviour
             };
             if (Parameter.mode == Parameter.Mode.AnyStart)
 			{
-				if (Vector2.Distance(entry.locationSample[0][0], stroke[0]) > AnyStartThr * Parameter.KeyWidth)
+				if (Vector2.Distance(entry.locationSample[0][0], stroke[0]) > AnyStartThr * Parameter.keyWidth)
 					continue;
 				entry.pts.Insert(0, stroke[0]);
 				entry.locationSample[(int)Parameter.mode] = PathCalc.TemporalSampling(entry.pts.ToArray());
 				entry.shapeSample[(int)Parameter.mode] = PathCalc.Normalize(entry.locationSample[(int)Parameter.mode]);
 				entry.pts.RemoveAt(0);
 			}
-			newCandidate.confidence = newCandidate.location = PathCalc.Match(stroke, entry.locationSample[(int)Parameter.mode], Parameter.locationFormula);
-            if (newCandidate.location == 0)
+            newCandidate.location = PathCalc.Match(stroke, entry.locationSample[(int)Parameter.mode], Parameter.locationFormula);
+            if (newCandidate.location == Parameter.inf)
 				continue;
-			if (Parameter.locationFormula == Parameter.Formula.DTW)
-				newCandidate.DTWDistance = dis * SampleSize;
-			if (Parameter.shapeFormula != Parameter.Formula.Null)
-			{
-				newCandidate.shape = PathCalc.Match(nStroke, entry.shapeSample[(int)Parameter.mode], Parameter.shapeFormula, true);
-				if (newCandidate.shape == 0)
-					continue;
-				newCandidate.confidence *= newCandidate.shape;
-			}
-			newCandidate.language = entry.languageModelPossibilty;
-			newCandidate.confidence *= newCandidate.language;
-			if (newCandidate.confidence < candsTmp[CandidatesNum - 1].confidence)
+            int w = history.Count - 1;
+            w = System.Math.Min(w, words.Length - 1);
+            string pre = "<s>";
+            if (w >= 0)
+                pre = words[w];
+            float biF = 0;
+            if (bigramMap.ContainsKey(pre + ' ' + entry.word))
+                biF = bigramMap[pre + ' ' + entry.word];
+            else
+            {
+                biF = katzAlpha[pre] * entry.frequency;
+                if (biF == 0)
+                    biF = -Parameter.inf;
+            }
+            newCandidate.language = Mathf.Log(biF);
+            newCandidate.confidence = newCandidate.language - 100 * newCandidate.location;
+            if (newCandidate.confidence < candsTmp[CandidatesNum - 1].confidence)
 				continue;
 			for (int i = 0; i < CandidatesNum; ++i)
 				if (newCandidate.confidence > candsTmp[i].confidence)
@@ -250,7 +253,7 @@ public class Lexicon : MonoBehaviour
 					break;
 				}
 		}
-		return candsTmp;
+        return candsTmp;
 	}
 
 	public void SetCandidates(Candidate[] candList)
@@ -272,7 +275,7 @@ public class Lexicon : MonoBehaviour
 			if (text.Length > 0)
 				space = " ";
 			inputText.text = text + space + cands[0].word;
-			underText.text = under + space + underline('_', cands[0].word.Length);
+			underText.text = under + space + Underline('_', cands[0].word.Length);
 		}
 	}
 
@@ -284,7 +287,8 @@ public class Lexicon : MonoBehaviour
             int id = panel * 4 + i;
             string text = cands[id].word;
             if (Parameter.debugOn)
-                text += "\n" + cands[id].location.ToString(".00") + " " + cands[id].shape.ToString(".00") + " " + cands[id].language.ToString(".00");
+                text += "\n" + cands[id].location.ToString(".000") + " " + cands[id].language.ToString(".000") 
+                    + " " + cands[id].confidence.ToString(".000");
             if (useRadialMenu)
                 radialText[i].text = text;
             else
@@ -303,7 +307,7 @@ public class Lexicon : MonoBehaviour
 		if (text.Length > 0)
 			space = " ";
 		inputText.text = text + space + cands[choose].word;
-		underText.text = under + space + underline('_', cands[choose].word.Length);
+		underText.text = under + space + Underline('_', cands[choose].word.Length);
 		btn[choose].Select();
 	}
 
@@ -324,7 +328,7 @@ public class Lexicon : MonoBehaviour
 			history.Add(new Candidate(word));
 		else
 		{
-			under += underline(' ', word.Length);
+			under += Underline(' ', word.Length);
 			underText.text = under;
 		}
 		
@@ -358,11 +362,11 @@ public class Lexicon : MonoBehaviour
 			text += history[i].word + " ";
 			length += history[i].word.Length + 1;
 		}
-		under = underline(' ', length);
+		under = Underline(' ', length);
 		if (history.Count > 0)
 		{
 			text += history[history.Count - 1].word;
-			under += underline('_', history[history.Count - 1].word.Length);
+			under += Underline('_', history[history.Count - 1].word.Length);
 		}
 		inputText.text = text;
 		if (!useRadialMenu)
@@ -405,7 +409,6 @@ public class Lexicon : MonoBehaviour
 		inputText.text = text;
 		history.Add(new Candidate(key.ToString()));
 		return key;
-
 	}
 
 	public void SetDebugDisplay(bool debugOn)

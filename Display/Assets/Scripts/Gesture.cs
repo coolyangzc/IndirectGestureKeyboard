@@ -12,9 +12,7 @@ public class Gesture : MonoBehaviour {
 	public Lexicon lexicon;
 	
 	public bool chooseCandidate = false;
-	private bool ratioChanged = false;
     private int menuGestureCount = 0;
-	private float keyboardWidth, keyboardHeight;
 	private float length, lastBeginTime, lastEndTime;
 	private Vector2 StartPointRelative;
 	private Vector2 beginPoint, prePoint, localPoint;
@@ -26,8 +24,6 @@ public class Gesture : MonoBehaviour {
 	// Use this for initialization
 	void Start() 
 	{
-		keyboardWidth = keyboard.rectTransform.rect.width;
-		keyboardHeight = keyboard.rectTransform.rect.height;
 		StartPointRelative = Lexicon.StartPointRelative;
         lastEndTime = -1;
 	}
@@ -36,27 +32,6 @@ public class Gesture : MonoBehaviour {
 	void Update() 
 	{
 		
-	}
-
-	public void ChangeRatio()
-	{
-		Vector3 pos = keyboard.GetComponent<RectTransform>().localPosition;
-		Vector2 size = keyboard.GetComponent<RectTransform>().sizeDelta;
-		if (ratioChanged)
-		{
-			size.x = 1000; size.y = 300;
-			pos.y = 0.5f;
-		}
-		else
-		{
-			size.x = 700; size.y = 630;
-			pos.y = -0.1f;
-		}
-		keyboard.GetComponent<RectTransform>().sizeDelta = size;
-		keyboard.GetComponent<RectTransform>().localPosition = pos;
-		keyboardWidth = keyboard.rectTransform.rect.width;
-		keyboardHeight = keyboard.rectTransform.rect.height;
-		ratioChanged ^= true;
 	}
 
 	public void Begin(float x, float y)
@@ -71,21 +46,21 @@ public class Gesture : MonoBehaviour {
 		length = 0;
 		if (Lexicon.useRadialMenu && chooseCandidate)
 		{
-			cursor.transform.localPosition = new Vector3(StartPointRelative.x * keyboardWidth, 
-			                                             StartPointRelative.y * keyboardHeight, -0.2f);
+			cursor.transform.localPosition = new Vector3(StartPointRelative.x * Parameter.keyboardWidth, 
+			                                             StartPointRelative.y * Parameter.keyboardHeight, -0.2f);
 			return;
 		}
 		switch (Parameter.mode)
 		{
 			case (Parameter.Mode.Basic):
 			case (Parameter.Mode.AnyStart):
-				cursor.transform.localPosition = new Vector3(x * keyboardWidth, y * keyboardHeight, -0.2f);
+				cursor.transform.localPosition = new Vector3(x * Parameter.keyboardWidth, y * Parameter.keyboardHeight, -0.2f);
 				stroke.Clear();
 				stroke.Add(new Vector2(x, y));
 				break;
 			case (Parameter.Mode.FixStart):
-				cursor.transform.localPosition = new Vector3(StartPointRelative.x * keyboardWidth, 
-				                                             StartPointRelative.y * keyboardHeight, -0.2f);
+				cursor.transform.localPosition = new Vector3(StartPointRelative.x * Parameter.keyboardWidth, 
+				                                             StartPointRelative.y * Parameter.keyboardHeight, -0.2f);
 				stroke.Clear();
 				stroke.Add(Lexicon.StartPointRelative);
 				break;
@@ -105,7 +80,7 @@ public class Gesture : MonoBehaviour {
 			x = x - beginPoint.x + StartPointRelative.x;
 			y = y - beginPoint.y + StartPointRelative.y;
 		}
-		cursor.transform.localPosition = new Vector3(x * keyboardWidth, y * keyboardHeight, -0.2f);
+		cursor.transform.localPosition = new Vector3(x * Parameter.keyboardWidth, y * Parameter.keyboardHeight, -0.2f);
         if (Vector2.Distance(new Vector2(x, y), stroke[stroke.Count - 1]) > eps)
 		    stroke.Add(new Vector2(x, y));
 
@@ -157,7 +132,7 @@ public class Gesture : MonoBehaviour {
 			x = x - beginPoint.x + StartPointRelative.x;
 			y = y - beginPoint.y + StartPointRelative.y;
 		}
-		cursor.transform.localPosition = new Vector3(x * keyboardWidth, y * keyboardHeight, -0.2f);
+		cursor.transform.localPosition = new Vector3(x * Parameter.keyboardWidth, y * Parameter.keyboardHeight, -0.2f);
         if (lastEndTime == -1 || Time.time - lastEndTime > 0.2)
             lastEndTime = Time.time;
         else
@@ -187,7 +162,7 @@ public class Gesture : MonoBehaviour {
 		if (Parameter.mode == Parameter.Mode.FixStart)
 		{
 			cursor.GetComponent<TrailRendererHelper>().Reset();
-			cursor.transform.localPosition = new Vector3(StartPointRelative.x * keyboardWidth, StartPointRelative.y * keyboardHeight, -0.2f);
+			cursor.transform.localPosition = new Vector3(StartPointRelative.x * Parameter.keyboardWidth, StartPointRelative.y * Parameter.keyboardHeight, -0.2f);
 		}
 		if (chooseCandidate)
 		{
@@ -253,7 +228,7 @@ public class Gesture : MonoBehaviour {
 			chooseCandidate = false;
 			return;
 		}
-		if (x >= 0.55f && length <= 2.0f && Parameter.userStudy == Parameter.UserStudy.Basic)
+		if (x >= 0.55f && length - (x - 0.5f) <= 1.0f && Parameter.userStudy == Parameter.UserStudy.Basic)
 		{
 			lexicon.ChangePhrase();
 			return;
@@ -270,19 +245,18 @@ public class Gesture : MonoBehaviour {
             }
         }
 		for (int i = 0; i < stroke.Count; ++i)
-            stroke[i] = new Vector2(stroke[i].x * keyboardWidth, stroke[i].y * keyboardHeight);
+            stroke[i] = new Vector2(stroke[i].x * Parameter.keyboardWidth, stroke[i].y * Parameter.keyboardHeight);
 		Lexicon.Candidate[] candidates = lexicon.Recognize(stroke.ToArray());
-		if (candidates[0].confidence > 0)
+		
+		chooseCandidate = true;
+        menuGestureCount = 0;
+        if (Lexicon.useRadialMenu)
 		{
-			chooseCandidate = true;
-            menuGestureCount = 0;
-            if (Lexicon.useRadialMenu)
-			{
-				cursor.transform.localPosition = new Vector3(StartPointRelative.x * keyboardWidth, StartPointRelative.y * keyboardHeight, -0.2f);
-				cursor.GetComponent<TrailRendererHelper>().Reset();
-				lexicon.SetRadialMenuDisplay(true);
-			}
+			cursor.transform.localPosition = new Vector3(StartPointRelative.x * Parameter.keyboardWidth, StartPointRelative.y * Parameter.keyboardHeight, -0.2f);
+			cursor.GetComponent<TrailRendererHelper>().Reset();
+			lexicon.SetRadialMenuDisplay(true);
 		}
+
 		lexicon.SetCandidates(candidates);
 		string msg = "";
 		for (int i = 0; i < candidates.Length; ++i)

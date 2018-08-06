@@ -7,15 +7,18 @@ public class Parameter : MonoBehaviour
     public const float eps = 1e-6f;
     public const float inf = 1e10f;
 
+    public static float keyboardWidth, keyboardHeight;
     public static bool debugOn = false;
     public static Mode mode = Mode.FixStart;
     public static UserStudy userStudy = UserStudy.Basic;
-    public static Formula locationFormula = Formula.DTW, shapeFormula = Formula.Null;
-    public static float endOffset = 3.0f, KeyWidth = 0f, radius = 0, radiusMul = 0.20f;
+    public static Formula locationFormula = Formula.DTW;
+    public static float endOffset = 3.0f, keyWidth = 0f, radius = 0, radiusMul = 0.20f;
 
     public Image keyboard;
     public Info info;
-    
+
+    private bool ratioChanged = false;
+
     //Definitions
     public enum Mode
     {
@@ -46,7 +49,9 @@ public class Parameter : MonoBehaviour
     // Use this for initialization
     void Start()
     {
-        KeyWidth = keyboard.rectTransform.rect.width * 0.1f;
+        keyWidth = keyboard.rectTransform.rect.width * 0.1f;
+        keyboardWidth = keyboard.rectTransform.rect.width;
+        keyboardHeight = keyboard.rectTransform.rect.height;
         ChangeRadius(0);
         ChangeEndOffset(0);
     }
@@ -59,6 +64,28 @@ public class Parameter : MonoBehaviour
         info.Log("Mode", mode.ToString());
     }
 
+    public void ChangeRatio()
+    {
+        Vector3 pos = keyboard.GetComponent<RectTransform>().localPosition;
+        Vector2 size = keyboard.GetComponent<RectTransform>().sizeDelta;
+        if (ratioChanged)
+        {
+            size.x = 1000; size.y = 300;
+            pos.y = 0.5f;
+        }
+        else
+        {
+            size.x = 700; size.y = 630;
+            pos.y = -0.1f;
+        }
+        keyboard.GetComponent<RectTransform>().sizeDelta = size;
+        keyboard.GetComponent<RectTransform>().localPosition = pos;
+        keyWidth = keyboard.rectTransform.rect.width * 0.1f;
+        keyboardWidth = keyboard.rectTransform.rect.width;
+        keyboardHeight = keyboard.rectTransform.rect.height;
+        ratioChanged ^= true;
+    }
+
     public void ChangeLocationFormula()
     {
         locationFormula = locationFormula + 1;
@@ -68,21 +95,12 @@ public class Parameter : MonoBehaviour
             info.Log("[L]ocation", locationFormula.ToString());
     }
 
-    public void ChangeShapeFormula()
-    {
-        shapeFormula = shapeFormula + 1;
-        if (shapeFormula >= Parameter.Formula.End)
-            shapeFormula = 0;
-        if (debugOn)
-            info.Log("[S]hape", shapeFormula.ToString());
-    }
-
     public void ChangeRadius(float delta)
     {
         if (radiusMul + delta <= eps)
             return;
         radiusMul += delta;
-        radius = KeyWidth * radiusMul;
+        radius = keyWidth * radiusMul;
         if (debugOn)
             info.Log("[R]adius", radiusMul.ToString("0.00") + "key");
     }

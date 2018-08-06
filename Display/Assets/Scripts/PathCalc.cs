@@ -98,12 +98,13 @@ public class PathCalc : MonoBehaviour {
     public static float Match(Vector2[] A, Vector2[] B, Parameter.Formula formula, bool isShape = false)
     {
         if (A.Length != B.Length || formula == Parameter.Formula.Null)
-            return 0;
+            return inf;
         /*if (Vector2.Distance(A[0], B[0]) > KeyWidth)
 			return 0;*/
-        if (Vector2.Distance(A[A.Length - 1], B[B.Length - 1]) > Parameter.endOffset * Parameter.KeyWidth)
-            return 0;
+        if (Vector2.Distance(A[A.Length - 1], B[B.Length - 1]) > Parameter.endOffset * Parameter.keyWidth)
+            return inf;
         float dis = 0;
+        
         switch (formula)
         {
             case (Parameter.Formula.Basic):
@@ -133,10 +134,10 @@ public class PathCalc : MonoBehaviour {
                 dis = dtw[SampleSize][SampleSize];
                 break;
         }
-        dis /= SampleSize;
-        if (!isShape)
+        return dis / SampleSize / Parameter.keyboardWidth;
+        /*if (!isShape)
             return Mathf.Exp(-0.5f * dis * dis / Parameter.radius / Parameter.radius);
         else
-            return Mathf.Exp(-0.5f * dis * dis / (Parameter.radiusMul * 0.1f) / (Parameter.radiusMul * 0.1f));
+            return Mathf.Exp(-0.5f * dis * dis / (Parameter.radiusMul * 0.1f) / (Parameter.radiusMul * 0.1f));*/
     }
 }

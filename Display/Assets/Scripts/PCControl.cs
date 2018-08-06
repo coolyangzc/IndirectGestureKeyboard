@@ -31,7 +31,7 @@ public class PCControl : MonoBehaviour {
         lexicon.SetDebugDisplay(debugOn);
 
         //Alternative Start Option
-        gesture.ChangeRatio();
+        parameter.ChangeRatio();
 		lexicon.CalcKeyLayout();
 		lexicon.CalcLexicon();
 	}
@@ -74,8 +74,6 @@ public class PCControl : MonoBehaviour {
 			}
 			if (Input.GetKeyDown(KeyCode.M))
                 parameter.ChangeMode();
-			if (Input.GetKeyDown(KeyCode.S))
-                parameter.ChangeShapeFormula();
 			if (Input.GetKeyDown(KeyCode.L))
                 parameter.ChangeLocationFormula();
 			if (Input.GetKeyDown(KeyCode.N))
@@ -89,7 +87,7 @@ public class PCControl : MonoBehaviour {
 			}
 			if (Input.GetKeyDown(KeyCode.T))
 			{
-				gesture.ChangeRatio();
+                parameter.ChangeRatio();
 				lexicon.CalcKeyLayout();
 				lexicon.CalcLexicon();
 			}
