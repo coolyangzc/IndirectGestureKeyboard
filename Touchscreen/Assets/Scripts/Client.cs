@@ -30,7 +30,7 @@ public class Client : MonoBehaviour
 
 	public DebugInfo debugInfo;
 	private string serverIP = "";
-	private int port = 9973;
+	private const int port = 9973;
     private NetworkClient client;
 
 	// Use this for initialization

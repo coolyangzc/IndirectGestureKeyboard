@@ -28,7 +28,7 @@ public class Server : MonoBehaviour
 	public Lexicon lexicon;
 	public Info info;
 
-	private int port = 9973;
+	private const int port = 9973;
 	private string IP;
 	
 	// Use this for initialization
@@ -39,13 +39,14 @@ public class Server : MonoBehaviour
         NetworkServer.Listen(port);
         NetworkServer.RegisterHandler(MsgType.Connect, OnConnected);
         NetworkServer.RegisterHandler(MyMsgType.Message, ReceiveMessage);
+        
     }
 	
 	// Update is called once per frame
 	void Update() 
 	{
-	
-	}
+
+    }
 	
 	string GetIP()
 	{
