@@ -109,7 +109,6 @@ public class PCControl : MonoBehaviour {
 				lexicon.HighLight(-100);
 				info.Log("Phrase", (phraseID+1).ToString() + "/60");
 				server.Send("Get Keyboard Size", "");
-				
 			}
 			if (Input.GetKeyDown(KeyCode.Alpha2))
 			{

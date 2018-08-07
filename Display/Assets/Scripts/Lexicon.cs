@@ -128,18 +128,22 @@ public class Lexicon : MonoBehaviour
         TextAsset textAsset = Resources.Load("bigrams-LDC-10k-katz-1m-phrase") as TextAsset;
         string[] lines = textAsset.text.Split('\n');
         int bigramsNum = int.Parse(lines[0]);
-        for (int i = 1; i <= bigramsNum; ++i)
+        if (bigramMap.Count == 0)
         {
-            string[] data = lines[i].Split(' ');
-            bigramMap.Add(data[0] + ' ' + data[1], float.Parse(data[2]));
+            for (int i = 1; i <= bigramsNum; ++i)
+            {
+                string[] data = lines[i].Split(' ');
+                bigramMap.Add(data[0] + ' ' + data[1], float.Parse(data[2]));
+            }
         }
         int unigramsNum = int.Parse(lines[bigramsNum + 1]);
-        Debug.Log(unigramsNum);
+        Debug.Log("Unigram: " + unigramsNum);
         dict.Clear();
         for (int i = 0; i < unigramsNum; ++i)
         {
             string[] data = lines[i + bigramsNum + 2].Split(' ');
-            katzAlpha.Add(data[0], float.Parse(data[2]));
+            if (!katzAlpha.ContainsKey(data[0]))
+                katzAlpha.Add(data[0], float.Parse(data[2]));
             if (data[0] == "<s>")
                 continue;
             Entry entry = new Entry(data[0], long.Parse(data[1]), this);
@@ -154,12 +158,13 @@ public class Lexicon : MonoBehaviour
 		for (int i = 0; i < lines.Length; ++i)
 		{
             string line = lines[i];
+            if (line.Length <= 1)
+                continue;
             if (line[line.Length - 1] < 'a' || line[line.Length - 1] > 'z')
                 line = line.Substring(0, line.Length - 1);
 			phrase.Add(line);
 		}
-
-        Debug.Log("Phrases: " + phrase.Count + "/" + lines.Length);
+        Debug.Log("Phrases: " + phrase.Count);
 		
 		ChangePhrase();
 
@@ -230,7 +235,7 @@ public class Lexicon : MonoBehaviour
             w = System.Math.Min(w, words.Length - 1);
             string pre = "<s>";
             if (w >= 0)
-                pre = words[w];
+                pre = history[w].word;
             float biF = 0;
             if (bigramMap.ContainsKey(pre + ' ' + entry.word))
                 biF = bigramMap[pre + ' ' + entry.word];

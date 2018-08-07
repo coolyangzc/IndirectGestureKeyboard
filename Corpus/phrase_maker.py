@@ -3,7 +3,7 @@ dict_fd = open('ANC-written-noduplicate+pangram.txt', 'rb')
 
 dict = {}
 lines = dict_fd.readlines()
-for line in lines[:10000]:
+for line in lines[:5000]:
     line = line.decode('utf-8')
     word = line.split(' ')[0]
     dict[word] = 1
