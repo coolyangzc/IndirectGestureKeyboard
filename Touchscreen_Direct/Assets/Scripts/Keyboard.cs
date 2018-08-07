@@ -12,7 +12,7 @@ public class Keyboard : MonoBehaviour
 	public Client client;
     public GameObject nameWindow;
 
-	private int userStudy = 0;
+	public int userStudy = 0;
 
 	private const string path = "sdcard//G-Keyboard//Direct//";
 	private string buffer = "";
@@ -62,11 +62,16 @@ public class Keyboard : MonoBehaviour
 			debugInfo.Log("Local", local.x.ToString("f2") + "," + local.y.ToString("f2"));
 			debugInfo.Log("Relative", relative.x.ToString("f2") + "," + relative.y.ToString("f2"));
 			string coor = relative.x.ToString() + "," + relative.y.ToString();
+
+            if (relative.y > 1.2f)
+                return;
+
 			if (userStudy > 0)
 				buffer += touch.phase.ToString() + " " + Time.time.ToString() + " " +
 					touch.position.x.ToString() + " " + touch.position.y.ToString() + " " +
 					relative.x.ToString() + " " + relative.y.ToString() + "\n";
-			switch (touch.phase)
+
+            switch (touch.phase)
 			{
 				case TouchPhase.Began:
 					preLocal = local;
@@ -78,7 +83,8 @@ public class Keyboard : MonoBehaviour
 					}
 					break;
 				case TouchPhase.Ended:
-					break;
+                    client.HighLight(+1);
+                    break;
 			}
 		}
 	}

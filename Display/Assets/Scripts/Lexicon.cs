@@ -484,7 +484,6 @@ public class Lexicon : MonoBehaviour
 					phraseText.text += "<color=red>" + words[i] + "</color> ";
 				else
 					phraseText.text += words[i] + " ";
-
 	}
 
 	public void UpdateSizeMsg(string msg)
