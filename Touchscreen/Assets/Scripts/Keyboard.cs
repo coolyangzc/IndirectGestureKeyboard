@@ -66,7 +66,7 @@ public class Keyboard : MonoBehaviour
 	{
 		if (Input.touchCount > 0) 
 		{
-			Touch touch = Input.GetTouch(Input.touchCount - 1);
+			Touch touch = Input.GetTouch(0);
 			Vector2 local;
 			RectTransformUtility.ScreenPointToLocalPointInRectangle(
 				keyboard.transform as RectTransform, touch.position, Camera.main, out local);
