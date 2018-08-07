@@ -160,12 +160,11 @@ public class PCControl : MonoBehaviour {
 					break;
 				case Parameter.UserStudy.Train:
 					lexicon.ChangePhrase();
-					lexicon.HighLight(-1000);
+					lexicon.HighLight(-100);
 					break;
 				case Parameter.UserStudy.Study1:
 					server.Send("Study1 End Phrase", Parameter.mode.ToString());
 					phraseID++;
-					
 					if (phraseID % 10 == 0)
 					{
                         Parameter.userStudy = Parameter.UserStudy.Train;
@@ -177,7 +176,7 @@ public class PCControl : MonoBehaviour {
 					lexicon.ChangePhrase(phraseID);
 					SendPhraseMessage();
 					lexicon.HighLight(-100);
-					info.Log("Phrase", (phraseID+1).ToString() + "/60");
+					info.Log("Phrase", (phraseID+1).ToString() + "/80");
 					break;
 				case Parameter.UserStudy.Study2:
 					server.Send("Study2 End Phrase", lexicon.inputText.text + "\n" + Parameter.mode.ToString());

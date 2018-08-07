@@ -43,8 +43,7 @@ public class Client : MonoBehaviour
 	// Update is called once per frame
 	void Update() 
 	{
-		//if (Input.GetKeyDown(KeyCode.Escape)) 
-			//connectWindow.enabled ^= true;
+
 	}
 
 	void OnGUI()

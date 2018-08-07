@@ -14,7 +14,7 @@ public class Keyboard : MonoBehaviour
 
 	private int userStudy = 0;
 
-	private string path = "sdcard//G-Keyboard//";
+	private const string path = "sdcard//G-Keyboard//";
 	private string buffer = "";
 	private string phraseInfo;
 	private StreamWriter writer;
