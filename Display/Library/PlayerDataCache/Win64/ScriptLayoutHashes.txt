@@ -1,6 +1,6 @@
 WindowsStandalone
 PlayerPath?
-E:/Projects/IndirectGestureKeyboard/IGK_Display.exe
+E:/Projects/IndirectGestureKeyboard/Build/IGK_Display.exe
 SceneListBegin?
 Assets/Main.unity
 SceneListEnd?

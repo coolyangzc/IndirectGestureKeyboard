@@ -38,7 +38,7 @@ public class Lexicon : MonoBehaviour
 	private Vector2[] keyPos = new Vector2[26];
 
 	private List<string> phrase = new List<string>();
-	private int[] phraseList = new int[30];
+	private List<int> phraseList = new List<int>();
 	private List<Candidate> history = new List<Candidate>();
     private List<Entry> dict = new List<Entry>();
     private Dictionary<string, float> katzAlpha = new Dictionary<string, float>();
@@ -163,37 +163,17 @@ public class Lexicon : MonoBehaviour
             if (line[line.Length - 1] < 'a' || line[line.Length - 1] > 'z')
                 line = line.Substring(0, line.Length - 1);
 			phrase.Add(line);
+            phraseList.Add(i);
 		}
         Debug.Log("Phrases: " + phrase.Count);
-		
-		ChangePhrase();
-
-        /*
-		int[] id = new int[24];
-		for (int i = 0; i < 24; ++i)
-			id[i] = i;
-		for (int i = 0; i < 24; ++i) 
-		{
-			int j = Random.Range(0, 23);
-			int k = id[i]; id[i] = id[j]; id[j] = k;
-		}
-		int x;
-		for(int i = 0; i < 3; ++i)
-		{
-			x = Random.Range((i*10), (i+1)*10 - 1);
-			phraseList[x] = phrase.Count - 2;
-			do
-				x = Random.Range((i*10), (i+1)*10 - 1);
-			while (phraseList[x] > 0);
-			phraseList[x] = phrase.Count - 1;
-		}
-		int p = 0;
-		for (int i = 0; i < 24; ++i)
-		{
-			while (phraseList[p] > 0) ++p;
-			phraseList[p++] = id[i];
+        for (int i = 2; i < phrase.Count; ++i)
+        {
+            int j = Random.Range(2, phrase.Count);
+            int k = phraseList[i];
+            phraseList[i] = phraseList[j];
+            phraseList[j] = k;
         }
-        */
+        ChangePhrase();
 	}
 
 	string Underline(char ch, int length)
@@ -485,6 +465,11 @@ public class Lexicon : MonoBehaviour
 				else
 					phraseText.text += words[i] + " ";
 	}
+
+    public bool InputCorrect()
+    {
+        return highLight == words.Length;
+    }
 
 	public void UpdateSizeMsg(string msg)
 	{

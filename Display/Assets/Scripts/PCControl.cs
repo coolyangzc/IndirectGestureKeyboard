@@ -107,7 +107,7 @@ public class PCControl : MonoBehaviour {
 				lexicon.ChangePhrase(phraseID);
 				SendPhraseMessage();
 				lexicon.HighLight(-100);
-				info.Log("Phrase", (phraseID+1).ToString() + "/60");
+				info.Log("Phrase", (phraseID+1).ToString() + "/40");
 				server.Send("Get Keyboard Size", "");
 			}
 			if (Input.GetKeyDown(KeyCode.Alpha2))
@@ -163,6 +163,8 @@ public class PCControl : MonoBehaviour {
 					lexicon.HighLight(-100);
 					break;
 				case Parameter.UserStudy.Study1:
+                    if (!lexicon.InputCorrect() && !(Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift)))
+                        return;
 					server.Send("Study1 End Phrase", Parameter.mode.ToString());
 					phraseID++;
 					if (phraseID % 10 == 0)
@@ -176,7 +178,7 @@ public class PCControl : MonoBehaviour {
 					lexicon.ChangePhrase(phraseID);
 					SendPhraseMessage();
 					lexicon.HighLight(-100);
-					info.Log("Phrase", (phraseID+1).ToString() + "/80");
+					info.Log("Phrase", (phraseID+1).ToString() + "/40");
 					break;
 				case Parameter.UserStudy.Study2:
 					server.Send("Study2 End Phrase", lexicon.inputText.text + "\n" + Parameter.mode.ToString());

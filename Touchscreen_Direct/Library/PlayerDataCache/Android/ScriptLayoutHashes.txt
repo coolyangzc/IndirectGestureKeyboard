@@ -1,6 +1,6 @@
 Android
 PlayerPath?
-E:/Projects/IndirectGestureKeyboard/Touchscreen/Touchscreen_Direct.apk
+E:/Projects/IndirectGestureKeyboard/Build/Touchscreen_Direct.apk
 SceneListBegin?
 Assets/Main.unity
 SceneListEnd?
