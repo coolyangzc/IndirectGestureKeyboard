@@ -7,14 +7,15 @@ public class Keyboard : MonoBehaviour
 {
 	public Image keyboard;
 	public Image candidates;
+    public RawImage cursor;
 	public Button button;
 	public DebugInfo debugInfo;
 	public Client client;
     public GameObject nameWindow;
 
 	public int userStudy = 0;
+    public const string path = "sdcard//G-Keyboard//Direct//";
 
-	private const string path = "sdcard//G-Keyboard//Direct//";
 	private string buffer = "";
 	private string phraseInfo;
 	private StreamWriter writer;
@@ -61,8 +62,10 @@ public class Keyboard : MonoBehaviour
             debugInfo.Log("World", touch.position.x.ToString("f2") + "," + touch.position.y.ToString("f2"));
 			debugInfo.Log("Local", local.x.ToString("f2") + "," + local.y.ToString("f2"));
 			debugInfo.Log("Relative", relative.x.ToString("f2") + "," + relative.y.ToString("f2"));
-			string coor = relative.x.ToString() + "," + relative.y.ToString();
-
+            //string coor = relative.x.ToString() + "," + relative.y.ToString();
+            cursor.transform.localPosition = new Vector3(local.x, local.y, -0.2f);
+            if (touch.phase == TouchPhase.Began)
+                cursor.GetComponent<TrailRendererHelper>().Reset(0.6f);
             if (relative.y > 1.2f)
                 return;
 
@@ -75,7 +78,7 @@ public class Keyboard : MonoBehaviour
 			{
 				case TouchPhase.Began:
 					preLocal = local;
-					break;
+                    break;
 				case TouchPhase.Moved:
 					if (Vector2.Distance(local, preLocal) > 0.1f)
 					{

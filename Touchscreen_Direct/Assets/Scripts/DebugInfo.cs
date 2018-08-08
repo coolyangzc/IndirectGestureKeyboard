@@ -38,7 +38,7 @@ public class DebugInfo : MonoBehaviour
 		info.text = "";
 		nowTime = 0;
 		for (int i = 0; i < logs.Count; ++i)
-            if (!phraseOnly || tags[i] == "Phrases")
+            if (!phraseOnly || tags[i] == "Phrase")
 			    info.text += tags[i] + ':' + logs[i] + '\n';
 
 		changed = false;
