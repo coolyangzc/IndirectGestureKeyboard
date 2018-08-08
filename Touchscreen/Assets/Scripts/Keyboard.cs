@@ -218,10 +218,16 @@ public class Keyboard : MonoBehaviour
 		debugInfo.Log("FileName", file.FullName);
 		buffer = "";
         connectWindow.SetActive(false);
-        Color c = keyboard.color;
-        c.a = 0;
-        keyboard.color = c;
-	}
+        debugInfo.SetVisibility(false);
+
+        for (int i = 0; i < 26; ++i)
+        {
+            string name = ((char)i + 65).ToString();
+            Color c = keyboard.rectTransform.Find(((char)(i + 65)).ToString()).GetComponent<Image>().color;
+            c.a = 0;
+            keyboard.rectTransform.Find(((char)(i + 65)).ToString()).GetComponent<Image>().color = c;
+        }
+    }
 
 	public void EndDataFile(string msg)
 	{

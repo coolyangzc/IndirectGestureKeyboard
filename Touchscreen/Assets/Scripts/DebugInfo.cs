@@ -9,7 +9,7 @@ public class DebugInfo : MonoBehaviour
 
 	private List<string> logs = new List<string>();
 	private List<string> tags = new List<string>();
-	private bool changed = false;
+	private bool changed = false, visible = true;
 	private float ClearTime = 5;
 	private float nowTime = 0;
 	
@@ -35,10 +35,11 @@ public class DebugInfo : MonoBehaviour
 		}
 
 		info.text = "";
+        if (!visible)
+            return;
 		nowTime = 0;
 		for (int i = 0; i < logs.Count; ++i)
 			info.text += tags[i] + ':' + logs[i] + '\n';
-
 		changed = false;
 	}
 
@@ -60,4 +61,9 @@ public class DebugInfo : MonoBehaviour
 		}
 		changed = true;
 	}
+
+    public void SetVisibility(bool visibility = false)
+    {
+        visible = visibility;
+    }
 }
