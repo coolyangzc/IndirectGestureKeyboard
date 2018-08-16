@@ -14,7 +14,7 @@ public class Gesture : MonoBehaviour {
 	
 	public bool chooseCandidate = false;
     private int menuGestureCount = 0;
-	private float length, lastBeginTime, lastEndTime;
+	private float length, lastBeginTime, lastEndTime, lastOutListTime;
 	private Vector2 StartPointRelative;
 	private Vector2 beginPoint, prePoint, localPoint;
 	private List<Vector2> stroke = new List<Vector2>();
@@ -37,7 +37,7 @@ public class Gesture : MonoBehaviour {
 
 	public void Begin(float x, float y)
 	{
-        lastBeginTime = Time.time;
+        lastBeginTime = lastOutListTime = Time.time;
         if (chooseCandidate)
 			cursor.GetComponent<TrailRendererHelper>().Reset(0.3f);
 		else
@@ -85,7 +85,11 @@ public class Gesture : MonoBehaviour {
 		cursor.transform.localPosition = new Vector3(x * Parameter.keyboardWidth, y * Parameter.keyboardHeight, -0.2f);
         if (Vector2.Distance(new Vector2(x, y), stroke[stroke.Count - 1]) > eps)
 		    stroke.Add(new Vector2(x, y));
-
+        if (!Lexicon.useRadialMenu)
+        {
+            int choose = CandicateListChoose(x, y);
+            lexicon.HighLightListMenu(choose);
+        }
         if (Lexicon.useRadialMenu && chooseCandidate)
         {
             int choose = RadialMenuChoose(x, y);
@@ -162,14 +166,6 @@ public class Gesture : MonoBehaviour {
 		if (chooseCandidate)
 		{
             menuGestureCount++;
-            if (length < 0.1f)
-			{
-				if (!Lexicon.useRadialMenu)
-				{
-					lexicon.NextCandidate();
-					return;
-				}
-			}
 			if (Lexicon.useRadialMenu)
 			{
                 int choose = RadialMenuChoose(x, y);
@@ -274,6 +270,18 @@ public class Gesture : MonoBehaviour {
             else
                 return 5;
         }
+    }
+
+    private int CandicateListChoose(float x, float y)
+    {
+        x *= Parameter.keyboardWidth;
+        y *= Parameter.keyboardHeight;
+        for (int i = 0; i < 4; ++i)
+            if (-500 + i * 250 < x && x < -250 + i * 250)
+                for (int j = 0; j < 3; ++j)
+                    if (y > 310 - 120 * j && y < 430 - 120 * j)
+                        return j * 4 + i + 1;
+        return -1;
     }
 
     private void CancelRadialChoose()

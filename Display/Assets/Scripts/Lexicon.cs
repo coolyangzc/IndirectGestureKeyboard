@@ -4,8 +4,8 @@ using System.Collections.Generic;
 
 public class Lexicon : MonoBehaviour 
 {
-	public Image keyboard, candidates;
-	public RawImage radialMenu;
+	public Image keyboard, candidatesList;
+	public RawImage radialMenu, textWindow;
 	public Info info;
 	public Gesture gesture;
 	public Lexicon lexicon;
@@ -30,8 +30,8 @@ public class Lexicon : MonoBehaviour
 	//Internal Variables
 	private int choose = 0;
     private string[] words;
-    private Button[] btn = new Button[CandidatesNum];
-	private Text[] radialText = new Text[RadialNum];
+	private Text[] radialText = new Text[RadialNum], listText = new Text[CandidatesNum];
+    private Image[] candidateBtn = new Image[CandidatesNum];
     private int panel;
 	private Candidate[] cands = new Candidate[CandidatesNum], candsTmp = new Candidate[CandidatesNum];
 	private Vector2[] keyPos = new Vector2[26];
@@ -242,19 +242,18 @@ public class Lexicon : MonoBehaviour
 
 	public void SetCandidates(Candidate[] candList)
 	{
-		if (!useRadialMenu)
-			btn[choose = 0].Select();
-        
 		for (int i = 0; i < candList.Length; ++i)
-			cands[i] = candList[i];
+        {
+            cands[i] = candList[i];
+            listText[i].text = cands[i].word;
+        }
+			
         panel = -1;
         NextCandidatePanel();
 
         if (cands[0].confidence == 0)
 			return;
         textManager.SetCandidate(cands[0].word);
-        if (!useRadialMenu)
-			history.Add(new Candidate(cands[0]));
 	}
 
     public void NextCandidatePanel()
@@ -267,34 +266,14 @@ public class Lexicon : MonoBehaviour
             if (Parameter.debugOn)
                 text += "\n" + cands[id].location.ToString(".000") + " " + cands[id].language.ToString(".000") 
                     + " " + cands[id].confidence.ToString(".000");
-            if (useRadialMenu)
-                radialText[i].text = text;
-            else
-                btn[i].GetComponentInChildren<Text>().text = text;
+            radialText[i].text = text;
+            listText[i].text = text;
         }
 
     }
 
-	public void NextCandidate()
-	{
-        /*
-		choose = (choose + 1) % CandidatesNum;
-		if (cands[choose].confidence == 0)
-			choose = 0;
-		history[history.Count - 1] = new Candidate(cands[choose]);
-		string space = "";
-		if (text.Length > 0)
-			space = " ";
-		inputText.text = text + space + cands[choose].word;
-		underText.text = under + space + Underline('_', cands[choose].word.Length);
-		btn[choose].Select();
-        */
-	}
-
 	public string Accept(ref int id)
 	{
-		if (id == -1)
-			id = choose;
         if (useRadialMenu)
             id = (id == 0)? 0 : panel * 4 + id;
         string word = cands[id].word;
@@ -304,7 +283,6 @@ public class Lexicon : MonoBehaviour
         
 		for (int i = 0; i < CandidatesNum; ++i)
 		{
-			//btn[i].GetComponentInChildren<Text>().text = "";
 			cands[i].word = "";
 		}
 
@@ -315,8 +293,6 @@ public class Lexicon : MonoBehaviour
 
 	public void Delete()
 	{
-		if (!useRadialMenu)
-			btn[choose = 0].Select();
 		for (int i = 0; i < CandidatesNum; ++i)
 		{
 			//btn[i].GetComponentInChildren<Text>().text = "";
@@ -383,27 +359,61 @@ public class Lexicon : MonoBehaviour
             textManager.SetPhrase(phrase[phraseList[id]]);
 		words = textManager.GetWords();
 		Clear();
-		if (!useRadialMenu)
-			btn[0].Select();
 	}
 
 	public void ChangeCandidatesChoose(bool change)
 	{
 		for (int i = 0; i < RadialNum; ++i)
 			radialText[i] = radialMenu.transform.Find("Candidate" + i.ToString()).GetComponent<Text>();
-		//for (int i = 0; i < CandidatesNum; ++i)
-			//btn[i] = candidates.transform.Find("Candidate" + i.ToString()).GetComponent<Button>();
-		useRadialMenu ^= change;
-		if (Parameter.debugOn)
-			if (useRadialMenu)
-			{
-				info.Log("[C]hoose", "Radial");
-			}
-			else
-			{
-				info.Log("[C]hoose", "Tap");
-			}
-	}
+        for (int i = 0; i < CandidatesNum; ++i)
+        {
+            candidateBtn[i] = candidatesList.transform.Find("Candidate" + i.ToString()).GetComponent<Image>();
+            listText[i] = candidatesList.transform.Find("Candidate" + i.ToString()).GetComponentInChildren<Text>();
+        }
+            
+        useRadialMenu ^= change;
+        info.Log("[C]hoose", useRadialMenu ? "Radial" : "List");
+        Vector3 pos = textWindow.GetComponent<RectTransform>().localPosition;
+        pos.y = useRadialMenu ? 4 : 5.1f;
+        textWindow.GetComponent<RectTransform>().localPosition = pos;
+        if (useRadialMenu)
+            SetListMenuDisplay(false);
+        else
+            SetListMenuDisplay(true, 12);
+    }
+
+    public void SetListMenuDisplay(bool display, int num = CandidatesNum)
+    {
+        num = Mathf.Min(num + 1, CandidatesNum);
+        for (int i = 0; i < num; ++i)
+        {
+            Color c = listText[i].color;
+            c.a = display ? 1f : 0;
+            listText[i].color = c;
+            c = candidateBtn[i].color;
+            c.a = display ? 0.9f : 0;
+            candidateBtn[i].color = c;
+        }
+    }
+
+    public void HighLightListMenu(int id = -1)
+    {
+        for (int i = 0; i < CandidatesNum; ++i)
+        {
+            Color c = candidateBtn[i].color;
+            c.r = c.g = c.b = 255;
+            candidateBtn[i].color = c;
+        }
+        if (id > 0)
+        {
+            Color c = candidateBtn[id].color;
+            c.r = c.g = c.b = 64;
+            c.r = 255;
+            c.g = 0;
+            c.b = 0;
+            candidateBtn[id].color = c;
+        }
+    }
 
 	public void SetRadialMenuDisplay(bool display)
 	{
@@ -412,7 +422,7 @@ public class Lexicon : MonoBehaviour
 			Color c = radialText[i].color;
 			c.a = display?1f:0;
 			radialText[i].color = c;
-		}	
+		}
 		radialMenu.texture = (Texture)Resources.Load("6Menu/6Menu", typeof(Texture));
 		Color color = radialMenu.color;
 		color.a = display?0.9f:0;

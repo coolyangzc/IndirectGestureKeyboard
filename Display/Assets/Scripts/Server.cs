@@ -88,10 +88,6 @@ public class Server : MonoBehaviour
 			case "Ended":
 				gesture.End(float.Parse(msg.Split(',')[0]), float.Parse(msg.Split(',')[1]));
 				break;
-			case "Choose Candidate":
-                int choose = int.Parse(msg);
-				lexicon.Accept(ref choose);
-				break;
 			case "Keyboard Size Msg":
 				lexicon.UpdateSizeMsg(msg);
 				break;
