@@ -95,6 +95,10 @@ public class PathCalc : MonoBehaviour {
         return nPts;
     }
 
+    
+    /// <summary>
+    /// Returns distance in keywidth; Inputs two Vector2[] in pixels
+    /// </summary>
     public static float Match(Vector2[] A, Vector2[] B, Parameter.Formula formula, 
                               float threshold = Parameter.inf, bool isShape = false)
     {

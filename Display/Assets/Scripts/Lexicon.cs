@@ -15,8 +15,8 @@ public class Lexicon : MonoBehaviour
 	//Constants
 	private const int LexiconSize = 10000;
 	private const int SampleSize = 32;
-	private const int RadialNum = 4;
-	private const int CandidatesNum = 12;
+	private const int RadialNum = 5;
+	private const int CandidatesNum = 13;
 	private const float AnyStartThr = 2.5f;
     private const float eps = Parameter.eps;
 
@@ -106,11 +106,20 @@ public class Lexicon : MonoBehaviour
 		//CalcLexicon();
 		InitPhrases();
 	}
-	
+
+    int cnt = 0;
 	// Update is called once per frame
 	void Update () 
 	{
-		
+        cnt++;
+        if (cnt % 100 == 0)
+        {
+            string s = "";
+            for (int i = 0; i < history.Count; ++i)
+                s += history[i].word + " ";
+            Debug.Log(s);
+        }
+            
 	}
 
 	public void CalcKeyLayout()
@@ -190,8 +199,8 @@ public class Lexicon : MonoBehaviour
 
 		for (int i = 0; i < CandidatesNum; ++i)
 			candsTmp[i] = new Candidate();
-
-		foreach (Entry entry in dict)
+        int h = history.Count;
+        foreach (Entry entry in dict)
 		{
             if (rawStroke.Length == 1 && entry.word.Length != 1)
                 continue;
@@ -209,13 +218,11 @@ public class Lexicon : MonoBehaviour
 				entry.pts.RemoveAt(0);
 			}
             if (Vector2.Distance(stroke[SampleSize - 1], entry.locationSample[(int)Parameter.mode][SampleSize - 1]) 
-                > Parameter.endOffset * Parameter.keyWidth)
+                > Parameter.endOffset * Parameter.keyWidth && 
+                (h >= words.Length || entry.word != words[h]))
                 continue;
-            int w = history.Count - 1;
-            w = System.Math.Min(w, words.Length - 1);
-            string pre = "<s>";
-            if (w >= 0)
-                pre = history[w].word;
+            string pre = (h == 0) ? "<s>" : history[h - 1].word;
+
             float biF = 0;
             if (bigramMap.ContainsKey(pre + ' ' + entry.word))
                 biF = bigramMap[pre + ' ' + entry.word];
@@ -243,6 +250,10 @@ public class Lexicon : MonoBehaviour
 					break;
 				}
 		}
+        if (h < words.Length)
+            for (int i = 0; i < CandidatesNum; ++i)
+                if (candsTmp[i].word == words[h].ToLower())
+                    candsTmp[i].word = words[h];
         return candsTmp;
 	}
 
@@ -272,9 +283,9 @@ public class Lexicon : MonoBehaviour
     public void NextCandidatePanel()
     {
         panel = (panel + 1) % 3;
-        for (int i = 0; i < 4; ++i)
+        for (int i = 0; i <= 4; ++i)
         {
-            int id = panel * 4 + i;
+            int id = (i==0)?0:panel * 4 + i;
             string text = cands[id].word;
             if (Parameter.debugOn)
                 text += "\n" + cands[id].location.ToString(".000") + " " + cands[id].language.ToString(".000") 
@@ -310,7 +321,8 @@ public class Lexicon : MonoBehaviour
 			text += " ";
 			under += " ";
 		}
-        id = panel * 4 + id;
+        if (useRadialMenu)
+            id = (id == 0)? 0 : panel * 4 + id;
         string word = cands[id].word;
         text += word;
 		inputText.text = text;
@@ -447,7 +459,7 @@ public class Lexicon : MonoBehaviour
 			c.a = display?1f:0;
 			radialText[i].color = c;
 		}	
-		radialMenu.texture = (Texture)Resources.Load("RadialMenu", typeof(Texture));
+		radialMenu.texture = (Texture)Resources.Load("6Menu/6Menu", typeof(Texture));
 		Color color = radialMenu.color;
 		color.a = display?0.9f:0;
 		radialMenu.color = color;

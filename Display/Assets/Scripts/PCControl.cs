@@ -19,9 +19,9 @@ public class PCControl : MonoBehaviour {
 	private bool debugOn = false;
 	private float distance = 0;
 
-	private const float MinScrollDistance = 4;
+	private const float MinScrollDistance = 2;
 	private const float MaxScrollDistance = 12;
-	private const float ScrollKeySpeed = -1f;
+	private const float ScrollKeySpeed = -2f;
 	
 	// Use this for initialization
 	void Start() 

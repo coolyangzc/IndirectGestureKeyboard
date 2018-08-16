@@ -88,25 +88,31 @@ public class Gesture : MonoBehaviour {
 		{
 			if (Vector2.Distance(new Vector2(x, y), StartPointRelative) < RadiusMenuR)
 			{
-				radialMenu.texture = (Texture)Resources.Load("RadialMenu", typeof(Texture));
+				radialMenu.texture = (Texture)Resources.Load("6Menu/6Menu", typeof(Texture));
 				return;
 			}
-			float rx = x - StartPointRelative.x;
-			float ry = y - StartPointRelative.y;
-			if (Mathf.Abs(rx) > Mathf.Abs(ry))
-			{
-				if (rx > 0)
-					radialMenu.texture = (Texture)Resources.Load("RadialMenu_RIGHT", typeof(Texture));
-				else
-					radialMenu.texture = (Texture)Resources.Load("RadialMenu_LEFT", typeof(Texture));
-			}
-			else
-			{
-				if (ry > 0)
-					radialMenu.texture = (Texture)Resources.Load("RadialMenu_UP", typeof(Texture));
-				else
-					radialMenu.texture = (Texture)Resources.Load("RadialMenu_DOWN", typeof(Texture));
-			}
+            int choose = RadialMenuChoose(x, y);
+            switch (choose)
+            {
+                case 0:
+                    radialMenu.texture = (Texture)Resources.Load("6Menu/6Menu_Right", typeof(Texture));
+                    break;
+                case 1:
+                    radialMenu.texture = (Texture)Resources.Load("6Menu/6Menu_TopRight", typeof(Texture));
+                    break;
+                case 2:
+                    radialMenu.texture = (Texture)Resources.Load("6Menu/6Menu_TopLeft", typeof(Texture));
+                    break;
+                case 3:
+                    radialMenu.texture = (Texture)Resources.Load("6Menu/6Menu_BottomRight", typeof(Texture));
+                    break;
+                case 4:
+                    radialMenu.texture = (Texture)Resources.Load("6Menu/6Menu_BottomLeft", typeof(Texture));
+                    break;
+                case 5:
+                    radialMenu.texture = (Texture)Resources.Load("6Menu/6Menu_Left", typeof(Texture));
+                    break;
+            }
 		}
 		else
 		{
@@ -139,14 +145,14 @@ public class Gesture : MonoBehaviour {
         {
             if (chooseCandidate)
             {
-                if (Parameter.userStudy == Parameter.UserStudy.Study2)
-                    server.Send("Cancel", "");
-                chooseCandidate = false;
-                lexicon.SetRadialMenuDisplay(false);
                 if (menuGestureCount == 0)
                 {
                     lexicon.Delete();
                     server.Send("Delete", "DoubleClick");
+                    if (Parameter.userStudy == Parameter.UserStudy.Study2)
+                        server.Send("Cancel", "");
+                    chooseCandidate = false;
+                    lexicon.SetRadialMenuDisplay(false);
                 }
             }
             lastEndTime = -1;
@@ -177,25 +183,11 @@ public class Gesture : MonoBehaviour {
 			}
 			if (Lexicon.useRadialMenu)
 			{
-                if (Vector2.Distance(new Vector2(x, y), StartPointRelative) > RadiusMenuR)
+                int choose = RadialMenuChoose(x, y);
+                if (choose == 5)
+                    CancelRadialChoose();
+                else if (choose >= 0)
                 {
-                    x -= StartPointRelative.x;
-                    y -= StartPointRelative.y;
-                    int choose = -1;
-                    if (Mathf.Abs(x) > Mathf.Abs(y))
-                    {
-                        if (x > 0)
-                            choose = 2;
-                        else
-                            choose = 1;
-                    }
-                    else
-                    {
-                        if (y > 0)
-                            choose = 0;
-                        else
-                            choose = 3;
-                    }
                     string word = lexicon.Accept(ref choose);
                     if (Parameter.userStudy == Parameter.UserStudy.Study2)
                         server.Send("Accept", choose.ToString() + " " + word);
@@ -220,7 +212,7 @@ public class Gesture : MonoBehaviour {
 		}
         */
 
-		if (stroke[stroke.Count - 1].x - stroke[0].x <= -0.15f && length <= 1.0f && Time.time - lastBeginTime < 0.2)
+		if (x <= -0.5f && length <= 1.0f)
 		{
 			if (Parameter.userStudy == Parameter.UserStudy.Study2)
 				server.Send("Delete", "LeftSwipe");
@@ -270,5 +262,45 @@ public class Gesture : MonoBehaviour {
     private bool OutKeyboard(Vector2 v)
     {
         return v.x > 0.5 || v.x < -0.5 || v.y > 0.5 || v.y < -0.5;
+    }
+
+    private int RadialMenuChoose(float x, float y)
+    {
+        float rx = x - StartPointRelative.x;
+        float ry = y - StartPointRelative.y;
+        if (new Vector2(rx, ry).sqrMagnitude < RadiusMenuR * RadiusMenuR)
+            return -1;
+        if (rx > 0)
+        {
+            if (Mathf.Abs(ry) * Mathf.Sqrt(3) > Mathf.Abs(rx))
+            {
+                if (ry > 0)
+                    return 1;
+                else
+                    return 3;
+            }
+            else
+                return 0;
+        }
+        else
+        {
+            if (Mathf.Abs(ry) * Mathf.Sqrt(3) > Mathf.Abs(rx))
+            {
+                if (ry > 0)
+                    return 2;
+                else
+                    return 4;
+            }
+            else
+                return 5;
+        }
+    }
+
+    private void CancelRadialChoose()
+    {
+        if (Parameter.userStudy == Parameter.UserStudy.Study2)
+            server.Send("Cancel", "");
+        chooseCandidate = false;
+        lexicon.SetRadialMenuDisplay(false);
     }
 }
