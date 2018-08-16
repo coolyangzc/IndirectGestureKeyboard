@@ -7,7 +7,7 @@ public class Gesture : MonoBehaviour {
 
 	public Server server;
 	public Image keyboard;
-	public RawImage cursor, radialMenu;
+	public RawImage cursor, radialMenu, spaceArea, deleteArea;
 	public Text text;
 	public Lexicon lexicon;
     public TextManager textManager;
@@ -51,14 +51,15 @@ public class Gesture : MonoBehaviour {
 			                                             StartPointRelative.y * Parameter.keyboardHeight, -0.2f);
 			return;
 		}
-		switch (Parameter.mode)
+        switch (Parameter.mode)
 		{
 			case (Parameter.Mode.Basic):
 			case (Parameter.Mode.AnyStart):
 				cursor.transform.localPosition = new Vector3(x * Parameter.keyboardWidth, y * Parameter.keyboardHeight, -0.2f);
 				stroke.Clear();
 				stroke.Add(new Vector2(x, y));
-				break;
+                SetAreaDisplay(x, y);
+                break;
 			case (Parameter.Mode.FixStart):
 				cursor.transform.localPosition = new Vector3(StartPointRelative.x * Parameter.keyboardWidth, 
 				                                             StartPointRelative.y * Parameter.keyboardHeight, -0.2f);
@@ -85,8 +86,8 @@ public class Gesture : MonoBehaviour {
         if (Vector2.Distance(new Vector2(x, y), stroke[stroke.Count - 1]) > eps)
 		    stroke.Add(new Vector2(x, y));
 
-		if (Lexicon.useRadialMenu && chooseCandidate)
-		{
+        if (Lexicon.useRadialMenu && chooseCandidate)
+        {
             int choose = RadialMenuChoose(x, y);
             if (choose >= 0 && choose <= 4)
                 textManager.SetCandidate(lexicon.GetChoosedCandidate(choose));
@@ -114,22 +115,9 @@ public class Gesture : MonoBehaviour {
                     radialMenu.texture = (Texture)Resources.Load("6Menu/6Menu_Left", typeof(Texture));
                     break;
             }
-		}
-		else
-		{
-            /*
-			if (length > 0.1f)
-			{
-				lexicon.under = lexicon.under.Replace("_", " ");
-				lexicon.underText.text = lexicon.under;
-				if (chooseCandidate)
-				{
-					chooseCandidate = false;
-					lexicon.Accept(ref -1);
-				}
-			}
-            */
-		}
+        }
+        else
+            SetAreaDisplay(x, y);
 	}
 
 	public void End(float x, float y)
@@ -140,6 +128,7 @@ public class Gesture : MonoBehaviour {
 			y = y - beginPoint.y + StartPointRelative.y;
 		}
 		cursor.transform.localPosition = new Vector3(x * Parameter.keyboardWidth, y * Parameter.keyboardHeight, -0.2f);
+        SetAreaDisplay(x, y, false);
         if (lastEndTime == -1 || Time.time - lastEndTime > 0.2)
             lastEndTime = Time.time;
         else
@@ -169,7 +158,7 @@ public class Gesture : MonoBehaviour {
 		{
 			cursor.GetComponent<TrailRendererHelper>().Reset();
 			cursor.transform.localPosition = new Vector3(StartPointRelative.x * Parameter.keyboardWidth, StartPointRelative.y * Parameter.keyboardHeight, -0.2f);
-		}
+        }
 		if (chooseCandidate)
 		{
             menuGestureCount++;
@@ -203,7 +192,7 @@ public class Gesture : MonoBehaviour {
 			}
 		}
 
-        if (x <= -0.5f && length <= 1.0f)
+        if (x <= -0.52f && length - (0.5f - x) <= 1.0f)
 		{
 			if (Parameter.userStudy == Parameter.UserStudy.Study2)
 				server.Send("Delete", "LeftSwipe");
@@ -211,7 +200,7 @@ public class Gesture : MonoBehaviour {
 			chooseCandidate = false;
 			return;
 		}
-		if (x >= 0.55f && length - (x - 0.5f) <= 1.0f && Parameter.userStudy == Parameter.UserStudy.Basic)
+		if (x >= 0.52f && length - (x - 0.5f) <= 1.0f && Parameter.userStudy == Parameter.UserStudy.Basic)
 		{
 			lexicon.ChangePhrase();
 			return;
@@ -294,5 +283,15 @@ public class Gesture : MonoBehaviour {
         chooseCandidate = false;
         lexicon.SetRadialMenuDisplay(false);
         textManager.CancelCandidate();
+    }
+
+    private void SetAreaDisplay(float x, float y, bool display = true)
+    {
+        Color color = deleteArea.color;
+        color.a = (x < -0.52f && display) ? 0.9f : 0;
+        deleteArea.color = color;
+        color = spaceArea.color;
+        color.a = (x > 0.52f && display) ? 0.9f : 0;
+        spaceArea.color = color;
     }
 }
