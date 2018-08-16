@@ -40,7 +40,7 @@ public class Parameter : MonoBehaviour
     public enum UserStudy
     {
         Basic = 0,
-        Train = 1,
+        Study1_Train = 1,
         Study1 = 2,
         Study2 = 3,
         End = 4,

@@ -10,6 +10,7 @@ public class Gesture : MonoBehaviour {
 	public RawImage cursor, radialMenu;
 	public Text text;
 	public Lexicon lexicon;
+    public TextManager textManager;
 	
 	public bool chooseCandidate = false;
     private int menuGestureCount = 0;
@@ -86,14 +87,14 @@ public class Gesture : MonoBehaviour {
 
 		if (Lexicon.useRadialMenu && chooseCandidate)
 		{
-			if (Vector2.Distance(new Vector2(x, y), StartPointRelative) < RadiusMenuR)
-			{
-				radialMenu.texture = (Texture)Resources.Load("6Menu/6Menu", typeof(Texture));
-				return;
-			}
             int choose = RadialMenuChoose(x, y);
+            if (choose >= 0 && choose <= 4)
+                textManager.SetCandidate(lexicon.GetChoosedCandidate(choose));
             switch (choose)
             {
+                case -1:
+                    radialMenu.texture = (Texture)Resources.Load("6Menu/6Menu", typeof(Texture));
+                    break;
                 case 0:
                     radialMenu.texture = (Texture)Resources.Load("6Menu/6Menu_Right", typeof(Texture));
                     break;
@@ -156,13 +157,12 @@ public class Gesture : MonoBehaviour {
                 }
             }
             lastEndTime = -1;
-            return;
         }
         if (Vector2.Distance(new Vector2(x, y), stroke[stroke.Count - 1]) > eps)
             stroke.Add(new Vector2(x, y));
-		if (Parameter.userStudy == Parameter.UserStudy.Study1 || Parameter.userStudy == Parameter.UserStudy.Train)
+		if (Parameter.userStudy == Parameter.UserStudy.Study1 || Parameter.userStudy == Parameter.UserStudy.Study1_Train)
 		{
-			lexicon.HighLight(+1);
+			textManager.HighLight(+1);
 			return;
 		}
 		if (Parameter.mode == Parameter.Mode.FixStart)
@@ -203,16 +203,7 @@ public class Gesture : MonoBehaviour {
 			}
 		}
 
-        /*
-        if (Lexicon.useRadialMenu && length <= 0.05f)
-		{
-			char key = lexicon.TapSingleKey(new Vector2(x * keyboardWidth, y * keyboardHeight));
-			server.Send("SingleKey", key.ToString());
-			return;
-		}
-        */
-
-		if (x <= -0.5f && length <= 1.0f)
+        if (x <= -0.5f && length <= 1.0f)
 		{
 			if (Parameter.userStudy == Parameter.UserStudy.Study2)
 				server.Send("Delete", "LeftSwipe");
@@ -302,5 +293,6 @@ public class Gesture : MonoBehaviour {
             server.Send("Cancel", "");
         chooseCandidate = false;
         lexicon.SetRadialMenuDisplay(false);
+        textManager.CancelCandidate();
     }
 }

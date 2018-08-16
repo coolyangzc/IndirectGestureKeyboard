@@ -11,6 +11,7 @@ public class PCControl : MonoBehaviour {
 	public Gesture gesture;
 	public Info info;
     public Parameter parameter;
+    public TextManager textManager;
 	public int blockID = 0, phraseID = 0; 
 	public InputField userID;
 	//public Text userID;
@@ -97,16 +98,16 @@ public class PCControl : MonoBehaviour {
                 info.Clear();
                 if (Parameter.userStudy == Parameter.UserStudy.Basic)
                 {
-                    Parameter.userStudy = Parameter.UserStudy.Train;
+                    Parameter.userStudy = Parameter.UserStudy.Study1_Train;
                     lexicon.ChangePhrase();
-                    lexicon.HighLight(-100);
+                    textManager.HighLight(-100);
                     info.Log("Phrase", "Warmup");
                     return;
                 }
                 Parameter.userStudy = Parameter.UserStudy.Study1;
 				lexicon.ChangePhrase(phraseID);
 				SendPhraseMessage();
-				lexicon.HighLight(-100);
+                textManager.HighLight(-100);
 				info.Log("Phrase", (phraseID+1).ToString() + "/40");
 				server.Send("Get Keyboard Size", "");
 			}
@@ -158,30 +159,30 @@ public class PCControl : MonoBehaviour {
 				case Parameter.UserStudy.Basic:
 					lexicon.ChangePhrase();
 					break;
-				case Parameter.UserStudy.Train:
+				case Parameter.UserStudy.Study1_Train:
 					lexicon.ChangePhrase();
-					lexicon.HighLight(-100);
+					textManager.HighLight(-100);
 					break;
 				case Parameter.UserStudy.Study1:
-                    if (!lexicon.InputCorrect() && !(Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift)))
+                    if (!textManager.InputCorrect() && !(Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift)))
                         return;
 					server.Send("Study1 End Phrase", Parameter.mode.ToString());
 					phraseID++;
 					if (phraseID % 10 == 0)
 					{
-                        Parameter.userStudy = Parameter.UserStudy.Train;
+                        Parameter.userStudy = Parameter.UserStudy.Study1_Train;
 						lexicon.ChangePhrase();
-						lexicon.HighLight(-100);
+                        textManager.HighLight(-100);
 						info.Log("Phrase", "Warmup");
 						return;
 					}
 					lexicon.ChangePhrase(phraseID);
 					SendPhraseMessage();
-					lexicon.HighLight(-100);
+                    textManager.HighLight(-100);
 					info.Log("Phrase", (phraseID+1).ToString() + "/40");
 					break;
 				case Parameter.UserStudy.Study2:
-					server.Send("Study2 End Phrase", lexicon.inputText.text + "\n" + Parameter.mode.ToString());
+					server.Send("Study2 End Phrase", textManager.inputText.text + "\n" + Parameter.mode.ToString());
 					phraseID++;
 					if (phraseID % 6 == 0)
 					{
@@ -201,8 +202,8 @@ public class PCControl : MonoBehaviour {
 		{
 			if (Parameter.userStudy == Parameter.UserStudy.Study1 || Parameter.userStudy == Parameter.UserStudy.Study2)
 				server.Send("Backspace", "");
-			if (Parameter.userStudy == Parameter.UserStudy.Study1 || Parameter.userStudy == Parameter.UserStudy.Train)
-				lexicon.HighLight(-100);
+			if (Parameter.userStudy == Parameter.UserStudy.Study1 || Parameter.userStudy == Parameter.UserStudy.Study1_Train)
+                textManager.HighLight(-100);
 			if (Parameter.userStudy == Parameter.UserStudy.Study2 || Parameter.userStudy == Parameter.UserStudy.Basic)
 				lexicon.Clear();
 		}
@@ -242,11 +243,11 @@ public class PCControl : MonoBehaviour {
 	{
 		if (Parameter.userStudy == Parameter.UserStudy.Study1)
 			server.Send("Study1 New Phrase", 
-			            userID.text + "_" + phraseID.ToString() + ".txt" + "\n" + 
-			            lexicon.phraseText.text);
+			            userID.text + "_" + phraseID.ToString() + ".txt" + "\n" +
+                        textManager.phraseText.text);
 		else if (Parameter.userStudy == Parameter.UserStudy.Study2)
 			server.Send("Study2 New Phrase", 
-			            userID.text + "_" + phraseID.ToString() + ".txt" + "\n" + 
-			            lexicon.phraseText.text);
+			            userID.text + "_" + phraseID.ToString() + ".txt" + "\n" +
+                        textManager.phraseText.text);
 	}
 }

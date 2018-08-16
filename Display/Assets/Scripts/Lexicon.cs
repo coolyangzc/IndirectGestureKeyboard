@@ -9,7 +9,7 @@ public class Lexicon : MonoBehaviour
 	public Info info;
 	public Gesture gesture;
 	public Lexicon lexicon;
-	public Text inputText, underText, phraseText;
+    public TextManager textManager;
 	public string text = "", under = "";
 	
 	//Constants
@@ -29,9 +29,8 @@ public class Lexicon : MonoBehaviour
 
 	//Internal Variables
 	private int choose = 0;
-	private int highLight = 0;
-	private string[] words;
-	private Button[] btn = new Button[CandidatesNum];
+    private string[] words;
+    private Button[] btn = new Button[CandidatesNum];
 	private Text[] radialText = new Text[RadialNum];
     private int panel;
 	private Candidate[] cands = new Candidate[CandidatesNum], candsTmp = new Candidate[CandidatesNum];
@@ -107,19 +106,10 @@ public class Lexicon : MonoBehaviour
 		InitPhrases();
 	}
 
-    int cnt = 0;
 	// Update is called once per frame
 	void Update () 
 	{
-        cnt++;
-        if (cnt % 100 == 0)
-        {
-            string s = "";
-            for (int i = 0; i < history.Count; ++i)
-                s += history[i].word + " ";
-            Debug.Log(s);
-        }
-            
+        
 	}
 
 	public void CalcKeyLayout()
@@ -185,14 +175,6 @@ public class Lexicon : MonoBehaviour
         ChangePhrase();
 	}
 
-	string Underline(char ch, int length)
-	{
-		string under = "";
-		for(int i = 0; i < length; ++i)
-			under += ch;
-		return under;
-	}
-
 	public Candidate[] Recognize(Vector2[] rawStroke)
 	{
 		Vector2[] stroke = PathCalc.TemporalSampling(rawStroke);
@@ -200,6 +182,8 @@ public class Lexicon : MonoBehaviour
 		for (int i = 0; i < CandidatesNum; ++i)
 			candsTmp[i] = new Candidate();
         int h = history.Count;
+        string pre = (h == 0) ? "<s>" : history[h - 1].word.ToLower();
+        Debug.Log(pre);
         foreach (Entry entry in dict)
 		{
             if (rawStroke.Length == 1 && entry.word.Length != 1)
@@ -221,7 +205,6 @@ public class Lexicon : MonoBehaviour
                 > Parameter.endOffset * Parameter.keyWidth && 
                 (h >= words.Length || entry.word != words[h]))
                 continue;
-            string pre = (h == 0) ? "<s>" : history[h - 1].word;
 
             float biF = 0;
             if (bigramMap.ContainsKey(pre + ' ' + entry.word))
@@ -269,15 +252,9 @@ public class Lexicon : MonoBehaviour
 
         if (cands[0].confidence == 0)
 			return;
-		if (!useRadialMenu)
-		{
+        textManager.SetCandidate(cands[0].word);
+        if (!useRadialMenu)
 			history.Add(new Candidate(cands[0]));
-			string space = "";
-			if (text.Length > 0)
-				space = " ";
-			inputText.text = text + space + cands[0].word;
-			underText.text = under + space + Underline('_', cands[0].word.Length);
-		}
 	}
 
     public void NextCandidatePanel()
@@ -285,7 +262,7 @@ public class Lexicon : MonoBehaviour
         panel = (panel + 1) % 3;
         for (int i = 0; i <= 4; ++i)
         {
-            int id = (i==0)?0:panel * 4 + i;
+            int id = (i == 0) ? 0 : panel * 4 + i;
             string text = cands[id].word;
             if (Parameter.debugOn)
                 text += "\n" + cands[id].location.ToString(".000") + " " + cands[id].language.ToString(".000") 
@@ -300,6 +277,7 @@ public class Lexicon : MonoBehaviour
 
 	public void NextCandidate()
 	{
+        /*
 		choose = (choose + 1) % CandidatesNum;
 		if (cands[choose].confidence == 0)
 			choose = 0;
@@ -310,30 +288,20 @@ public class Lexicon : MonoBehaviour
 		inputText.text = text + space + cands[choose].word;
 		underText.text = under + space + Underline('_', cands[choose].word.Length);
 		btn[choose].Select();
+        */
 	}
 
 	public string Accept(ref int id)
 	{
 		if (id == -1)
 			id = choose;
-		if (text.Length > 0)
-		{
-			text += " ";
-			under += " ";
-		}
         if (useRadialMenu)
             id = (id == 0)? 0 : panel * 4 + id;
         string word = cands[id].word;
-        text += word;
-		inputText.text = text;
-		if (useRadialMenu)
-			history.Add(new Candidate(word));
-		else
-		{
-			under += Underline(' ', word.Length);
-			underText.text = under;
-		}
-		
+        textManager.AddWord(word);
+                
+		history.Add(new Candidate(word));
+        
 		for (int i = 0; i < CandidatesNum; ++i)
 		{
 			//btn[i].GetComponentInChildren<Text>().text = "";
@@ -357,22 +325,7 @@ public class Lexicon : MonoBehaviour
 		if (history.Count == 0)
 			return;
 		history.RemoveAt(history.Count - 1);
-		text = ""; 
-		int length = 0;
-		for (int i = 0; i < history.Count - 1; ++i)
-		{
-			text += history[i].word + " ";
-			length += history[i].word.Length + 1;
-		}
-		under = Underline(' ', length);
-		if (history.Count > 0)
-		{
-			text += history[history.Count - 1].word;
-			under += Underline('_', history[history.Count - 1].word.Length);
-		}
-		inputText.text = text;
-		if (!useRadialMenu)
-			underText.text = under;
+        textManager.Delete(history);
 	}
 
 	public void Clear()
@@ -388,12 +341,13 @@ public class Lexicon : MonoBehaviour
 		SetRadialMenuDisplay(false);
 		gesture.chooseCandidate = false;
 		history.Clear();
-		inputText.text = underText.text = under = text = "";
+        textManager.Clear();
 	}
 
 	public char TapSingleKey(Vector2 point)
 	{
-		float minDis = float.MaxValue;
+        return 'a';
+		/*float minDis = float.MaxValue;
 		char key = ' ';
 		for (int i = 0; i < 26; ++i)
 		{
@@ -410,7 +364,7 @@ public class Lexicon : MonoBehaviour
 		text += key.ToString();
 		inputText.text = text;
 		history.Add(new Candidate(key.ToString()));
-		return key;
+		return key;*/
 	}
 
 	public void SetDebugDisplay(bool debugOn)
@@ -423,11 +377,11 @@ public class Lexicon : MonoBehaviour
 
 	public void ChangePhrase(int id = -1)
 	{
-		if (id == -1)
-			phraseText.text = phrase[Random.Range(0, phrase.Count)];
+        if (id == -1)
+            textManager.SetPhrase(phrase[Random.Range(0, phrase.Count)]);
 		else
-			phraseText.text = phrase[phraseList[id]];
-		words = phraseText.text.Split(' ');
+            textManager.SetPhrase(phrase[phraseList[id]]);
+		words = textManager.GetWords();
 		Clear();
 		if (!useRadialMenu)
 			btn[0].Select();
@@ -465,27 +419,15 @@ public class Lexicon : MonoBehaviour
 		radialMenu.color = color;
 	}
 
-	public void HighLight(int delta)
-	{
-		highLight += delta;
-		if (highLight < 0)
-			highLight = 0;
-		phraseText.text = "";
-		for (int i = 0; i < words.Length; ++i)
-				if (i == highLight)
-					phraseText.text += "<color=red>" + words[i] + "</color> ";
-				else
-					phraseText.text += words[i] + " ";
-	}
-
-    public bool InputCorrect()
-    {
-        return highLight == words.Length;
-    }
-
 	public void UpdateSizeMsg(string msg)
 	{
 		info.Log("Size", msg.Split(' ')[0]);
 		info.Log("Scale", msg.Split(' ')[1]);
 	}
+
+    public string GetChoosedCandidate(int choose)
+    {
+        int id = (choose == 0) ? 0 : panel * 4 + choose;
+        return cands[id].word;
+    }
 }
