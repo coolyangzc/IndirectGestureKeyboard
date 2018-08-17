@@ -13,8 +13,9 @@ public class Gesture : MonoBehaviour {
     public TextManager textManager;
 	
 	public bool chooseCandidate = false;
+    private bool listExpanded = false;
     private int menuGestureCount = 0;
-	private float length, lastBeginTime, lastEndTime, lastOutListTime;
+	private float length, lastBeginTime, lastOutListTime;
 	private Vector2 StartPointRelative;
 	private Vector2 beginPoint, prePoint, localPoint;
 	private List<Vector2> stroke = new List<Vector2>();
@@ -26,7 +27,6 @@ public class Gesture : MonoBehaviour {
 	void Start() 
 	{
 		StartPointRelative = Lexicon.StartPointRelative;
-        lastEndTime = -1;
 	}
 	
 	// Update is called once per frame
@@ -38,7 +38,7 @@ public class Gesture : MonoBehaviour {
 	public void Begin(float x, float y)
 	{
         lastBeginTime = lastOutListTime = Time.time;
-        if (chooseCandidate)
+        if (chooseCandidate && Lexicon.useRadialMenu)
 			cursor.GetComponent<TrailRendererHelper>().Reset(0.3f);
 		else
 			cursor.GetComponent<TrailRendererHelper>().Reset(0.6f); //0.6f
@@ -74,7 +74,8 @@ public class Gesture : MonoBehaviour {
 
 	public void Move(float x, float y)
 	{
-		localPoint = new Vector2(x, y);
+        //Adjust Coor
+        localPoint = new Vector2(x, y);
 		length += Vector2.Distance(prePoint, localPoint);
 		prePoint = localPoint;
 		if (Parameter.mode == Parameter.Mode.FixStart || (Lexicon.useRadialMenu && chooseCandidate))
@@ -83,14 +84,22 @@ public class Gesture : MonoBehaviour {
 			y = y - beginPoint.y + StartPointRelative.y;
 		}
 		cursor.transform.localPosition = new Vector3(x * Parameter.keyboardWidth, y * Parameter.keyboardHeight, -0.2f);
+
         if (Vector2.Distance(new Vector2(x, y), stroke[stroke.Count - 1]) > eps)
 		    stroke.Add(new Vector2(x, y));
+
         if (!Lexicon.useRadialMenu)
         {
             int choose = CandicateListChoose(x, y);
             lexicon.HighLightListMenu(choose);
+            if (choose == 0)
+                lastOutListTime = Time.time;
+            else
+                if (Time.time - lastOutListTime > 0.4f)
+                    ExpandList(true);
+            SetAreaDisplay(x, y, choose == 0);
         }
-        if (Lexicon.useRadialMenu && chooseCandidate)
+        else if (Lexicon.useRadialMenu && chooseCandidate)
         {
             int choose = RadialMenuChoose(x, y);
             if (choose >= 0 && choose <= 4)
@@ -126,30 +135,32 @@ public class Gesture : MonoBehaviour {
 
 	public void End(float x, float y)
 	{
-		if (Parameter.mode == Parameter.Mode.FixStart || (Lexicon.useRadialMenu && chooseCandidate))
+        //Adjust Coor
+        if (Parameter.mode == Parameter.Mode.FixStart || (Lexicon.useRadialMenu && chooseCandidate))
 		{
 			x = x - beginPoint.x + StartPointRelative.x;
 			y = y - beginPoint.y + StartPointRelative.y;
 		}
 		cursor.transform.localPosition = new Vector3(x * Parameter.keyboardWidth, y * Parameter.keyboardHeight, -0.2f);
+
         SetAreaDisplay(x, y, false);
-        if (lastEndTime == -1 || Time.time - lastEndTime > 0.2)
-            lastEndTime = Time.time;
-        else
+        if (!Lexicon.useRadialMenu && chooseCandidate)
         {
-            if (chooseCandidate)
+            int choose = CandicateListChoose(x, y);
+            if (choose == 0 && listExpanded)
             {
-                if (menuGestureCount == 0)
-                {
-                    lexicon.Delete();
-                    server.Send("Delete", "DoubleClick");
-                    if (Parameter.userStudy == Parameter.UserStudy.Study2)
-                        server.Send("Cancel", "");
-                    chooseCandidate = false;
-                    lexicon.SetRadialMenuDisplay(false);
-                }
+                ExpandList(false);
+                return;
             }
-            lastEndTime = -1;
+            lexicon.Accept(ref choose);
+            ExpandList(false, true);
+            if (choose > 0)
+            {
+                lexicon.CleanList();
+                chooseCandidate = false;
+                return;
+            }
+                
         }
         if (Vector2.Distance(new Vector2(x, y), stroke[stroke.Count - 1]) > eps)
             stroke.Add(new Vector2(x, y));
@@ -276,12 +287,13 @@ public class Gesture : MonoBehaviour {
     {
         x *= Parameter.keyboardWidth;
         y *= Parameter.keyboardHeight;
+        int line = listExpanded ? 3 : 1;
         for (int i = 0; i < 4; ++i)
             if (-500 + i * 250 < x && x < -250 + i * 250)
-                for (int j = 0; j < 3; ++j)
+                for (int j = 0; j < line; ++j)
                     if (y > 310 - 120 * j && y < 430 - 120 * j)
                         return j * 4 + i + 1;
-        return -1;
+        return 0;
     }
 
     private void CancelRadialChoose()
@@ -296,10 +308,21 @@ public class Gesture : MonoBehaviour {
     private void SetAreaDisplay(float x, float y, bool display = true)
     {
         Color color = deleteArea.color;
-        color.a = (x < -0.52f && display) ? 0.9f : 0;
+        color.a = (x <= -0.52f && length - (0.5f - x) <= 1.0f && display) ? 0.9f : 0;
         deleteArea.color = color;
         color = spaceArea.color;
-        color.a = (x > 0.52f && display) ? 0.9f : 0;
+        color.a = (x >= 0.52f && length - (x - 0.5f) <= 1.0f && display) ? 0.9f : 0;
         spaceArea.color = color;
+    }
+
+    private void ExpandList(bool expand, bool clear = false)
+    {
+        listExpanded = expand;
+        if (expand)
+            lexicon.SetListMenuDisplay(true, 12);
+        else
+            lexicon.SetListMenuDisplay(true, 4);
+        if (clear)
+            lexicon.CleanList();
     }
 }

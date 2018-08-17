@@ -119,9 +119,9 @@ public class PCControl : MonoBehaviour {
 				SendPhraseMessage();
 				info.Clear();
                 info.Log("Mode", Parameter.mode.ToString());
-                info.Log("Block", (blockID+1).ToString() + "/8");
-				info.Log("Phrase", (phraseID % 6 + 1).ToString() + "/6");
-                blockID = (blockID + 1) % 8;
+                info.Log("Block", (blockID+1).ToString() + "/4");
+				info.Log("Phrase", (phraseID % 10 + 1).ToString() + "/10");
+                blockID = (blockID + 1) % 4;
             }
 		}
 		if (Input.GetKeyDown(KeyCode.UpArrow))
@@ -173,7 +173,7 @@ public class PCControl : MonoBehaviour {
                         Parameter.userStudy = Parameter.UserStudy.Study1_Train;
 						lexicon.ChangePhrase();
                         textManager.HighLight(-100);
-						info.Log("Phrase", "Warmup");
+						info.Log("Phrase", "<color=red>Rest</color>");
 						return;
 					}
 					lexicon.ChangePhrase(phraseID);
@@ -182,9 +182,11 @@ public class PCControl : MonoBehaviour {
 					info.Log("Phrase", (phraseID+1).ToString() + "/40");
 					break;
 				case Parameter.UserStudy.Study2:
-					server.Send("Study2 End Phrase", textManager.inputText.text + "\n" + Parameter.mode.ToString());
+                    if (!textManager.InputCorrect() && !(Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift)))
+                        return;
+                    server.Send("Study2 End Phrase", textManager.inputText.text + "\n" + Parameter.mode.ToString());
 					phraseID++;
-					if (phraseID % 6 == 0)
+					if (phraseID % 10 == 0)
 					{
                         Parameter.userStudy = Parameter.UserStudy.Basic;
 						lexicon.ChangePhrase();
@@ -194,7 +196,7 @@ public class PCControl : MonoBehaviour {
 					}
 					lexicon.ChangePhrase();
 					SendPhraseMessage();
-					info.Log("Phrase", (phraseID % 6 + 1).ToString() + "/6");
+					info.Log("Phrase", (phraseID % 10 + 1).ToString() + "/10");
 					break;
 			}
 		}

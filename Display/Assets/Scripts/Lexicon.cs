@@ -267,9 +267,7 @@ public class Lexicon : MonoBehaviour
                 text += "\n" + cands[id].location.ToString(".000") + " " + cands[id].language.ToString(".000") 
                     + " " + cands[id].confidence.ToString(".000");
             radialText[i].text = text;
-            listText[i].text = text;
         }
-
     }
 
 	public string Accept(ref int id)
@@ -282,9 +280,7 @@ public class Lexicon : MonoBehaviour
 		history.Add(new Candidate(word));
         
 		for (int i = 0; i < CandidatesNum; ++i)
-		{
 			cands[i].word = "";
-		}
 
 		for (int i = 0; i < RadialNum; ++i)
 			radialText[i].text = "";
@@ -304,6 +300,12 @@ public class Lexicon : MonoBehaviour
         textManager.Delete(history);
 	}
 
+    public void CleanList()
+    {
+        for (int i = 0; i < CandidatesNum; ++i)
+            listText[i].text = "";
+    }
+
 	public void Clear()
 	{
 		for (int i = 0; i < CandidatesNum; ++i)
@@ -314,7 +316,9 @@ public class Lexicon : MonoBehaviour
 		}
 		for (int i = 0; i < RadialNum; ++i)
 			radialText[i].text = "";
-		SetRadialMenuDisplay(false);
+        for (int i = 0; i < CandidatesNum; ++i)
+            listText[i].text = "";
+        SetRadialMenuDisplay(false);
 		gesture.chooseCandidate = false;
 		history.Clear();
         textManager.Clear();
@@ -379,19 +383,18 @@ public class Lexicon : MonoBehaviour
         if (useRadialMenu)
             SetListMenuDisplay(false);
         else
-            SetListMenuDisplay(true, 12);
+            SetListMenuDisplay(true, 4);
     }
 
     public void SetListMenuDisplay(bool display, int num = CandidatesNum)
     {
-        num = Mathf.Min(num + 1, CandidatesNum);
-        for (int i = 0; i < num; ++i)
+        for (int i = 0; i < CandidatesNum; ++i)
         {
             Color c = listText[i].color;
-            c.a = display ? 1f : 0;
+            c.a = (display && i <= num) ? 1f : 0;
             listText[i].color = c;
             c = candidateBtn[i].color;
-            c.a = display ? 0.9f : 0;
+            c.a = (display && i <= num) ? 0.9f : 0;
             candidateBtn[i].color = c;
         }
     }
@@ -401,16 +404,13 @@ public class Lexicon : MonoBehaviour
         for (int i = 0; i < CandidatesNum; ++i)
         {
             Color c = candidateBtn[i].color;
-            c.r = c.g = c.b = 255;
+            c.r = c.g = c.b = 1;
             candidateBtn[i].color = c;
         }
         if (id > 0)
         {
             Color c = candidateBtn[id].color;
-            c.r = c.g = c.b = 64;
-            c.r = 255;
-            c.g = 0;
-            c.b = 0;
+            c.r = c.g = c.b = 0.8f;
             candidateBtn[id].color = c;
         }
     }
