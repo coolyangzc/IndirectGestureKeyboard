@@ -119,9 +119,9 @@ public class PCControl : MonoBehaviour {
 				SendPhraseMessage();
 				info.Clear();
                 info.Log("Mode", Parameter.mode.ToString());
-                info.Log("Block", (blockID+1).ToString() + "/4");
-				info.Log("Phrase", (phraseID % 10 + 1).ToString() + "/10");
                 blockID = (blockID + 1) % 4;
+                info.Log("Block", blockID.ToString() + "/4");
+				info.Log("Phrase", (phraseID % 10 + 1).ToString() + "/10");
             }
 		}
 		if (Input.GetKeyDown(KeyCode.UpArrow))
@@ -211,12 +211,13 @@ public class PCControl : MonoBehaviour {
         {
             Parameter.userStudy = Parameter.UserStudy.Basic;
             lexicon.ChangePhrase();
-            info.Log("Block", "<color=red>Rest</color>");
+            info.Log("Block", "<color=red>Finished</color> " + blockID.ToString() + "/4");
             info.Log("Phrase", "<color=red>Rest</color>");
             return;
         }
         lexicon.ChangePhrase(phraseID);
         SendPhraseMessage();
+        info.Log("Block", blockID.ToString() + "/4");
         info.Log("Phrase", (phraseID % 10 + 1).ToString() + "/10");
     }
 
