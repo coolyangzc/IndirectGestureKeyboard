@@ -181,11 +181,8 @@ public class Lexicon : MonoBehaviour
         }
         if (study == Parameter.UserStudy.Study2)
         {
-            for (int b = 1; b < 4; ++b)
-            {
-                phraseList[b * 10] = phraseList[0];
-                phraseList[b * 10 + 1] = phraseList[1];
-            }
+            for (int b = 1; b < 8; ++b)
+                phraseList[b * 10] = phraseList[1];
         }
     }
 

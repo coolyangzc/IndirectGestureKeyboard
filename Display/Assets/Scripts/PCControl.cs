@@ -119,7 +119,7 @@ public class PCControl : MonoBehaviour {
 				SendPhraseMessage();
 				info.Clear();
                 info.Log("Mode", Parameter.mode.ToString());
-                blockID = (blockID + 1) % 4;
+                blockID = blockID % 4 + 1;
                 info.Log("Block", blockID.ToString() + "/4");
 				info.Log("Phrase", (phraseID % 10 + 1).ToString() + "/10");
             }
