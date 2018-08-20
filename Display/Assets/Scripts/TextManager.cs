@@ -40,9 +40,13 @@ public class TextManager : MonoBehaviour {
                 phraseText.text += words[i] + " ";
     }
 
-    public bool InputCorrect()
+    public bool InputNumberCorrect()
     {
-        return highLight == words.Length;
+        if (Parameter.userStudy == Parameter.UserStudy.Study1)
+            return highLight == words.Length;
+        else if (Parameter.userStudy == Parameter.UserStudy.Study2 || Parameter.userStudy == Parameter.UserStudy.Basic)
+            return inputText.text.Split(' ').Length == words.Length;
+        return false;
     }
 
     public string[] GetWords()

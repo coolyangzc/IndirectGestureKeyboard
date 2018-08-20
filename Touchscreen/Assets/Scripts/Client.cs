@@ -116,10 +116,13 @@ public class Client : MonoBehaviour
 			case "Delete":
 				keyboard.Delete(msg);
 				break;
-			case "Backspace":
+            case "Expand":
+                keyboard.Expand();
+                break;
+            case "Backspace":
 				keyboard.Backspace();
 				break;
-			case "Change Ratio":
+            case "Change Ratio":
 				keyboard.ChangeRatio();
 				break;
             case "NextCandidatePanel":

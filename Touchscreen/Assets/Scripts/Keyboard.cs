@@ -222,7 +222,6 @@ public class Keyboard : MonoBehaviour
 
         for (int i = 0; i < 26; ++i)
         {
-            string name = ((char)i + 65).ToString();
             Color c = keyboard.rectTransform.Find(((char)(i + 65)).ToString()).GetComponent<Image>().color;
             c.a = 0;
             keyboard.rectTransform.Find(((char)(i + 65)).ToString()).GetComponent<Image>().color = c;
@@ -231,6 +230,8 @@ public class Keyboard : MonoBehaviour
 
 	public void EndDataFile(string msg)
 	{
+        if (buffer == "")
+            return;
 		buffer = phraseInfo + "\n" + 
 				 msg + "\n" + 
 				 (widthRatio * overallRatio).ToString("0.0") + " " + (heightRatio * overallRatio).ToString("0.0") + "\n" +
@@ -251,6 +252,11 @@ public class Keyboard : MonoBehaviour
 	{
 		buffer += "SingleKey" + " " + Time.time.ToString() + " " + key + "\n";
 	}
+
+    public void Expand()
+    {
+        buffer += "Expand" + " " + Time.time.ToString() + "\n";
+    }
 
 	public void Cancel()
 	{

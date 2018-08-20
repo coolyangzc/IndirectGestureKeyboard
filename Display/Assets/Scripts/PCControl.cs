@@ -14,7 +14,7 @@ public class PCControl : MonoBehaviour {
     public TextManager textManager;
 	public int blockID = 0, phraseID = 0; 
 	public InputField userID;
-	//public Text userID;
+    private int tmp = 0;
 
 	private bool mouseHidden = false;
 	private bool debugOn = false;
@@ -115,7 +115,8 @@ public class PCControl : MonoBehaviour {
 			{
                 HideDisplay();
                 Parameter.userStudy = Parameter.UserStudy.Study2;
-				lexicon.ChangePhrase();
+                lexicon.SetPhraseList(Parameter.userStudy);
+				lexicon.ChangePhrase(phraseID);
 				SendPhraseMessage();
 				info.Clear();
                 info.Log("Mode", Parameter.mode.ToString());
@@ -164,8 +165,10 @@ public class PCControl : MonoBehaviour {
 					textManager.HighLight(-100);
 					break;
 				case Parameter.UserStudy.Study1:
-                    if (!textManager.InputCorrect() && !(Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift)))
+                    if (!textManager.InputNumberCorrect() && !(Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift)))
                         return;
+                    tmp++;
+                    Debug.Log(tmp);
 					server.Send("Study1 End Phrase", Parameter.mode.ToString());
 					phraseID++;
 					if (phraseID % 10 == 0)
@@ -182,22 +185,10 @@ public class PCControl : MonoBehaviour {
 					info.Log("Phrase", (phraseID+1).ToString() + "/40");
 					break;
 				case Parameter.UserStudy.Study2:
-                    if (!textManager.InputCorrect() && !(Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift)))
+                    if (!textManager.InputNumberCorrect() && !(Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift)))
                         return;
-                    server.Send("Study2 End Phrase", textManager.inputText.text + "\n" + Parameter.mode.ToString());
-					phraseID++;
-					if (phraseID % 10 == 0)
-					{
-                        Parameter.userStudy = Parameter.UserStudy.Basic;
-						lexicon.ChangePhrase();
-                        info.Log("Block", "<color=red>Rest</color>");
-						info.Log("Phrase", "<color=red>Rest</color>");
-						return;
-					}
-					lexicon.ChangePhrase();
-					SendPhraseMessage();
-					info.Log("Phrase", (phraseID % 10 + 1).ToString() + "/10");
-					break;
+                    FinishStudy2Phrase();
+                    break;
 			}
 		}
 		if (Input.GetKeyDown(KeyCode.Backspace))
@@ -211,6 +202,26 @@ public class PCControl : MonoBehaviour {
 		}
 
 	}
+
+    public void FinishStudy2Phrase()
+    {
+        string msg = textManager.inputText.text + "\n" + Parameter.mode.ToString() + "\n";
+        msg += (Lexicon.useRadialMenu ? "Radial" : "List") + "\n";
+        server.Send("Study2 End Phrase", msg);
+
+        phraseID++;
+        if (phraseID % 10 == 0)
+        {
+            Parameter.userStudy = Parameter.UserStudy.Basic;
+            lexicon.ChangePhrase();
+            info.Log("Block", "<color=red>Rest</color>");
+            info.Log("Phrase", "<color=red>Rest</color>");
+            return;
+        }
+        lexicon.ChangePhrase(phraseID);
+        SendPhraseMessage();
+        info.Log("Phrase", (phraseID % 10 + 1).ToString() + "/10");
+    }
 
 	void MouseControl() 
 	{

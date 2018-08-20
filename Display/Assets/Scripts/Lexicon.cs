@@ -165,6 +165,14 @@ public class Lexicon : MonoBehaviour
             phraseList.Add(i);
 		}
         Debug.Log("Phrases: " + phrase.Count);
+        SetPhraseList(Parameter.UserStudy.Study1);
+        ChangePhrase();
+	}
+
+    public void SetPhraseList(Parameter.UserStudy study)
+    {
+        for (int i = 0; i < phrase.Count; ++i)
+            phraseList[i] = i;
         for (int i = 2; i < phrase.Count; ++i)
         {
             int j = Random.Range(2, phrase.Count);
@@ -172,8 +180,15 @@ public class Lexicon : MonoBehaviour
             phraseList[i] = phraseList[j];
             phraseList[j] = k;
         }
-        ChangePhrase();
-	}
+        if (study == Parameter.UserStudy.Study2)
+        {
+            for (int b = 1; b < 4; ++b)
+            {
+                phraseList[b * 10] = phraseList[0];
+                phraseList[b * 10 + 1] = phraseList[1];
+            }
+        }
+    }
 
 	public Candidate[] Recognize(Vector2[] rawStroke)
 	{
@@ -275,6 +290,7 @@ public class Lexicon : MonoBehaviour
         if (useRadialMenu)
             id = (id == 0)? 0 : panel * 4 + id;
         string word = cands[id].word;
+        Debug.Log("Accept " + word);
         textManager.AddWord(word);
                 
 		history.Add(new Candidate(word));

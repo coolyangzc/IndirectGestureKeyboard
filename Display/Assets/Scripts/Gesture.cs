@@ -11,6 +11,7 @@ public class Gesture : MonoBehaviour {
 	public Text text;
 	public Lexicon lexicon;
     public TextManager textManager;
+    public PCControl pcControl;
 	
 	public bool chooseCandidate = false;
     private bool listExpanded = false;
@@ -22,6 +23,8 @@ public class Gesture : MonoBehaviour {
 
 	private const float RadiusMenuR = 0.09f;
     private const float eps = 1e-6f;
+    private readonly int[] listOrder = new int[4] { 3, 1, 2, 4 };
+
 
 	// Use this for initialization
 	void Start() 
@@ -95,8 +98,11 @@ public class Gesture : MonoBehaviour {
             if (choose == 0)
                 lastOutListTime = Time.time;
             else
-                if (Time.time - lastOutListTime > 0.4f)
+                if (Time.time - lastOutListTime > 0.4f && !listExpanded)
+                {
                     ExpandList(true);
+                    server.Send("Expand", "");
+                }
             SetAreaDisplay(x, y, choose == 0);
         }
         else if (Lexicon.useRadialMenu && chooseCandidate)
@@ -150,13 +156,15 @@ public class Gesture : MonoBehaviour {
             if (choose == 0 && listExpanded)
             {
                 ExpandList(false);
+                server.Send("Cancel", "");
                 return;
             }
-            lexicon.Accept(ref choose);
+            string word = lexicon.Accept(ref choose);
+            if (Parameter.userStudy == Parameter.UserStudy.Study2)
+                server.Send("Accept", choose.ToString() + " " + word);
             ExpandList(false, true);
             if (choose > 0)
             {
-                lexicon.CleanList();
                 chooseCandidate = false;
                 return;
             }
@@ -207,11 +215,22 @@ public class Gesture : MonoBehaviour {
 			chooseCandidate = false;
 			return;
 		}
-		if (x >= 0.52f && length - (x - 0.5f) <= 1.0f && Parameter.userStudy == Parameter.UserStudy.Basic)
-		{
-			lexicon.ChangePhrase();
-			return;
-		}
+		if (x >= 0.52f && length - (x - 0.5f) <= 1.0f)
+        {
+            chooseCandidate = false;
+            if (Parameter.userStudy == Parameter.UserStudy.Basic)
+            {
+                if (!chooseCandidate && textManager.InputNumberCorrect())
+                    lexicon.ChangePhrase();
+            }
+            else if (Parameter.userStudy == Parameter.UserStudy.Study2)
+            {
+                if (!chooseCandidate && textManager.InputNumberCorrect())
+                    pcControl.FinishStudy2Phrase();
+            }
+            return;
+        }
+            
         if (Lexicon.isCut)
         {
             int l = 0, r = stroke.Count - 1;
@@ -292,7 +311,7 @@ public class Gesture : MonoBehaviour {
             if (-500 + i * 250 < x && x < -250 + i * 250)
                 for (int j = 0; j < line; ++j)
                     if (y > 310 - 120 * j && y < 430 - 120 * j)
-                        return j * 4 + i + 1;
+                        return j * 4 + listOrder[i];
         return 0;
     }
 
