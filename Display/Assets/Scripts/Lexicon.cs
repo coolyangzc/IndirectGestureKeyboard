@@ -214,7 +214,7 @@ public class Lexicon : MonoBehaviour
 			}
             if (Vector2.Distance(stroke[SampleSize - 1], entry.locationSample[(int)Parameter.mode][SampleSize - 1]) 
                 > Parameter.endOffset * Parameter.keyWidth && 
-                (h >= words.Length || entry.word != words[h]))
+                (h >= words.Length || entry.word != words[h] || stroke[SampleSize - 1].y > Parameter.keyboardHeight * 0.7f))
                 continue;
 
             float biF = 0;
@@ -286,16 +286,20 @@ public class Lexicon : MonoBehaviour
         if (useRadialMenu)
             id = (id == 0)? 0 : panel * 4 + id;
         string word = cands[id].word;
-        Debug.Log("Accept " + word);
-        textManager.AddWord(word);
-                
-		history.Add(new Candidate(word));
-        
-		for (int i = 0; i < CandidatesNum; ++i)
-			cands[i].word = "";
+        for (int i = 0; i < CandidatesNum; ++i)
+            cands[i].word = "";
+        for (int i = 0; i < RadialNum; ++i)
+            radialText[i].text = "";
 
-		for (int i = 0; i < RadialNum; ++i)
-			radialText[i].text = "";
+        if (word != "")
+        {
+            Debug.Log("Accept " + word);
+            textManager.AddWord(word);
+            history.Add(new Candidate(word));
+        }
+        else
+            word = "#";
+		
 		return word;
 	}
 
@@ -303,7 +307,6 @@ public class Lexicon : MonoBehaviour
 	{
 		for (int i = 0; i < CandidatesNum; ++i)
 		{
-			//btn[i].GetComponentInChildren<Text>().text = "";
 			cands[i].word = "";
 		}
 		if (history.Count == 0)

@@ -14,9 +14,9 @@ public class Gesture : MonoBehaviour {
     public PCControl pcControl;
 	
 	public bool chooseCandidate = false;
-    private bool listExpanded = false;
+    private bool listExpanded = false, inGesture = false;
     private int menuGestureCount = 0;
-	private float length, lastBeginTime, lastOutListTime;
+	private float length, lastOutListTime;
 	private Vector2 StartPointRelative;
 	private Vector2 beginPoint, prePoint, localPoint;
 	private List<Vector2> stroke = new List<Vector2>();
@@ -35,12 +35,23 @@ public class Gesture : MonoBehaviour {
 	// Update is called once per frame
 	void Update() 
 	{
-		
-	}
+        if (Parameter.mode == Parameter.Mode.FixStart && inGesture)
+        {
+            if (prePoint.x < -0.74f || prePoint.x > 0.74f)
+            {
+                Vector2 delta = prePoint - StartPointRelative;
+                delta.Normalize();
+                Debug.Log(delta);
+                beginPoint -= delta * 0.005f;
+                Move(prePoint.x, prePoint.y);
+            }
+        }
+    }
 
 	public void Begin(float x, float y)
 	{
-        lastBeginTime = lastOutListTime = Time.time;
+        inGesture = true;
+        lastOutListTime = Time.time;
         if (chooseCandidate && Lexicon.useRadialMenu)
 			cursor.GetComponent<TrailRendererHelper>().Reset(0.3f);
 		else
@@ -79,8 +90,9 @@ public class Gesture : MonoBehaviour {
 	{
         //Adjust Coor
         localPoint = new Vector2(x, y);
-		length += Vector2.Distance(prePoint, localPoint);
-		prePoint = localPoint;
+        length += Vector2.Distance(prePoint, localPoint);
+        prePoint = localPoint;
+		
 		if (Parameter.mode == Parameter.Mode.FixStart || (Lexicon.useRadialMenu && chooseCandidate))
 		{
 			x = x - beginPoint.x + StartPointRelative.x;
@@ -141,14 +153,18 @@ public class Gesture : MonoBehaviour {
 
 	public void End(float x, float y)
 	{
+        inGesture = false;
         //Adjust Coor
         if (Parameter.mode == Parameter.Mode.FixStart || (Lexicon.useRadialMenu && chooseCandidate))
 		{
 			x = x - beginPoint.x + StartPointRelative.x;
 			y = y - beginPoint.y + StartPointRelative.y;
 		}
-		cursor.transform.localPosition = new Vector3(x * Parameter.keyboardWidth, y * Parameter.keyboardHeight, -0.2f);
-
+        if (Parameter.mode == Parameter.Mode.FixStart)
+        {
+            cursor.GetComponent<TrailRendererHelper>().Reset();
+            cursor.transform.localPosition = new Vector3(StartPointRelative.x * Parameter.keyboardWidth, StartPointRelative.y * Parameter.keyboardHeight, -0.2f);
+        }
         SetAreaDisplay(x, y, false);
         if (!Lexicon.useRadialMenu && chooseCandidate)
         {
@@ -177,11 +193,6 @@ public class Gesture : MonoBehaviour {
 			textManager.HighLight(+1);
 			return;
 		}
-		if (Parameter.mode == Parameter.Mode.FixStart)
-		{
-			cursor.GetComponent<TrailRendererHelper>().Reset();
-			cursor.transform.localPosition = new Vector3(StartPointRelative.x * Parameter.keyboardWidth, StartPointRelative.y * Parameter.keyboardHeight, -0.2f);
-        }
 		if (chooseCandidate)
 		{
             menuGestureCount++;
