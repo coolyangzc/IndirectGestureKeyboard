@@ -28,7 +28,6 @@ public class Lexicon : MonoBehaviour
 	public static bool useRadialMenu = true;
 
 	//Internal Variables
-	private int choose = 0;
     private string[] words;
 	private Text[] radialText = new Text[RadialNum], listText = new Text[CandidatesNum];
     private Image[] candidateBtn = new Image[CandidatesNum];

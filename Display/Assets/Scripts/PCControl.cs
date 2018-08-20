@@ -14,7 +14,6 @@ public class PCControl : MonoBehaviour {
     public TextManager textManager;
 	public int blockID = 0, phraseID = 0; 
 	public InputField userID;
-    private int tmp = 0;
 
 	private bool mouseHidden = false;
 	private bool debugOn = false;
@@ -167,8 +166,6 @@ public class PCControl : MonoBehaviour {
 				case Parameter.UserStudy.Study1:
                     if (!textManager.InputNumberCorrect() && !(Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift)))
                         return;
-                    tmp++;
-                    Debug.Log(tmp);
 					server.Send("Study1 End Phrase", Parameter.mode.ToString());
 					phraseID++;
 					if (phraseID % 10 == 0)

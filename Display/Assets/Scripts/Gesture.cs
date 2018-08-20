@@ -326,6 +326,8 @@ public class Gesture : MonoBehaviour {
 
     private void SetAreaDisplay(float x, float y, bool display = true)
     {
+        if (Parameter.userStudy == Parameter.UserStudy.Study1 || Parameter.userStudy == Parameter.UserStudy.Study1_Train)
+            display = false;
         Color color = deleteArea.color;
         color.a = (x <= -0.52f && length - (0.5f - x) <= 1.0f && display) ? 0.9f : 0;
         deleteArea.color = color;
