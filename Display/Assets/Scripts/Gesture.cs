@@ -16,7 +16,7 @@ public class Gesture : MonoBehaviour {
 	public bool chooseCandidate = false;
     private bool listExpanded = false, inGesture = false;
     private int menuGestureCount = 0;
-	private float length, lastOutListTime;
+	private float length, lastOutListTime, lastAdjustTime;
 	private Vector2 StartPointRelative;
 	private Vector2 beginPoint, prePoint, localPoint;
 	private List<Vector2> stroke = new List<Vector2>();
@@ -35,15 +35,16 @@ public class Gesture : MonoBehaviour {
 	// Update is called once per frame
 	void Update() 
 	{
-        if (Parameter.mode == Parameter.Mode.FixStart && inGesture)
+        if ((prePoint.x < -0.74f || prePoint.x > 0.74f) && Time.time - lastAdjustTime > 0.01f)
         {
-            if (prePoint.x < -0.74f || prePoint.x > 0.74f)
+            if (Parameter.mode == Parameter.Mode.FixStart && inGesture)
             {
                 Vector2 delta = prePoint - StartPointRelative;
                 delta.Normalize();
                 Debug.Log(delta);
-                beginPoint -= delta * 0.005f;
+                beginPoint -= delta * 0.008f;
                 Move(prePoint.x, prePoint.y);
+                lastAdjustTime = Time.time;
             }
         }
     }
@@ -218,7 +219,7 @@ public class Gesture : MonoBehaviour {
 			}
 		}
 
-        if (x <= -0.52f && length - (0.5f - x) <= 1.0f)
+        if (x <= -0.54f && length - (-0.5f - x) <= 1.0f)
 		{
 			if (Parameter.userStudy == Parameter.UserStudy.Study2)
 				server.Send("Delete", "LeftSwipe");
@@ -226,7 +227,7 @@ public class Gesture : MonoBehaviour {
 			chooseCandidate = false;
 			return;
 		}
-		if (x >= 0.52f && length - (x - 0.5f) <= 1.0f)
+		if (x >= 0.54f && length - (x - 0.5f) <= 1.0f)
         {
             chooseCandidate = false;
             if (Parameter.userStudy == Parameter.UserStudy.Basic)
@@ -340,10 +341,10 @@ public class Gesture : MonoBehaviour {
         if (Parameter.userStudy == Parameter.UserStudy.Study1 || Parameter.userStudy == Parameter.UserStudy.Study1_Train)
             display = false;
         Color color = deleteArea.color;
-        color.a = (x <= -0.52f && length - (0.5f - x) <= 1.0f && display) ? 0.9f : 0;
+        color.a = (x <= -0.54f && length - (-0.5f - x) <= 1.0f && display) ? 0.9f : 0;
         deleteArea.color = color;
         color = spaceArea.color;
-        color.a = (x >= 0.52f && length - (x - 0.5f) <= 1.0f && display) ? 0.9f : 0;
+        color.a = (x >= 0.54f && length - (x - 0.5f) <= 1.0f && display) ? 0.9f : 0;
         spaceArea.color = color;
     }
 
