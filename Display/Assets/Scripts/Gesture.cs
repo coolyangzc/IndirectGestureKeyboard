@@ -217,7 +217,7 @@ public class Gesture : MonoBehaviour {
 			}
 		}
 
-        if (x <= -0.54f && length - (-0.5f - x) <= 1.0f)
+        if ((x <= -0.54f && length - (-0.5f - x) <= 1.0f) || x <= -0.74f)
 		{
 			if (Parameter.userStudy == Parameter.UserStudy.Study2)
 				server.Send("Delete", "LeftSwipe");
@@ -225,7 +225,7 @@ public class Gesture : MonoBehaviour {
 			chooseCandidate = false;
 			return;
 		}
-		if (x >= 0.54f && length - (x - 0.5f) <= 1.0f)
+		if ((x >= 0.54f && length - (x - 0.5f) <= 1.0f) || x >= 0.74f)
         {
             chooseCandidate = false;
             if (Parameter.userStudy == Parameter.UserStudy.Basic)
@@ -319,7 +319,7 @@ public class Gesture : MonoBehaviour {
         for (int i = 0; i < 4; ++i)
             if (-500 + i * 250 < x && x < -250 + i * 250)
                 for (int j = 0; j < line; ++j)
-                    if (y > 310 - 120 * j && y < 430 - 120 * j)
+                    if ((y > 310 - 120 * j && y < 430 - 120 * j ) || (j == 0 && y > 310))
                         return j * 4 + listOrder[i];
         return 0;
     }
@@ -338,10 +338,10 @@ public class Gesture : MonoBehaviour {
         if (Parameter.userStudy == Parameter.UserStudy.Study1 || Parameter.userStudy == Parameter.UserStudy.Study1_Train)
             display = false;
         Color color = deleteArea.color;
-        color.a = (x <= -0.54f && length - (-0.5f - x) <= 1.0f && display) ? 0.9f : 0;
+        color.a = (((x <= -0.54f && length - (-0.5f - x) <= 1.0f) || x <= -0.74f) && display) ? 0.9f : 0;
         deleteArea.color = color;
         color = spaceArea.color;
-        color.a = (x >= 0.54f && length - (x - 0.5f) <= 1.0f && display) ? 0.9f : 0;
+        color.a = (((x >= 0.54f && length - (x - 0.5f) <= 1.0f) || x >= 0.74f) && display) ? 0.9f : 0;
         spaceArea.color = color;
     }
 
