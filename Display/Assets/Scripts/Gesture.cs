@@ -15,7 +15,6 @@ public class Gesture : MonoBehaviour {
 	
 	public bool chooseCandidate = false;
     private bool listExpanded = false, inGesture = false;
-    private int menuGestureCount = 0;
 	private float length, lastOutListTime, lastAdjustTime;
 	private Vector2 StartPointRelative;
 	private Vector2 beginPoint, prePoint, localPoint;
@@ -196,7 +195,6 @@ public class Gesture : MonoBehaviour {
 		}
 		if (chooseCandidate)
 		{
-            menuGestureCount++;
 			if (Lexicon.useRadialMenu)
 			{
                 int choose = RadialMenuChoose(x, y);
@@ -259,7 +257,6 @@ public class Gesture : MonoBehaviour {
 		Lexicon.Candidate[] candidates = lexicon.Recognize(stroke.ToArray());
 		
 		chooseCandidate = true;
-        menuGestureCount = 0;
         if (Lexicon.useRadialMenu)
 		{
 			cursor.transform.localPosition = new Vector3(StartPointRelative.x * Parameter.keyboardWidth, StartPointRelative.y * Parameter.keyboardHeight, -0.2f);

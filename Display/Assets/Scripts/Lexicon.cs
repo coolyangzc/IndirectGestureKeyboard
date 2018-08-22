@@ -214,7 +214,7 @@ public class Lexicon : MonoBehaviour
 			}
             if (Vector2.Distance(stroke[SampleSize - 1], entry.locationSample[(int)Parameter.mode][SampleSize - 1]) 
                 > Parameter.endOffset * Parameter.keyWidth && 
-                (h >= words.Length || entry.word != words[h] || stroke[SampleSize - 1].y > Parameter.keyboardHeight * 0.7f))
+                (h >= words.Length || entry.word != words[h]))
                 continue;
 
             float biF = 0;
@@ -337,29 +337,6 @@ public class Lexicon : MonoBehaviour
 		gesture.chooseCandidate = false;
 		history.Clear();
         textManager.Clear();
-	}
-
-	public char TapSingleKey(Vector2 point)
-	{
-        return 'a';
-		/*float minDis = float.MaxValue;
-		char key = ' ';
-		for (int i = 0; i < 26; ++i)
-		{
-			float dis = Vector2.Distance(point, keyPos[i]);
-			if (dis < minDis)
-			{
-				minDis = dis;
-				key = (char)(i + 97);
-			}
-		}
-
-		if (text.Length > 0)
-			text += " ";
-		text += key.ToString();
-		inputText.text = text;
-		history.Add(new Candidate(key.ToString()));
-		return key;*/
 	}
 
 	public void SetDebugDisplay(bool debugOn)
