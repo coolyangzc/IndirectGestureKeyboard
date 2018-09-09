@@ -23,28 +23,27 @@ public class MyMessage : MessageBase
 
 public class Client : MonoBehaviour 
 {
-	public Canvas connectWindow;
+	public GameObject connectWindow;
 	public Button connectButton;
 	public Keyboard keyboard;
 	public InputField inputIP;
 
 	public DebugInfo debugInfo;
 	private string serverIP = "";
-	private int port = 9973;
+	private const int port = 9973;
     private NetworkClient client;
 
 	// Use this for initialization
 	void Start() 
 	{
-		connectWindow.enabled = true;
+		connectWindow.SetActive(true);
 		connectButton.onClick.AddListener(StartConnect);
 	}
 	
 	// Update is called once per frame
 	void Update() 
 	{
-		//if (Input.GetKeyDown(KeyCode.Escape)) 
-			//connectWindow.enabled ^= true;
+
 	}
 
 	void OnGUI()
@@ -70,7 +69,11 @@ public class Client : MonoBehaviour
         var m = netMsg.ReadMessage<MyMessage>();
         string msg = m.msg;
         switch (m.tag)
-        { 
+        {
+            case "Hide":
+                connectWindow.SetActive(false);
+                debugInfo.SetVisibility(false);
+                break;
             case "TouchScreen Keyboard Width":
 				if (msg == "+")
 					keyboard.ZoomIn(true);
@@ -117,10 +120,13 @@ public class Client : MonoBehaviour
 			case "Delete":
 				keyboard.Delete(msg);
 				break;
-			case "Backspace":
+            case "Expand":
+                keyboard.Expand();
+                break;
+            case "Backspace":
 				keyboard.Backspace();
 				break;
-			case "Change Ratio":
+            case "Change Ratio":
 				keyboard.ChangeRatio();
 				break;
             case "NextCandidatePanel":

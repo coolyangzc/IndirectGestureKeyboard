@@ -10,18 +10,18 @@ public class PCControl : MonoBehaviour {
 	public Lexicon lexicon;
 	public Gesture gesture;
 	public Info info;
+    public Parameter parameter;
+    public TextManager textManager;
 	public int blockID = 0, phraseID = 0; 
 	public InputField userID;
-	//public Text userID;
 
 	private bool mouseHidden = false;
 	private bool debugOn = false;
 	private float distance = 0;
 
-	private float MinDistance = 4;
-	private float MaxDistance = 12;
-	private float ScrollKeySpeed = -1f;
-    private int display_cnt = 0;
+	private const float MinScrollDistance = 2;
+	private const float MaxScrollDistance = 12;
+	private const float ScrollKeySpeed = -2f;
 	
 	// Use this for initialization
 	void Start() 
@@ -31,7 +31,7 @@ public class PCControl : MonoBehaviour {
         lexicon.SetDebugDisplay(debugOn);
 
         //Alternative Start Option
-        gesture.ChangeRatio();
+        parameter.ChangeRatio();
 		lexicon.CalcKeyLayout();
 		lexicon.CalcLexicon();
 	}
@@ -60,20 +60,14 @@ public class PCControl : MonoBehaviour {
 
 	void KeyControl()
 	{
-        if ((Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl)) && Input.GetKeyDown(KeyCode.D))
-        {
-            display_cnt++;
-            if (display_cnt % 2 == 0)
-                lexicon.SetPhrase("thanks for watching");
-            else
-                lexicon.SetPhrase("a subject one can really enjoy");
-        }
-        if (Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift))
+		if (Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift))
 		{
 			if (Input.GetKeyDown(KeyCode.RightArrow))
 				server.Send("TouchScreen Keyboard Width", "+");
 			if (Input.GetKeyDown(KeyCode.LeftArrow))
 				server.Send("TouchScreen Keyboard Width", "-");
+            if (Input.GetKeyDown(KeyCode.H))
+                server.Send("Hide", "");
 			if (Input.GetKeyDown(KeyCode.D))
 			{
 				debugOn ^= true;
@@ -81,11 +75,9 @@ public class PCControl : MonoBehaviour {
 				lexicon.SetDebugDisplay(debugOn);
 			}
 			if (Input.GetKeyDown(KeyCode.M))
-				lexicon.ChangeMode();
-			if (Input.GetKeyDown(KeyCode.S))
-				lexicon.ChangeShapeFormula();
+                parameter.ChangeMode();
 			if (Input.GetKeyDown(KeyCode.L))
-				lexicon.ChangeLocationFormula();
+                parameter.ChangeLocationFormula();
 			if (Input.GetKeyDown(KeyCode.N))
 				lexicon.ChangePhrase();
 			if (Input.GetKeyDown(KeyCode.C))
@@ -97,7 +89,7 @@ public class PCControl : MonoBehaviour {
 			}
 			if (Input.GetKeyDown(KeyCode.T))
 			{
-				gesture.ChangeRatio();
+                parameter.ChangeRatio();
 				lexicon.CalcKeyLayout();
 				lexicon.CalcLexicon();
 			}
@@ -105,41 +97,41 @@ public class PCControl : MonoBehaviour {
 			{
                 HideDisplay();
                 info.Clear();
-                if (Lexicon.userStudy == Lexicon.UserStudy.Basic)
+                if (Parameter.userStudy == Parameter.UserStudy.Basic)
                 {
-                    Lexicon.userStudy = Lexicon.UserStudy.Train;
+                    Parameter.userStudy = Parameter.UserStudy.Study1_Train;
                     lexicon.ChangePhrase();
-                    lexicon.HighLight(-100);
+                    textManager.HighLight(-100);
                     info.Log("Phrase", "Warmup");
                     return;
                 }
-				Lexicon.userStudy = Lexicon.UserStudy.Study1;
+                Parameter.userStudy = Parameter.UserStudy.Study1;
 				lexicon.ChangePhrase(phraseID);
 				SendPhraseMessage();
-				lexicon.HighLight(-100);
-				info.Log("Phrase", (phraseID+1).ToString() + "/60");
+                textManager.HighLight(-100);
+				info.Log("Phrase", (phraseID+1).ToString() + "/40");
 				server.Send("Get Keyboard Size", "");
-				
 			}
 			if (Input.GetKeyDown(KeyCode.Alpha2))
 			{
                 HideDisplay();
-				Lexicon.userStudy = Lexicon.UserStudy.Study2;
-				lexicon.ChangePhrase();
+                Parameter.userStudy = Parameter.UserStudy.Study2;
+                lexicon.SetPhraseList(Parameter.userStudy);
+				lexicon.ChangePhrase(phraseID);
 				SendPhraseMessage();
 				info.Clear();
-                info.Log("Mode", Lexicon.mode.ToString());
-                info.Log("Block", (blockID+1).ToString() + "/8");
-				info.Log("Phrase", (phraseID % 6 + 1).ToString() + "/6");
-                blockID = (blockID + 1) % 8;
+                info.Log("Mode", Parameter.mode.ToString());
+                blockID = blockID % 4 + 1;
+                info.Log("Block", blockID.ToString() + "/4");
+				info.Log("Phrase", (phraseID % 10 + 1).ToString() + "/10");
             }
 		}
 		if (Input.GetKeyDown(KeyCode.UpArrow))
 		{
 			if (Input.GetKey(KeyCode.E))
-				lexicon.ChangeEndOffset(0.1f);
+                parameter.ChangeEndOffset(0.1f);
 			if (Input.GetKey(KeyCode.R))
-				lexicon.ChangeRadius(0.1f);
+                parameter.ChangeRadius(0.1f);
 			if (Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift))
 				server.Send("TouchScreen Keyboard Height", "+");
 			if (Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl))
@@ -151,9 +143,9 @@ public class PCControl : MonoBehaviour {
 		if (Input.GetKeyDown(KeyCode.DownArrow))
 		{
 			if (Input.GetKey(KeyCode.E))
-				lexicon.ChangeEndOffset(-0.1f);
+                parameter.ChangeEndOffset(-0.1f);
 			if (Input.GetKey(KeyCode.R))
-				lexicon.ChangeRadius(-0.1f);
+                parameter.ChangeRadius(-0.1f);
 			if (Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift))
 				server.Send("TouchScreen Keyboard Height", "-");
 			if (Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl))
@@ -164,60 +156,72 @@ public class PCControl : MonoBehaviour {
 		}
 		if (Input.GetKeyDown(KeyCode.Space))
 		{
-			switch(Lexicon.userStudy)
+			switch(Parameter.userStudy)
 			{
-				case Lexicon.UserStudy.Basic:
+				case Parameter.UserStudy.Basic:
 					lexicon.ChangePhrase();
 					break;
-				case Lexicon.UserStudy.Train:
+				case Parameter.UserStudy.Study1_Train:
 					lexicon.ChangePhrase();
-					lexicon.HighLight(-1000);
+					textManager.HighLight(-100);
 					break;
-				case Lexicon.UserStudy.Study1:
-					server.Send("Study1 End Phrase", Lexicon.mode.ToString());
+				case Parameter.UserStudy.Study1:
+                    if (!textManager.InputNumberCorrect() && !(Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift)))
+                        return;
+					server.Send("Study1 End Phrase", Parameter.mode.ToString());
 					phraseID++;
-					
 					if (phraseID % 10 == 0)
 					{
-						Lexicon.userStudy = Lexicon.UserStudy.Train;
+                        Parameter.userStudy = Parameter.UserStudy.Study1_Train;
 						lexicon.ChangePhrase();
-						lexicon.HighLight(-100);
-						info.Log("Phrase", "Warmup");
+                        textManager.HighLight(-100);
+						info.Log("Phrase", "<color=red>Rest</color>");
 						return;
 					}
 					lexicon.ChangePhrase(phraseID);
 					SendPhraseMessage();
-					lexicon.HighLight(-100);
-					info.Log("Phrase", (phraseID+1).ToString() + "/60");
+                    textManager.HighLight(-100);
+					info.Log("Phrase", (phraseID+1).ToString() + "/40");
 					break;
-				case Lexicon.UserStudy.Study2:
-					server.Send("Study2 End Phrase", lexicon.inputText.text + "\n" + Lexicon.mode.ToString());
-					phraseID++;
-					if (phraseID % 6 == 0)
-					{
-						Lexicon.userStudy = Lexicon.UserStudy.Basic;
-						lexicon.ChangePhrase();
-                        info.Log("Block", "<color=red>Rest</color>");
-						info.Log("Phrase", "<color=red>Rest</color>");
-						return;
-					}
-					lexicon.ChangePhrase();
-					SendPhraseMessage();
-					info.Log("Phrase", (phraseID % 6 + 1).ToString() + "/6");
-					break;
+				case Parameter.UserStudy.Study2:
+                    if (!textManager.InputNumberCorrect() && !(Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift)))
+                        return;
+                    FinishStudy2Phrase();
+                    break;
 			}
 		}
 		if (Input.GetKeyDown(KeyCode.Backspace))
 		{
-			if (Lexicon.userStudy == Lexicon.UserStudy.Study1 || Lexicon.userStudy == Lexicon.UserStudy.Study2)
+			if (Parameter.userStudy == Parameter.UserStudy.Study1 || Parameter.userStudy == Parameter.UserStudy.Study2)
 				server.Send("Backspace", "");
-			if (Lexicon.userStudy == Lexicon.UserStudy.Study1 || Lexicon.userStudy == Lexicon.UserStudy.Train)
-				lexicon.HighLight(-100);
-			if (Lexicon.userStudy == Lexicon.UserStudy.Study2 || Lexicon.userStudy == Lexicon.UserStudy.Basic)
+			if (Parameter.userStudy == Parameter.UserStudy.Study1 || Parameter.userStudy == Parameter.UserStudy.Study1_Train)
+                textManager.HighLight(-100);
+			if (Parameter.userStudy == Parameter.UserStudy.Study2 || Parameter.userStudy == Parameter.UserStudy.Basic)
 				lexicon.Clear();
 		}
 
 	}
+
+    public void FinishStudy2Phrase()
+    {
+        string msg = textManager.inputText.text + "\n" + Parameter.mode.ToString() + "\n";
+        msg += (Lexicon.useRadialMenu ? "Radial" : "List") + "\n";
+        server.Send("Study2 End Phrase", msg);
+
+        phraseID++;
+        if (phraseID % 10 == 0)
+        {
+            Parameter.userStudy = Parameter.UserStudy.Basic;
+            lexicon.ChangePhrase();
+            info.Log("Block", "<color=red>Finished</color> " + blockID.ToString() + "/4");
+            info.Log("Phrase", "<color=red>Rest</color>");
+            return;
+        }
+        lexicon.ChangePhrase(phraseID);
+        SendPhraseMessage();
+        info.Log("Block", blockID.ToString() + "/4");
+        info.Log("Phrase", (phraseID % 10 + 1).ToString() + "/10");
+    }
 
 	void MouseControl() 
 	{
@@ -226,10 +230,10 @@ public class PCControl : MonoBehaviour {
 			if (Input.GetAxis("Mouse ScrollWheel") != 0)
 			{
 				distance += Input.GetAxis("Mouse ScrollWheel") * ScrollKeySpeed;
-				if (distance < MinDistance)
-					distance = MinDistance;
-				else if (distance > MaxDistance)
-					distance = MaxDistance;
+				if (distance < MinScrollDistance)
+					distance = MinScrollDistance;
+				else if (distance > MaxScrollDistance)
+					distance = MaxScrollDistance;
 			}
 			Vector3 pos = canvas.transform.localPosition;
 			canvas.transform.localPosition = new Vector3(pos.x, pos.y, distance);
@@ -250,13 +254,13 @@ public class PCControl : MonoBehaviour {
 
 	void SendPhraseMessage()
 	{
-		if (Lexicon.userStudy == Lexicon.UserStudy.Study1)
+		if (Parameter.userStudy == Parameter.UserStudy.Study1)
 			server.Send("Study1 New Phrase", 
-			            userID.text + "_" + phraseID.ToString() + ".txt" + "\n" + 
-			            lexicon.phraseText.text);
-		else if (Lexicon.userStudy == Lexicon.UserStudy.Study2)
+			            userID.text + "_" + phraseID.ToString() + ".txt" + "\n" +
+                        textManager.phraseText.text);
+		else if (Parameter.userStudy == Parameter.UserStudy.Study2)
 			server.Send("Study2 New Phrase", 
-			            userID.text + "_" + phraseID.ToString() + ".txt" + "\n" + 
-			            lexicon.phraseText.text);
+			            userID.text + "_" + phraseID.ToString() + ".txt" + "\n" +
+                        textManager.phraseText.text);
 	}
 }

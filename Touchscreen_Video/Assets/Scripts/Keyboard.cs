@@ -14,7 +14,7 @@ public class Keyboard : MonoBehaviour
 
 	private int userStudy = 0;
 
-	private string path = "sdcard//G-Keyboard//";
+	private const string path = "sdcard//G-Keyboard//";
 	private string buffer = "";
 	private string phraseInfo;
 	private StreamWriter writer;
@@ -22,6 +22,7 @@ public class Keyboard : MonoBehaviour
 	private const int CandidateNum = 5;
 
 	private const float eps = 1e-10f;
+    private const bool PhoneSize_5_1_inch = false;
 	private Vector2 preLocal;
 	private Button[] btn = new Button[CandidateNum];
 	private float keyboardWidth, keyboardHeight;
@@ -46,9 +47,17 @@ public class Keyboard : MonoBehaviour
 		keyboardWidth = keyboard.rectTransform.rect.width;
 		keyboardHeight = keyboard.rectTransform.rect.height;
 		SetKeyboard();
-		ZoomOut(true);ZoomOut(true);
-		ZoomOut(false);ZoomOut(false);
-		ZoomOut(false, true);
+        if (PhoneSize_5_1_inch)
+        {
+            ZoomOut(false, true);
+            ZoomOut(false, true);
+        }
+        else
+        {
+            ZoomOut(true); ZoomOut(true);
+            ZoomOut(false); ZoomOut(false);
+            ZoomOut(false, true);
+        }
 		ChangeRatio();
 	}
 	
@@ -57,7 +66,7 @@ public class Keyboard : MonoBehaviour
 	{
 		if (Input.touchCount > 0) 
 		{
-			Touch touch = Input.GetTouch(Input.touchCount - 1);
+			Touch touch = Input.GetTouch(0);
 			Vector2 local;
 			RectTransformUtility.ScreenPointToLocalPointInRectangle(
 				keyboard.transform as RectTransform, touch.position, Camera.main, out local);
@@ -209,13 +218,20 @@ public class Keyboard : MonoBehaviour
 		debugInfo.Log("FileName", file.FullName);
 		buffer = "";
         connectWindow.SetActive(false);
-        Color c = keyboard.color;
-        c.a = 0;
-        keyboard.color = c;
-	}
+        debugInfo.SetVisibility(false);
+
+        for (int i = 0; i < 26; ++i)
+        {
+            Color c = keyboard.rectTransform.Find(((char)(i + 65)).ToString()).GetComponent<Image>().color;
+            c.a = 0;
+            keyboard.rectTransform.Find(((char)(i + 65)).ToString()).GetComponent<Image>().color = c;
+        }
+    }
 
 	public void EndDataFile(string msg)
 	{
+        if (buffer == "")
+            return;
 		buffer = phraseInfo + "\n" + 
 				 msg + "\n" + 
 				 (widthRatio * overallRatio).ToString("0.0") + " " + (heightRatio * overallRatio).ToString("0.0") + "\n" +
@@ -236,6 +252,11 @@ public class Keyboard : MonoBehaviour
 	{
 		buffer += "SingleKey" + " " + Time.time.ToString() + " " + key + "\n";
 	}
+
+    public void Expand()
+    {
+        buffer += "Expand" + " " + Time.time.ToString() + "\n";
+    }
 
 	public void Cancel()
 	{

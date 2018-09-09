@@ -1,6 +1,7 @@
-﻿using UnityEngine;
+﻿using System.Net;
+using System.Net.Sockets;
+using UnityEngine;
 using UnityEngine.Networking;
-using UnityEngine.Networking.NetworkSystem;
 
 public class MyMsgType
 {
@@ -27,7 +28,7 @@ public class Server : MonoBehaviour
 	public Lexicon lexicon;
 	public Info info;
 
-	private int port = 9973;
+	private const int port = 9973;
 	private string IP;
 	
 	// Use this for initialization
@@ -38,17 +39,25 @@ public class Server : MonoBehaviour
         NetworkServer.Listen(port);
         NetworkServer.RegisterHandler(MsgType.Connect, OnConnected);
         NetworkServer.RegisterHandler(MyMsgType.Message, ReceiveMessage);
+        
     }
 	
 	// Update is called once per frame
 	void Update() 
 	{
-	
-	}
+
+    }
 	
 	string GetIP()
 	{
-        return Network.player.ipAddress;
+        IPAddress[] ips = Dns.GetHostAddresses(Dns.GetHostName());
+        string ipv4 = "";
+        foreach (IPAddress ip in ips)
+            if (ip.AddressFamily == AddressFamily.InterNetwork)
+            {
+                ipv4 = ip.ToString();  //ipv4
+            }
+        return ipv4;
     }
 
     void OnConnected(NetworkMessage netMsg)
@@ -78,10 +87,6 @@ public class Server : MonoBehaviour
 				break;
 			case "Ended":
 				gesture.End(float.Parse(msg.Split(',')[0]), float.Parse(msg.Split(',')[1]));
-				break;
-			case "Choose Candidate":
-                int choose = int.Parse(msg);
-				lexicon.Accept(ref choose);
 				break;
 			case "Keyboard Size Msg":
 				lexicon.UpdateSizeMsg(msg);
