@@ -60,6 +60,13 @@ public class PCControl : MonoBehaviour {
 
 	void KeyControl()
 	{
+        if (Input.GetKey(KeyCode.LeftAlt) || Input.GetKey(KeyCode.RightAlt))
+        {
+            if (Input.GetKeyDown(KeyCode.Alpha1))
+                lexicon.ChangePhrase(-3);
+            if (Input.GetKeyDown(KeyCode.Alpha2))
+                lexicon.ChangePhrase(-2);
+        }
 		if (Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift))
 		{
 			if (Input.GetKeyDown(KeyCode.RightArrow))

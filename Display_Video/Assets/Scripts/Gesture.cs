@@ -230,7 +230,7 @@ public class Gesture : MonoBehaviour {
             chooseCandidate = false;
             if (Parameter.userStudy == Parameter.UserStudy.Basic)
             {
-                if (!chooseCandidate && textManager.InputNumberCorrect())
+                if (!chooseCandidate && textManager.InputNumberCorrect() && textManager.GetWords()[0] != "Thanks")
                     lexicon.ChangePhrase();
             }
             else if (Parameter.userStudy == Parameter.UserStudy.Study2)
