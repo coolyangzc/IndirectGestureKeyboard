@@ -349,7 +349,9 @@ public class Lexicon : MonoBehaviour
 
 	public void ChangePhrase(int id = -1)
 	{
-        if (id == -1)
+        if (id == -3)
+            textManager.SetPhrase("a problem with the engine");
+        else if (id == -1)
             textManager.SetPhrase(phrase[Random.Range(0, phrase.Count)]);
 		else
             textManager.SetPhrase(phrase[phraseList[id]]);
